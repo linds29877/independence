@@ -2156,9 +2156,8 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	// set boot args
 	//
 	// alternative boot args for restore mode boot spew
-	//if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -v"))) {
-
-	if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -progress"))) {
+	if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -v"))) {
+	//if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -progress"))) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error setting boot args.");
 		return;
 	}
