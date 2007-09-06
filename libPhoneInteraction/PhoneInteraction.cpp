@@ -400,8 +400,12 @@ PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 	m_hAFC = NULL;
 	m_firmwarePath = NULL;
 	m_waitingForRecovery = false;
+	m_privateFunctionsSetup = false;
+	m_iTunesVersion = 0.0;
 
-	setupPrivateFunctions();
+	if (determineiTunesVersion()) {
+		setupPrivateFunctions();
+	}
 
 	if (m_statusFunc) {
 		(*m_statusFunc)("Disconnected: waiting for iPhone", true);
@@ -432,6 +436,59 @@ PhoneInteraction* PhoneInteraction::getInstance(void (*statusFunc)(const char*, 
 	return g_phoneInteraction;
 }
 
+bool PhoneInteraction::determineiTunesVersion()
+{
+	CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+												 CFSTR("/Applications/iTunes.app/Contents/version.plist"),
+												 kCFURLPOSIXPathStyle, false);
+	CFStringRef errString;
+	CFDictionaryRef iTunesVersionDict;
+
+	// 0p: TODO -- Figure out how to do this on Windows since these functions aren't in
+	// the CF headers that come with the Quicktime SDK
+#if defined(__APPLE__)
+	CFReadStreamRef stream= CFReadStreamCreateWithFile(kCFAllocatorDefault, url);
+	
+	Boolean opened = CFReadStreamOpen(stream);
+	
+	if (opened == FALSE) {
+		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error creating dictionary from given plist file.");
+		CFRelease(url);
+		CFRelease(stream);
+		return false;
+	}
+	
+	CFPropertyListFormat format;
+	iTunesVersionDict = (CFDictionaryRef)CFPropertyListCreateFromStream(kCFAllocatorDefault,
+																		stream, 0,
+																		kCFPropertyListMutableContainersAndLeaves,
+																		&format, &errString);
+	CFReadStreamClose(stream);
+	CFRelease(stream);
+#endif
+	
+	CFRelease(url);
+	
+	if (errString != NULL) {
+		return false;
+	}
+
+	CFStringRef versionStr = (CFStringRef)CFDictionaryGetValue(iTunesVersionDict, CFSTR("CFBundleVersion"));
+
+	if (versionStr == NULL) {
+		return false;
+	}
+
+	double versionVal = CFStringGetDoubleValue(versionStr);
+
+	if (versionVal == 0.0) {
+		return false;
+	}
+
+	m_iTunesVersion = versionVal;
+	return true;
+}
+
 #if defined(WIN32)
 void PhoneInteraction::setupPrivateFunctions()
 {
@@ -446,27 +503,65 @@ void PhoneInteraction::setupPrivateFunctions()
 	g_sendFileToDevice= (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009410);
 	g_performOperation= (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x100129C0);
 	g_socketForPort= (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10012830);
+	m_privateFunctionsSetup = true;
 }
 #elif defined(__APPLE__) && defined(__POWERPC__)
 void PhoneInteraction::setupPrivateFunctions()
 {
-	g_performOperation = (t_performOperation)0x3c3a0e14;
-	g_socketForPort = (t_socketForPort)0x3c3a0644;
-	g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a517c;
-	g_sendFileToDevice = (t_sendFileToDevice)0x3c3a52dc;
+
+	if (m_iTunesVersion < 7.3) return;
+
+	if (m_iTunesVersion < 7.4) {
+		g_performOperation = (t_performOperation)0x3c3a0e14;
+		g_socketForPort = (t_socketForPort)0x3c3a0644;
+		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a517c;
+		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a52dc;
+	}
+	else {
+		g_performOperation = (t_performOperation)0x3c3a0bc8;
+		g_socketForPort = (t_socketForPort)0x3c3a051c;
+		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a5bb0;
+		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a5d10;
+	}
+
+	m_privateFunctionsSetup = true;
 }
 #elif defined(__APPLE__)
 void PhoneInteraction::setupPrivateFunctions()
 {
-	g_performOperation = (t_performOperation)0x3c39fa4b;
-	g_socketForPort = (t_socketForPort)0x3c39f36c;
-	g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a3e3b;
-	g_sendFileToDevice = (t_sendFileToDevice)0x3c3a4087;
+
+	if (m_iTunesVersion < 7.3) return;
+	
+	if (m_iTunesVersion < 7.4) {
+		g_performOperation = (t_performOperation)0x3c39fa4b;
+		g_socketForPort = (t_socketForPort)0x3c39f36c;
+		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a3e3b;
+		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a4087;
+	}
+	else {
+		g_performOperation = (t_performOperation)0x3c3a0599;
+		g_socketForPort = (t_socketForPort)0x3c39ffa3;
+		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a597f;
+		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a5bcb;
+	}
+
+	m_privateFunctionsSetup = true;
 }
 #endif
 
+bool PhoneInteraction::arePrivateFunctionsSetup()
+{
+	return m_privateFunctionsSetup;
+}
+
 void PhoneInteraction::subscribeToNotifications()
 {
+
+	if (!arePrivateFunctionsSetup()) {
+		(*m_notifyFunc)(NOTIFY_INITIALIZATION_FAILED, "Error setting up private functions");
+		return;
+	}
+
 	struct am_device_notification *notif;
 
 	if (AMDeviceNotificationSubscribe(deviceNotificationCallback, 0, 0, 0, &notif)) {
@@ -1918,9 +2013,46 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	m_recoveryDevice = rdev;
 	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_CONNECTED, "Recovery mode started");
 
-#ifdef USE_OLD_RESTORE_MODE_SWITCH
+#ifdef USE_ALTERNATE_RESTORE_MODE_SWITCH
 
-	// Alternative way to get into restore mode
+	// Alternative way to get into restore mode which doesn't require firmware
+	// file paths
+	// NOTE: This doesn't work with iTunes 7.4 so I made it the alternative way
+
+	CFMutableDictionaryRef restoreOptions = AMRestoreCreateDefaultOptions(kCFAllocatorDefault);
+	
+	if (restoreOptions == NULL) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error creating restore options dictionary.");
+		return;
+	}
+	
+	CFStringRef cfFirmwarePath = CFStringCreateWithCString(kCFAllocatorDefault, m_firmwarePath,
+														   kCFStringEncodingUTF8);
+	
+	if (cfFirmwarePath == NULL) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error creating path CFString.");
+		return;
+	}
+	
+    CFDictionarySetValue(restoreOptions, CFSTR("CreateFilesystemPartitions"), kCFBooleanFalse);
+	CFDictionarySetValue(restoreOptions, CFSTR("RestoreBundlePath"), cfFirmwarePath);
+    CFDictionarySetValue(restoreOptions, CFSTR("RestoreBootArgs"), CFSTR("rd=md0 -progress"));
+	
+	// alternative boot args for restore mode boot spew
+	//CFDictionarySetValue(restoreOptions, CFSTR("RestoreBootArgs"), CFSTR("rd=md0 -v"));
+	
+	m_switchingToRestoreMode = true;
+	
+	if (AMRestorePerformRecoveryModeRestore(rdev, restoreOptions, (void*)recoveryProgressCallback, NULL)) {
+		CFRelease(cfFirmwarePath);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error switching to restore mode.");
+		return;
+	}
+	
+	CFRelease(cfFirmwarePath);
+#else
+
+	// Tried and true method using firmware file paths
 
 	char ramdisk[PATH_MAX+1];
 	char kerncache[PATH_MAX+1];
@@ -2039,38 +2171,6 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 		return;
 	}
 
-#else
-	CFMutableDictionaryRef restoreOptions = AMRestoreCreateDefaultOptions(kCFAllocatorDefault);
-
-	if (restoreOptions == NULL) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error creating restore options dictionary.");
-		return;
-	}
-
-	CFStringRef cfFirmwarePath = CFStringCreateWithCString(kCFAllocatorDefault, m_firmwarePath,
-														   kCFStringEncodingUTF8);
-
-	if (cfFirmwarePath == NULL) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error creating path CFString.");
-		return;
-	}
-
-    CFDictionarySetValue(restoreOptions, CFSTR("CreateFilesystemPartitions"), kCFBooleanFalse);
-	CFDictionarySetValue(restoreOptions, CFSTR("RestoreBundlePath"), cfFirmwarePath);
-    CFDictionarySetValue(restoreOptions, CFSTR("RestoreBootArgs"), CFSTR("rd=md0 -progress"));
-
-	// alternative boot args for restore mode boot spew
-	//CFDictionarySetValue(restoreOptions, CFSTR("RestoreBootArgs"), CFSTR("rd=md0 -v"));
-
-	m_switchingToRestoreMode = true;
-
-	if (AMRestorePerformRecoveryModeRestore(rdev, restoreOptions, (void*)recoveryProgressCallback, NULL)) {
-		CFRelease(cfFirmwarePath);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error switching to restore mode.");
-		return;
-	}
-
-	CFRelease(cfFirmwarePath);
 #endif
 
 }
