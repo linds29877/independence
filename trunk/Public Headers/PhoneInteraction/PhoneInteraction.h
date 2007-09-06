@@ -183,7 +183,9 @@ private:
 
 	// functions used internally
 	void subscribeToNotifications();	
+	bool determineiTunesVersion();
 	void setupPrivateFunctions();
+	bool arePrivateFunctionsSetup();
 	bool copyFilesystemRecursive(afc_connection *conn, const char *dirpath, const char *dest,
 								 const char *basepath, bool ignoreUserFiles);
 	bool removePathRecursive(const char *path);
@@ -197,5 +199,7 @@ private:
 	void (*m_statusFunc)(const char*, bool);
 	void (*m_notifyFunc)(int, const char*);
 	char *m_firmwarePath;
+	bool m_privateFunctionsSetup;
+	double m_iTunesVersion;
 
 };
