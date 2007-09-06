@@ -12,7 +12,7 @@ Requirements: XCode tools version 2.4.1 or higher
 
 ** Windows **
 
-Requirements: MinGW, MSYS, CFLite, OpenSSL 0.9.8e, QuickTime SDK
+Requirements: MinGW, MSYS, OpenSSL 0.9.8e, QuickTime SDK
 
 1) Download the MobileDevice.h header file and put it in Public Headers/MobileDevice/
 2) Edit libPhoneInteraction/Makefile.win to match your build setup
