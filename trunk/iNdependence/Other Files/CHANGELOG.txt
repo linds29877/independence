@@ -13,3 +13,8 @@ v1.1 - 09/06/07
 - Added "Restore PEM File" button which allows users to restore the original PEM file back onto their phone (useful when trying to undo all modifications for a firmware update)
 - Added "Remove SSH" button for same reason
 - Jailbreak has been verified to work on Windows via a command-line application.  In the process of adding some missing CF functionality so that activation will work too.  It's getting closer... :)
+
+
+v1.1.1 - 09/06/07
+
+- Fixes problems with jailbreak when iTunes 7.4 is installed

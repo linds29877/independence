@@ -69,7 +69,7 @@
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* iNdependence_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iNdependence_Prefix.pch; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* iNdependence.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = iNdependence.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* iNdependence.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iNdependence.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F22F9ADD0C7D4789007DCE73 /* dropbearkey */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = dropbearkey; path = "Other Files/SSH/dropbearkey"; sourceTree = SOURCE_ROOT; };
 		F25021460C7B354F00B7F437 /* jailbreak.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = jailbreak.jpg; path = images/jailbreak.jpg; sourceTree = SOURCE_ROOT; };
 		F250214C0C7B356D00B7F437 /* home_sleep_buttons.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = home_sleep_buttons.gif; path = images/home_sleep_buttons.gif; sourceTree = SOURCE_ROOT; };
