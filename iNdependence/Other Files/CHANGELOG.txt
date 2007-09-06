@@ -1,0 +1,15 @@
+Changelog
+---------
+
+v1.0 - 08/23/07
+
+- Initial release for Mac (universal binary)
+
+
+v1.1 - 09/06/07
+
+- Added ability to add/remove applications to/from the phone.  This includes setting the correct permissions and restarting Springboard
+- Added Finder-like interface for adding ringtones, wallpapers, and applications.  Uses buttons or drag and drop.  Shows preview images for wallpaper files and application icons.
+- Added "Restore PEM File" button which allows users to restore the original PEM file back onto their phone (useful when trying to undo all modifications for a firmware update)
+- Added "Remove SSH" button for same reason
+- Jailbreak has been verified to work on Windows via a command-line application.  In the process of adding some missing CF functionality so that activation will work too.  It's getting closer... :)

@@ -1,0 +1,98 @@
+{
+    IBClasses = (
+        {
+            ACTIONS = {
+                activate = id; 
+                backupActivation = id; 
+                changePassword = id; 
+                deactivate = id; 
+                generateActivation = id; 
+                imeiDialogCancel = id; 
+                imeiDialogOk = id; 
+                installSSH = id; 
+                keyGenerationOutputDismiss = id; 
+                passwordDialogCancel = id; 
+                passwordDialogOk = id; 
+                performJailbreak = id; 
+                putPEMOnPhone = id; 
+                removeSSH = id; 
+                restorePEM = id; 
+                returnToJail = id; 
+                showAboutPanel = id; 
+                waitDialogCancel = id; 
+            }; 
+            CLASS = AppController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                accountNameField = NSTextField; 
+                activateButton = NSButton; 
+                backupButton = NSButton; 
+                changePasswordButton = NSButton; 
+                customizeBrowser = CustomizeBrowser; 
+                deactivateButton = NSButton; 
+                iccidTextField = NSTextField; 
+                imeiDialog = NSWindow; 
+                imeiTextField = NSTextField; 
+                installSSHButton = NSButton; 
+                jailbreakButton = NSButton; 
+                keyGenerationOutput = NSWindow; 
+                logOutput = NSTextView; 
+                mainWindow = MainWindow; 
+                newPasswordDialog = NSWindow; 
+                passwordAgainField = NSSecureTextField; 
+                passwordField = NSSecureTextField; 
+                putPEMButton = NSButton; 
+                removeSSHButton = NSButton; 
+                restorePEMButton = NSButton; 
+                returnToJailButton = NSButton; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {CLASS = CustomizeBrowser; LANGUAGE = ObjC; SUPERCLASS = NSBrowser; }, 
+        {CLASS = CustomizeBrowserCell; LANGUAGE = ObjC; SUPERCLASS = NSBrowserCell; }, 
+        {
+            ACTIONS = {
+                addButtonPressed = id; 
+                deleteButtonPressed = id; 
+                selectionChanged = id; 
+                sshDialogCancel = id; 
+                sshDialogOk = id; 
+            }; 
+            CLASS = CustomizeBrowserDelegate; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                "m_addButton" = NSButton; 
+                "m_browser" = CustomizeBrowser; 
+                "m_deleteButton" = NSButton; 
+                "m_mainWindow" = MainWindow; 
+                "m_sshIPText1" = NSTextField; 
+                "m_sshIPText2" = NSTextField; 
+                "m_sshIPText3" = NSTextField; 
+                "m_sshIPText4" = NSTextField; 
+                "m_sshPassword" = NSSecureTextField; 
+                "m_sshWindow" = NSWindow; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {showAboutPanel = id; }; 
+            CLASS = MainWindow; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                aboutBox = NSWindow; 
+                appController = AppController; 
+                statusBar = NSTextField; 
+                statusLabel = NSTextField; 
+                statusSpinner = NSProgressIndicator; 
+                waitDialog = NSWindow; 
+                waitDialogCancel = NSButton; 
+                waitDialogImage = NSImageView; 
+                waitDialogMessage = NSTextField; 
+                waitDialogSpinner = NSProgressIndicator; 
+            }; 
+            SUPERCLASS = NSWindow; 
+        }
+    ); 
+    IBVersion = 1; 
+}
