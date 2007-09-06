@@ -1,0 +1,5 @@
+//
+// Prefix header for all source files of the 'libPhoneInteraction' target in the 'libPhoneInteraction' project.
+//
+
+#include <Carbon/Carbon.h>
