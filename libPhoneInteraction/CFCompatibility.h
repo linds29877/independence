@@ -16,4 +16,6 @@
  * See the GNU General Public License version 2 for more details
  */
 
+// Used to read a .plist file into a CFDictionaryRef since the QuickTime SDK
+// on Windows doesn't contain anything for this.
 CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file);

@@ -17,6 +17,9 @@
  */
 
 #include "CFCompatibility.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 typedef struct st_xml_keyval_pair
 {
@@ -31,12 +34,34 @@ typedef struct st_xml_token
 	int numpairs;
 } xml_token;
 
-#if 0
+
+static void StripWhitespace(char **buf)
+{
+	int len = strlen(*buf);
+
+	if (len == 0) return;
+
+	char newbuf[len+1];
+	int count = 0, index = 0;
+
+	while (count < len) {
+
+		if (!isspace((*buf)[count])) {
+			newbuf[index++] = (*buf)[count];
+		}
+
+		count++;
+	}
+
+	newbuf[index] = 0;
+	strcpy(*buf, newbuf);
+}
+
 static int GetIndexOfClosingTag(char *buf, int bufsize, const char *tokid)
 {
 	int len = strlen(tokid);
-	char open[len + 2];
-	char close[len + 3];
+	char open[len+2];
+	char close[len+3];
 
 	open[0] = '<';
 	strcpy(open + 1, tokid);
@@ -55,12 +80,21 @@ static int GetIndexOfClosingTag(char *buf, int bufsize, const char *tokid)
 		return tmp2 - buf;
 	}
 
-	while ( (tmp != NULL) && (tmp2 > tmp) ) {
+	while ( (tmp != NULL) && (tmp2 != NULL) && (tmp2 > tmp) ) {
+		tmp = strstr(tmp2 + strlen(close), open);
+		tmp2 = strstr(tmp2 + strlen(close), close);
 	}
 
+	if (tmp2 == NULL) return -1;
+
+	if ( (tmp == NULL) || (tmp2 < tmp) ) {
+		return tmp2 - buf;
+	}
+
+	return -1;
 }
 
-static bool GetNextToken(char **pData, int *pDatalen, xml_token *tok)
+static bool GetNextToken(char **pData, int *pDatalen, xml_token *tok, bool *bClosed)
 {
 	int count = 0, idlen = 0, datalen = *pDatalen;
 	bool bReadingToken = false;
@@ -113,6 +147,14 @@ static bool GetNextToken(char **pData, int *pDatalen, xml_token *tok)
 			if (data[count++] == '>') {
 				*pData = *pData + count;
 				*pDatalen = *pDatalen - count;
+
+				if (data[count-2] == '/') {
+					*bClosed = true;
+				}
+				else {
+					*bClosed = false;
+				}
+
 				return true;
 			}
 
@@ -121,7 +163,7 @@ static bool GetNextToken(char **pData, int *pDatalen, xml_token *tok)
 		return false;
 	}
 
-	bool bReadingKey = true, bReadingValue = false, bInQuotes = false;
+	bool bReadingKey = true, bReadingValue = false, bKeyValueRead = false, bInQuotes = false;
 	char *keybuf, *valuebuf;
 	int keybufsize = 0, valuebufsize = 0;
 
@@ -251,13 +293,23 @@ static bool GetNextToken(char **pData, int *pDatalen, xml_token *tok)
 	// find the closing brace
 	while (count < datalen) {
 
-		if (data[count++] == '>') break;
+		if (data[count++] == '>') {
+			*pData = *pData + count;
+			*pDatalen = *pDatalen - count;
+
+			if (data[count-2] == '/') {
+				*bClosed = true;
+			}
+			else {
+				*bClosed = false;
+			}
+
+			return true;
+		}
 
 	}
 
-	*pData = *pData + count;
-	*pDatalen = *pDatalen - count;
-	return true;
+	return false;
 }
 
 static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDictionaryRef *dict,
@@ -269,21 +321,38 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 	xml_token tok;
 	char *buf = data;
 	int bytesleft = size;
+	bool bClosed;
 
 	while (bytesleft) {
+		bClosed = false;
 
-		if (!GetNextToken(&buf, &bytesleft, &tok)) return false;
+		if (!GetNextToken(&buf, &bytesleft, &tok, &bClosed)) return false;
 
-		if (tok->id == NULL) return true;
+		if (bClosed) continue;
 
-		int len = strlen(tok->id);
+		int len = strlen(tok.id);
 
 		switch (len)
 		{
 			case 3:
 			{
 
-				if (!strcasecmp(tok->id, "key")) {
+				if (!strcasecmp(tok.id, "key")) {
+
+					if ( (key != NULL) || (*dict == NULL) ) return false;
+
+					int index = GetIndexOfClosingTag(buf, bytesleft, "key");
+
+					if (index == -1) {
+						return false;
+					}
+
+					char keybuf[index+1];
+					strncpy(keybuf, buf, index);
+					keybuf[index] = 0;
+					StripWhitespace((char**)&keybuf);
+
+					return CreateDictionaryFromXMLRecursive(buf, index, dict, keybuf);
 				}
 
 				break;
@@ -291,24 +360,100 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 			case 4:
 			{
 
-				if (!strcasecmp(tok, "dict")) {
+				if (!strcasecmp(tok.id, "dict")) {
 
 					if (key == NULL) {
-						*dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
-														  kCFTypeDictionaryKeyCallBacks,
-														  kCFTypeDictionaryValueCallBacks);
 
+						if (*dict != NULL) return false;
+
+						int index = GetIndexOfClosingTag(buf, bytesleft, "dict");
+
+						if (index == -1) {
+							return false;
+						}
+
+						*dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+														  &kCFTypeDictionaryKeyCallBacks,
+														  &kCFTypeDictionaryValueCallBacks);
+						
 						if (*dict == NULL) {
 							return false;
 						}
 
-						int index = GetIndexOfClosingTag(buf, bytesleft, "dict");
+						if (!CreateDictionaryFromXMLRecursive(buf, index, dict, NULL)) {
+							CFRelease(*dict);
+							return false;
+						}
 
-						return CreateDictionaryFromXMLRecursive(buf, index, dict, "dict");
+						return true;
+					}
+					else if (*dict != NULL) {
+						int index = GetIndexOfClosingTag(buf, bytesleft, "dict");
+						
+						if (index == -1) {
+							return false;
+						}
+						
+						CFMutableDictionaryRef dict2 = CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+																				 &kCFTypeDictionaryKeyCallBacks,
+																				 &kCFTypeDictionaryValueCallBacks);
+						
+						if (dict2 == NULL) {
+							return false;
+						}
+
+						if (!CreateDictionaryFromXMLRecursive(buf, index, &dict2, key)) {
+							CFRelease(dict2);
+							return false;
+						}
+
+						CFStringRef cfkey = CFStringCreateWithCString(kCFAllocatorDefault,
+																	  key, kCFStringEncodingUTF8);
+
+						if (cfkey == NULL) {
+							CFRelease(dict2);
+							return false;
+						}
+
+						CFDictionaryAddValue(*dict, cfkey, dict2);
+						return true;
+					}
+					else {
+						return false;
 					}
 
 				}
-				else if (!strcasecmp(tok, "data")) {
+				else if (!strcasecmp(tok.id, "data")) {
+					
+					if ( (key == NULL) || (*dict == NULL) ) return false;
+
+					int index = GetIndexOfClosingTag(buf, bytesleft, "data");
+
+					if (index == -1) {
+						return false;
+					}
+
+					char value[index+1];
+					strncpy(value, buf, index);
+					value[index] = 0;
+					StripWhitespace((char**)&value);
+					
+					CFStringRef cfkey = CFStringCreateWithCString(kCFAllocatorDefault,
+																  key, kCFStringEncodingUTF8);
+					
+					if (cfkey == NULL) {
+						return false;
+					}
+
+					// TODO: Do I need to base64 decode the data here?
+					CFDataRef cfvalue = CFDataCreate(kCFAllocatorDefault, (const UInt8*)value, strlen(value));
+
+					if (cfvalue == NULL) {
+						return false;
+					}
+					
+					CFDictionaryAddValue(*dict, cfkey, cfvalue);
+					return true;
 				}
 			
 				break;
@@ -316,7 +461,37 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 			case 6:
 			{
 
-				if (!strcasecmp(tok, "string")) {
+				if (!strcasecmp(tok.id, "string")) {
+					
+					if ( (key == NULL) || (*dict == NULL) ) return false;
+
+					int index = GetIndexOfClosingTag(buf, bytesleft, "string");
+
+					if (index == -1) {
+						return false;
+					}
+
+					char value[index+1];
+					strncpy(value, buf, index);
+					value[index] = 0;
+					StripWhitespace((char**)&value);
+
+					CFStringRef cfkey = CFStringCreateWithCString(kCFAllocatorDefault,
+																  key, kCFStringEncodingUTF8);
+					
+					if (cfkey == NULL) {
+						return false;
+					}
+					
+					CFStringRef cfvalue = CFStringCreateWithCString(kCFAllocatorDefault,
+																	value, kCFStringEncodingUTF8);
+
+					if (cfvalue == NULL) {
+						return false;
+					}
+
+					CFDictionaryAddValue(*dict, cfkey, cfvalue);
+					return true;
 				}
 
 				break;
@@ -344,7 +519,7 @@ CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file)
 		return NULL;
 	}
 
-	FILE *fp = fopen(file);
+	FILE *fp = fopen(file, "r");
 
 	if (fp == NULL) {
 		return NULL;
@@ -371,12 +546,13 @@ CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file)
 	// ignore the header
 	xml_token tok;
 	int bytesleft = st.st_size;
+	bool bClosed;
 
 	while (bytesleft > 0) {
 
-		if (!GetNextToken(&data, &bytesleft, &tok)) return NULL;
+		if (!GetNextToken((char**)&data, &bytesleft, &tok, &bClosed)) return NULL;
 
-		if (!strcmp(tok->id, "plist")) {
+		if (!strcmp(tok.id, "plist")) {
 			break;
 		}
 
@@ -385,7 +561,7 @@ CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file)
 	if (bytesleft <= 0) return NULL;
 
 	// now get the main dictionary
-	CFDictionaryRef dict = NULL;
+	CFMutableDictionaryRef dict = NULL;
 
 	if (CreateDictionaryFromXMLRecursive(data, bytesleft, &dict, NULL) == false) {
 		CFRelease(dict);
@@ -394,9 +570,3 @@ CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file)
 
 	return dict;
 }
-#else
-CFDictionaryRef PICreateDictionaryFromPlistFile(const char */*file*/)
-{
-	return NULL;
-}
-#endif
