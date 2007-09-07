@@ -503,6 +503,12 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 
 		}
 
+		int index = GetIndexOfClosingTag(buf, bytesleft, tok.id);
+		
+		if (index == -1) return false;
+
+		buf += (index + len + 3);
+		bytesleft -= (index + len + 3);
 	}
 
 	return true;
