@@ -18,3 +18,8 @@ v1.1 - 09/06/07
 v1.1.1 - 09/06/07
 
 - Fixes problems with jailbreak when iTunes 7.4 is installed
+
+
+v1.1.2
+
+- Added better iTunes version checking so that iNdependence fails if an unsupported version of iTunes is installed (thus avoiding nasty problems)

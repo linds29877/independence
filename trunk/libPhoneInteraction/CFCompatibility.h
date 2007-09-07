@@ -16,4 +16,4 @@
  * See the GNU General Public License version 2 for more details
  */
 
-CFDictionaryRef PICreateDictionaryFromXMLFile(const char *file);
+CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file);
