@@ -81,6 +81,13 @@ struct am_restore_device;
 typedef int (*cmdsend)(am_recovery_device *, const char *);
 
 
+typedef struct pi_version
+{
+	int major;
+	int minor;
+	int point;
+} PIVersion;
+
 /*
  * PhoneInteraction is the main class used to perform operations on the iPhone.
  *
@@ -200,6 +207,6 @@ private:
 	void (*m_notifyFunc)(int, const char*);
 	char *m_firmwarePath;
 	bool m_privateFunctionsSetup;
-	double m_iTunesVersion;
+	PIVersion m_iTunesVersion;
 
 };

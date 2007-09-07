@@ -401,7 +401,9 @@ PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 	m_firmwarePath = NULL;
 	m_waitingForRecovery = false;
 	m_privateFunctionsSetup = false;
-	m_iTunesVersion = 0.0;
+	m_iTunesVersion.major = 0;
+	m_iTunesVersion.minor = 0;
+	m_iTunesVersion.point = 0;
 
 	if (determineiTunesVersion()) {
 		setupPrivateFunctions();
@@ -479,19 +481,103 @@ bool PhoneInteraction::determineiTunesVersion()
 		return false;
 	}
 
-	double versionVal = CFStringGetDoubleValue(versionStr);
+	CFIndex len = CFStringGetLength(versionStr);
+	char version[len+1];
 
-	if (versionVal == 0.0) {
+	if (CFStringGetCString(versionStr, version, len+1, kCFStringEncodingUTF8) == false) {
 		return false;
 	}
 
-	m_iTunesVersion = versionVal;
+	int i, count = 0;
+	bool bHandled = false;
+
+	for (i = count; i < len; i++) {
+
+		if (version[i] == '.') {
+
+			if (i > count) {
+				char tmp[i-count+1];
+				strncpy(tmp, version + count, i-count);
+				m_iTunesVersion.major = atoi(tmp);
+			}
+
+			bHandled = true;
+			break;
+		}
+
+	}
+
+	if (!bHandled && (i > count)) {
+		char tmp[i-count+1];
+		strncpy(tmp, version + count, i-count);
+		m_iTunesVersion.major = atoi(tmp);
+	}
+
+	bHandled = false;
+	count = i + 1;
+
+	for (i = count; i < len; i++) {
+		
+		if (version[i] == '.') {
+			
+			if (i > count) {
+				char tmp[i-count+1];
+				strncpy(tmp, version + count, i-count);
+				m_iTunesVersion.minor = atoi(tmp);
+			}
+
+			bHandled = true;
+			break;
+		}
+		
+	}
+
+	if (!bHandled && (i > count)) {
+		char tmp[i-count+1];
+		strncpy(tmp, version + count, i-count);
+		m_iTunesVersion.minor = atoi(tmp);
+	}
+	
+	bHandled = false;
+	count = i + 1;
+	
+	for (i = count; i < len; i++) {
+		
+		if (version[i] == '.') {
+			
+			if (i > count) {
+				char tmp[i-count+1];
+				strncpy(tmp, version + count, i-count);
+				m_iTunesVersion.point = atoi(tmp);
+			}
+
+			bHandled = true;
+			break;
+		}
+		
+	}
+
+	if (!bHandled && (i > count)) {
+		char tmp[i-count+1];
+		strncpy(tmp, version + count, i-count);
+		m_iTunesVersion.point = atoi(tmp);
+	}
+
+#ifdef DEBUG
+	printf("iTunes version: %d.%d.%d\n", m_iTunesVersion.major, m_iTunesVersion.minor,
+		   m_iTunesVersion.point);
+#endif
+
 	return true;
 }
 
 #if defined(WIN32)
 void PhoneInteraction::setupPrivateFunctions()
 {
+	if ( (m_iTunesVersion.major < 7) || (m_iTunesVersion.major > 7) ) return;
+	
+	if ( (m_iTunesVersion.minor < 3) || (m_iTunesVersion.minor > 4) ) return;
+	
 	HMODULE hGetProcIDDLL = GetModuleHandle("iTunesMobileDevice.dll");
 
 	if (!hGetProcIDDLL) {
@@ -499,19 +585,34 @@ void PhoneInteraction::setupPrivateFunctions()
 		return;
 	}
 
-	g_sendCommandToDevice= (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009290);
-	g_sendFileToDevice= (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009410);
-	g_performOperation= (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x100129C0);
-	g_socketForPort= (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10012830);
+	if (m_iTunesVersion.minor == 4) {
+		
+		if (m_iTunesVersion.point > 0) return;
+
+		// TODO: Figure out iTunes 7.4.0 offsets
+		return;
+	}
+	else {
+		g_sendCommandToDevice= (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009290);
+		g_sendFileToDevice= (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009410);
+		g_performOperation= (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x100129C0);
+		g_socketForPort= (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10012830);
+	}
+
 	m_privateFunctionsSetup = true;
 }
 #elif defined(__APPLE__) && defined(__POWERPC__)
 void PhoneInteraction::setupPrivateFunctions()
 {
 
-	if (m_iTunesVersion < 7.3) return;
-
-	if (m_iTunesVersion < 7.4) {
+	if ( (m_iTunesVersion.major < 7) || (m_iTunesVersion.major > 7) ) return;
+	
+	if ( (m_iTunesVersion.minor < 3) || (m_iTunesVersion.minor > 4) ) return;
+	
+	if (m_iTunesVersion.minor == 4) {
+		
+		if (m_iTunesVersion.point > 0) return;
+		
 		g_performOperation = (t_performOperation)0x3c3a0e14;
 		g_socketForPort = (t_socketForPort)0x3c3a0644;
 		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a517c;
@@ -530,9 +631,14 @@ void PhoneInteraction::setupPrivateFunctions()
 void PhoneInteraction::setupPrivateFunctions()
 {
 
-	if (m_iTunesVersion < 7.3) return;
-	
-	if (m_iTunesVersion < 7.4) {
+	if ( (m_iTunesVersion.major < 7) || (m_iTunesVersion.major > 7) ) return;
+
+	if ( (m_iTunesVersion.minor < 3) || (m_iTunesVersion.minor > 4) ) return;
+
+	if (m_iTunesVersion.minor == 4) {
+
+		if (m_iTunesVersion.point > 0) return;
+
 		g_performOperation = (t_performOperation)0x3c39fa4b;
 		g_socketForPort = (t_socketForPort)0x3c39f36c;
 		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a3e3b;
@@ -558,7 +664,7 @@ void PhoneInteraction::subscribeToNotifications()
 {
 
 	if (!arePrivateFunctionsSetup()) {
-		(*m_notifyFunc)(NOTIFY_INITIALIZATION_FAILED, "Error setting up private functions");
+		(*m_notifyFunc)(NOTIFY_INITIALIZATION_FAILED, "Unsupported version of iTunes is installed");
 		return;
 	}
 
