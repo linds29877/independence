@@ -489,11 +489,11 @@ bool PhoneInteraction::determineiTunesVersion()
 	}
 
 	int i, count = 0;
-	bool bHandled = false;
 
-	for (i = count; i < len; i++) {
+	// major version number
+	for (i = count; i <= len; i++) {
 
-		if (version[i] == '.') {
+		if ( (version[i] == '.') || (version[i] == 0) ) {
 
 			if (i > count) {
 				char tmp[i-count+1];
@@ -501,49 +501,35 @@ bool PhoneInteraction::determineiTunesVersion()
 				m_iTunesVersion.major = atoi(tmp);
 			}
 
-			bHandled = true;
 			break;
 		}
 
 	}
 
-	if (!bHandled && (i > count)) {
-		char tmp[i-count+1];
-		strncpy(tmp, version + count, i-count);
-		m_iTunesVersion.major = atoi(tmp);
-	}
-
-	bHandled = false;
 	count = i + 1;
 
-	for (i = count; i < len; i++) {
+	// minor version number
+	for (i = count; i <= len; i++) {
 		
-		if (version[i] == '.') {
+		if ( (version[i] == '.') || (version[i] == 0) ) {
 			
 			if (i > count) {
 				char tmp[i-count+1];
 				strncpy(tmp, version + count, i-count);
 				m_iTunesVersion.minor = atoi(tmp);
 			}
-
-			bHandled = true;
+			
 			break;
 		}
 		
 	}
 
-	if (!bHandled && (i > count)) {
-		char tmp[i-count+1];
-		strncpy(tmp, version + count, i-count);
-		m_iTunesVersion.minor = atoi(tmp);
-	}
-	
-	bHandled = false;
 	count = i + 1;
-	
-	for (i = count; i < len; i++) {
+
+	// point release
+	for (i = count; i <= len; i++) {
 		
-		if (version[i] == '.') {
+		if ( (version[i] == '.') || (version[i] == 0) ) {
 			
 			if (i > count) {
 				char tmp[i-count+1];
@@ -551,16 +537,9 @@ bool PhoneInteraction::determineiTunesVersion()
 				m_iTunesVersion.point = atoi(tmp);
 			}
 
-			bHandled = true;
 			break;
 		}
 		
-	}
-
-	if (!bHandled && (i > count)) {
-		char tmp[i-count+1];
-		strncpy(tmp, version + count, i-count);
-		m_iTunesVersion.point = atoi(tmp);
 	}
 
 #ifdef DEBUG
@@ -589,7 +568,7 @@ void PhoneInteraction::setupPrivateFunctions()
 		
 		if (m_iTunesVersion.point > 0) return;
 
-		// TODO: Figure out iTunes 7.4.0 offsets
+		// TODO: Figure out iTunes 7.4.0 Win32 offsets
 		return;
 	}
 	else {
