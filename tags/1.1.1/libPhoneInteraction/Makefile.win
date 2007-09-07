@@ -1,0 +1,23 @@
+CC = g++.exe
+CFLAGS = -DDEBUG -DCF_BUILDING_CF_AS_LIB -Wall -I../Public\ Headers -I"/c/Program Files/QuickTime SDK/CIncludes" -I/c/OpenSSL/include
+LDFLAGS =-L/c/OpenSSL/lib/MinGW -L"/c/Program Files/QuickTime SDK/Libraries" -lQTMLClient -leay32 -lversion "/c/Program Files/Common Files/Apple/Mobile Device Support/bin/iTunesMobileDevice.dll" "/c/Program Files/QuickTime SDK/Libraries/QTMLClient.lib"
+DLL_LDFLAGS = -L/c/OpenSSL/lib/MinGW -L"/c/Program Files/QuickTime SDK/Libraries" -leay32 -lQTMLClient -lversion "/c/Program Files/Common Files/Apple/Mobile Device Support/bin/iTunesMobileDevice.dll"
+OBJS = PhoneInteraction.o UtilityFunctions.o
+DLLBASE = libphoneinteraction
+TEST = pitest
+TESTOBJS = PhoneInteraction.o UtilityFunctions.o pitest.o
+RM = rm -f
+
+all: $(DLLBASE).lib
+
+%.o: %.cpp
+	$(CC) -c $(CFLAGS) $< -o $@
+
+$(DLLBASE).lib: $(OBJS)
+	$(CC) -shared $(OBJS) $(DLL_LDFLAGS) -Wl,--out-implib,$(DLLBASE).lib
+
+$(TEST): $(TESTOBJS)
+	$(CC) $(TESTOBJS) -o $(TEST) $(LDFLAGS)
+
+clean:
+	$(RM) $(OBJS) $(DLLBASE).dll $(DLLBASE).lib $(TEST) $(TESTOBJS)
