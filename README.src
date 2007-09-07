@@ -21,3 +21,8 @@ Requirements: MinGW, MSYS, OpenSSL 0.9.8e, QuickTime SDK
 make -f Makefile.win pitest
 
 This will produce pitest.exe, which is essentially a command-line version of iActivator.  Use pitest.sh or pitest.bat to run it.
+
+
+** MobileDevice.h **
+
+Can be found at http://iphone.fiveforty.net/wiki/index.php/MobileDevice.h
