@@ -505,6 +505,7 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 
 	}
 
+	return true;
 }
 
 CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file)
