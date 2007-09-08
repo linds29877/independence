@@ -565,10 +565,7 @@ void PhoneInteraction::setupPrivateFunctions()
 	}
 
 	if (m_iTunesVersion.minor == 4) {
-		
-		if (m_iTunesVersion.point > 0) return;
-
-		// TODO: Figure out iTunes 7.4.0 Win32 offsets
+		// TODO: Figure out iTunes 7.4.x Win32 function offsets
 		return;
 	}
 	else {
@@ -589,9 +586,6 @@ void PhoneInteraction::setupPrivateFunctions()
 	if ( (m_iTunesVersion.minor < 3) || (m_iTunesVersion.minor > 4) ) return;
 	
 	if (m_iTunesVersion.minor == 4) {
-		
-		if (m_iTunesVersion.point > 0) return;
-		
 		g_performOperation = (t_performOperation)0x3c3a0e14;
 		g_socketForPort = (t_socketForPort)0x3c3a0644;
 		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a517c;
@@ -615,9 +609,6 @@ void PhoneInteraction::setupPrivateFunctions()
 	if ( (m_iTunesVersion.minor < 3) || (m_iTunesVersion.minor > 4) ) return;
 
 	if (m_iTunesVersion.minor == 4) {
-
-		if (m_iTunesVersion.point > 0) return;
-
 		g_performOperation = (t_performOperation)0x3c39fa4b;
 		g_socketForPort = (t_socketForPort)0x3c39f36c;
 		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a3e3b;
