@@ -352,6 +352,9 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 					keybuf[index] = 0;
 					StripWhitespace((char**)&keybuf);
 
+					// empty keys are not allowed
+					if (strlen(keybuf) == 0) return false;
+
 					return CreateDictionaryFromXMLRecursive(buf, index, dict, keybuf);
 				}
 
@@ -437,7 +440,7 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 					strncpy(value, buf, index);
 					value[index] = 0;
 					StripWhitespace((char**)&value);
-					
+
 					CFStringRef cfkey = CFStringCreateWithCString(kCFAllocatorDefault,
 																  key, kCFStringEncodingUTF8);
 					
