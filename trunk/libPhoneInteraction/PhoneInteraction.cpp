@@ -565,8 +565,10 @@ void PhoneInteraction::setupPrivateFunctions()
 	}
 
 	if (m_iTunesVersion.minor == 4) {
-		// TODO: Figure out iTunes 7.4.x Win32 function offsets
-		return;
+        g_sendCommandToDevice = (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10008170);
+        g_sendFileToDevice = (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x100082F0);
+        g_socketForPort = (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10012F90);
+        g_performOperation = (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10014040);
 	}
 	else {
 		g_sendCommandToDevice= (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009290);
