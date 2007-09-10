@@ -1,22 +1,30 @@
+#ifdef WIN32
+#include <CoreFoundation.h>
+#include <stdio.h>
+#include <windows.h>
+#else
 #include <CoreFoundation/CoreFoundation.h>
+#endif
+
 #include "CFCompatibility.h"
 
 
-int main (int argc, const char *argv[])
+int main (int argc, const char **argv)
 {
 	
     if (argc < 2) {
 		printf("Usage: %s <plist file>\n", argv[0]);
-		exit(-1);
+		return -1;
     }
 	
     CFDictionaryRef plistDict1 = PICreateDictionaryFromPlistFile(argv[1]);
 
     if (plistDict1 == NULL) {
 		printf("Error in PICreateDictionaryFromPlistFile\n");
-		exit(-1);
+		return -1;
     }
-	
+
+#ifdef __APPLE__
     CFStringRef fileString = CFStringCreateWithCString(kCFAllocatorDefault, argv[1], kCFStringEncodingUTF8);
     CFStringRef errString;
     CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, fileString, kCFURLPOSIXPathStyle, false);
@@ -27,7 +35,7 @@ int main (int argc, const char *argv[])
 		CFRelease(fileString);
 		CFRelease(url);
 		CFRelease(stream);
-		exit(-1);
+		return -1;
     }
 	
     CFPropertyListFormat format;
@@ -35,13 +43,17 @@ int main (int argc, const char *argv[])
 
     CFReadStreamClose(stream);
     CFRelease(stream);
+#endif
 
 	printf("Dictionary created using PICreateDictionaryFromPlistFile:\n");
     CFShow(plistDict1);
+ 	CFRelease(plistDict1);
+
+#ifdef __APPLE__
 	printf("\n\nDictionary created using CFPropertyListCreateFromStream:\n");
 	CFShow(plistDict2);
-
-	CFRelease(plistDict1);
 	CFRelease(plistDict2);
-    exit(0);
+#endif
+
+    return 0;
 }
