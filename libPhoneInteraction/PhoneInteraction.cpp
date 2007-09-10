@@ -40,6 +40,7 @@
 #include "PhoneInteraction/PhoneInteraction.h"
 #include "PhoneInteraction/UtilityFunctions.h"
 #include "MobileDevice/MobileDevice.h"
+#include "CFCompatibility.h"
 
 
 typedef unsigned int (*t_AMRUSBInterfaceReadPipe)(unsigned int readwrite_pipe, unsigned
@@ -440,15 +441,13 @@ PhoneInteraction* PhoneInteraction::getInstance(void (*statusFunc)(const char*, 
 
 bool PhoneInteraction::determineiTunesVersion()
 {
+	CFDictionaryRef iTunesVersionDict = NULL;
+
+#ifdef HAVE_CF_PLIST_READING_FUNCTIONS
 	CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
 												 CFSTR("/Applications/iTunes.app/Contents/version.plist"),
 												 kCFURLPOSIXPathStyle, false);
 	CFStringRef errString;
-	CFDictionaryRef iTunesVersionDict;
-
-	// 0p: TODO -- Figure out how to do this on Windows since these functions aren't in
-	// the CF headers that come with the Quicktime SDK
-#if defined(__APPLE__)
 	CFReadStreamRef stream= CFReadStreamCreateWithFile(kCFAllocatorDefault, url);
 	
 	Boolean opened = CFReadStreamOpen(stream);
@@ -467,11 +466,19 @@ bool PhoneInteraction::determineiTunesVersion()
 																		&format, &errString);
 	CFReadStreamClose(stream);
 	CFRelease(stream);
-#endif
-	
 	CFRelease(url);
 	
 	if (errString != NULL) {
+		return false;
+	}
+	
+#else
+	// 0p: New CFCompatibility code (cross-platform) for reading plist files
+	// (seems to work well)
+	iTunesVersionDict = PICreateDictionaryFromPlistFile("/Applications/iTunes.app/Contents/version.plist");
+#endif
+
+	if (iTunesVersionDict == NULL) {
 		return false;
 	}
 
@@ -779,18 +786,16 @@ void PhoneInteraction::activate(const char* filename)
 		(*m_statusFunc)("Activating...", true);
 	}
 
+	CFDictionaryRef activationDict;
+
+#ifdef HAVE_CF_PLIST_READING_FUNCTIONS
 	CFStringRef fileString = CFStringCreateWithCString(kCFAllocatorDefault, filename, kCFStringEncodingUTF8);
 	CFStringRef errString;
 	CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, fileString, kCFURLPOSIXPathStyle, false);
-	CFDictionaryRef activationDict;
-
-	// 0p: TODO -- Figure out how to do this on Windows since these functions aren't in
-	// the CF headers that come with the Quicktime SDK
-#if defined(__APPLE__)
 	CFReadStreamRef stream= CFReadStreamCreateWithFile(kCFAllocatorDefault, url);
-
+	
 	Boolean opened = CFReadStreamOpen(stream);
-
+	
 	if (opened == FALSE) {
 		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error creating dictionary from given plist file.");
 		CFRelease(fileString);
@@ -798,7 +803,7 @@ void PhoneInteraction::activate(const char* filename)
 		CFRelease(stream);
 		return;
 	}
-
+	
 	CFPropertyListFormat format;
 	activationDict = (CFDictionaryRef)CFPropertyListCreateFromStream(kCFAllocatorDefault,
 																	 stream, 0,
@@ -806,12 +811,21 @@ void PhoneInteraction::activate(const char* filename)
 																	 &format, &errString);
 	CFReadStreamClose(stream);
 	CFRelease(stream);
-#endif
-
 	CFRelease(url);
 	CFRelease(fileString);
 	
 	if (errString != NULL) {
+		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error creating dictionary from given plist file.");
+		return;
+	}
+	
+#else
+	// 0p: New CFCompatibility code (cross-platform) for reading plist files
+	// (seems to work well)
+	activationDict = PICreateDictionaryFromPlistFile(filename);
+#endif
+
+	if (activationDict == NULL) {
 		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error creating dictionary from given plist file.");
 		return;
 	}
