@@ -15,9 +15,22 @@
  *
  * See the GNU General Public License version 2 for more details
  */
-#include <CoreFoundation/CoreFoundation.h>
+#pragma once
 
+#ifdef WIN32
+#include <CoreFoundation.h>
+#else
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Used to read a .plist file into a CFDictionaryRef since the QuickTime SDK
 // on Windows doesn't contain anything for this.
 CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file);
+
+#ifdef __cplusplus
+}
+#endif
