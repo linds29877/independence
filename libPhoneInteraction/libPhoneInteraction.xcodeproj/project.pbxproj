@@ -16,6 +16,7 @@
 		F2567DC10C56F7DD009FAEA2 /* MobileDevice.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F2567DC00C56F7DD009FAEA2 /* MobileDevice.framework */; };
 		F2567DC70C56F81A009FAEA2 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F2567DC60C56F81A009FAEA2 /* libcrypto.dylib */; };
 		F26F96820C885AA70024C0DF /* SSHHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F26F96810C885AA70024C0DF /* SSHHelper.cpp */; };
+		F28191240C94BD8200C34484 /* base64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F28191220C94BD8200C34484 /* base64.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +37,8 @@
 		F25681D90C5712A8009FAEA2 /* MobileDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MobileDevice.h; path = "../Public Headers/MobileDevice/MobileDevice.h"; sourceTree = SOURCE_ROOT; };
 		F26F96810C885AA70024C0DF /* SSHHelper.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = SSHHelper.cpp; sourceTree = "<group>"; };
 		F26F96D70C8866C00024C0DF /* SSHHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHHelper.h; path = "../Public Headers/PhoneInteraction/SSHHelper.h"; sourceTree = SOURCE_ROOT; };
+		F28191220C94BD8200C34484 /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = SOURCE_ROOT; };
+		F28191230C94BD8200C34484 /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +89,7 @@
 		08FB77ACFE841707C02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				F28191220C94BD8200C34484 /* base64.cpp */,
 				F210E1690C8EF5D90029B820 /* CFCompatibility.cpp */,
 				F2567DAF0C56F683009FAEA2 /* PhoneInteraction.cpp */,
 				F210E36D0C8F59820029B820 /* PNGHelper.cpp */,
@@ -99,6 +103,7 @@
 		F2567DAE0C56F5D0009FAEA2 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				F28191230C94BD8200C34484 /* base64.h */,
 				F210E1680C8EF5D90029B820 /* CFCompatibility.h */,
 				F25681D90C5712A8009FAEA2 /* MobileDevice.h */,
 				F25681D50C57127B009FAEA2 /* PhoneInteraction.h */,
@@ -154,6 +159,7 @@
 				F26F96820C885AA70024C0DF /* SSHHelper.cpp in Sources */,
 				F210E16A0C8EF5D90029B820 /* CFCompatibility.cpp in Sources */,
 				F210E36E0C8F59820029B820 /* PNGHelper.cpp in Sources */,
+				F28191240C94BD8200C34484 /* base64.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
