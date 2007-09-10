@@ -10,9 +10,9 @@ int main (int argc, const char *argv[])
 		exit(-1);
     }
 	
-    CFDictionaryRef activationDict1 = PICreateDictionaryFromPlistFile(argv[1]);
-	
-    if (activationDict1 == NULL) {
+    CFDictionaryRef plistDict1 = PICreateDictionaryFromPlistFile(argv[1]);
+
+    if (plistDict1 == NULL) {
 		printf("Error in PICreateDictionaryFromPlistFile\n");
 		exit(-1);
     }
@@ -31,15 +31,17 @@ int main (int argc, const char *argv[])
     }
 	
     CFPropertyListFormat format;
-    CFDictionaryRef activationDict2 = (CFDictionaryRef)CFPropertyListCreateFromStream(kCFAllocatorDefault, stream, 0, kCFPropertyListMutableContainersAndLeaves, &format, &errString);
-	
+    CFDictionaryRef plistDict2 = (CFDictionaryRef)CFPropertyListCreateFromStream(kCFAllocatorDefault, stream, 0, kCFPropertyListMutableContainersAndLeaves, &format, &errString);
+
     CFReadStreamClose(stream);
     CFRelease(stream);
 
-	printf("Activation dict from PICreateDictionaryFromPlistFile:\n");
-    CFShow(activationDict1);
-	printf("\n\nActivation dict from CFPropertyListCreateFromStream:\n");
-	CFShow(activationDict2);
+	printf("Dictionary created using PICreateDictionaryFromPlistFile:\n");
+    CFShow(plistDict1);
+	printf("\n\nDictionary created using CFPropertyListCreateFromStream:\n");
+	CFShow(plistDict2);
 
+	CFRelease(plistDict1);
+	CFRelease(plistDict2);
     exit(0);
 }
