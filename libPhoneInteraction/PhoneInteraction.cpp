@@ -20,17 +20,19 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <stdio.h>
+#include <cstdlib>
+#include <iostream>
 
 #if defined(WIN32)
 #include <windows.h>
+#include <shlwapi.h>
+#include <tchar.h>
 
 #define sleep(x) Sleep((x)*1000)
 #define S_IRGRP 0
 #define S_IXGRP 0
 #define S_IROTH 0
 #define S_IXOTH 0
-
-#define PATH_MAX 1024
 
 #endif
 
@@ -42,6 +44,8 @@
 #include "MobileDevice/MobileDevice.h"
 #include "CFCompatibility.h"
 
+
+using namespace std;
 
 typedef unsigned int (*t_AMRUSBInterfaceReadPipe)(unsigned int readwrite_pipe, unsigned
 												  int read_pipe, void *data, unsigned int *len) __attribute__ ((regparm(2)));
@@ -410,6 +414,11 @@ PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 		setupPrivateFunctions();
 	}
 
+#ifdef DEBUG
+	printf("iTunes version: %d.%d.%d\n", m_iTunesVersion.major, m_iTunesVersion.minor,
+		   m_iTunesVersion.point);
+#endif
+
 	if (m_statusFunc) {
 		(*m_statusFunc)("Disconnected: waiting for iPhone", true);
 	}
@@ -439,6 +448,75 @@ PhoneInteraction* PhoneInteraction::getInstance(void (*statusFunc)(const char*, 
 	return g_phoneInteraction;
 }
 
+#if defined(WIN32)
+bool PhoneInteraction::determineiTunesVersion()
+{
+    HINSTANCE hDllInst = LoadLibrary("iTunesMobileDevice.dll");
+
+	if (!hDllInst) {
+		return false;
+	}
+
+    DLLGETVERSIONPROC pDllGetVersion = (DLLGETVERSIONPROC)GetProcAddress(hDllInst, TEXT("DllGetVersion"));
+
+    if (pDllGetVersion) {    // DLL supports version retrieval function
+        DLLVERSIONINFO dvi;
+
+        ZeroMemory(&dvi, sizeof(dvi));
+        dvi.cbSize = sizeof(dvi);
+        HRESULT hr = (*pDllGetVersion)(&dvi);
+
+        if(SUCCEEDED(hr)) { // Finally, the version is at our hands
+            m_iTunesVersion.major = (int)dvi.dwMajorVersion;
+            m_iTunesVersion.minor = (int)dvi.dwMinorVersion;
+            m_iTunesVersion.point = (int)dvi.dwBuildNumber;
+        }
+        else {  // GetProcAddress failed, the DLL cannot tell its version
+            FreeLibrary(hDllInst);
+            return false;
+        }
+
+        FreeLibrary(hDllInst);
+    }
+    else {
+        FreeLibrary(hDllInst);
+
+        TCHAR szPathStr[MAX_PATH];
+
+       if (GetWindowsDirectory(szPathStr, MAX_PATH) == 0) {
+            return false;
+        }
+
+        lstrcat(szPathStr, _T("\\..\\Program Files\\Common Files\\Apple\\Mobile Device Support\\bin\\iTunesMobileDevice.dll"));
+
+        VS_FIXEDFILEINFO   *ffInfo;
+        UINT    uVersionLen;
+        DWORD   dwVerHnd=0;			            // An 'ignored' parameter, always '0'
+        DWORD dwVerInfoSize = GetFileVersionInfoSize(szPathStr, &dwVerHnd);
+
+        if (!dwVerInfoSize) return false;
+
+        LPSTR lpstrVffInfo = (LPSTR)malloc(dwVerInfoSize);
+
+        if (!GetFileVersionInfo(szPathStr, dwVerHnd, dwVerInfoSize, lpstrVffInfo)) {
+            free(lpstrVffInfo);
+            return false;
+        }
+    
+        if (!VerQueryValue(lpstrVffInfo, _T("\\"),
+                           (LPVOID*)&ffInfo, (UINT*)&uVersionLen)) {
+            free(lpstrVffInfo);
+            return false;
+        }
+
+        m_iTunesVersion.major = (int)((ffInfo->dwFileVersionMS >> 16) & 0xffff);
+        m_iTunesVersion.minor = (int)(ffInfo->dwFileVersionMS & 0xffff);
+        m_iTunesVersion.point = (int)((ffInfo->dwFileVersionLS >> 16) & 0xffff);
+    }
+
+    return true;
+}
+#else
 bool PhoneInteraction::determineiTunesVersion()
 {
 	CFDictionaryRef iTunesVersionDict = NULL;
@@ -453,7 +531,6 @@ bool PhoneInteraction::determineiTunesVersion()
 	Boolean opened = CFReadStreamOpen(stream);
 	
 	if (opened == FALSE) {
-		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error creating dictionary from given plist file.");
 		CFRelease(url);
 		CFRelease(stream);
 		return false;
@@ -549,27 +626,23 @@ bool PhoneInteraction::determineiTunesVersion()
 		
 	}
 
-#ifdef DEBUG
-	printf("iTunes version: %d.%d.%d\n", m_iTunesVersion.major, m_iTunesVersion.minor,
-		   m_iTunesVersion.point);
-#endif
-
 	return true;
 }
+#endif
 
 #if defined(WIN32)
 void PhoneInteraction::setupPrivateFunctions()
 {
-	if ( (m_iTunesVersion.major < 7) || (m_iTunesVersion.major > 7) ) return;
-	
-	if ( (m_iTunesVersion.minor < 3) || (m_iTunesVersion.minor > 4) ) return;
-	
 	HMODULE hGetProcIDDLL = GetModuleHandle("iTunesMobileDevice.dll");
 
 	if (!hGetProcIDDLL) {
 		(*m_notifyFunc)(NOTIFY_WIN32_INITIALIZATION_FAILED, "Error obtaining handle to iTunesMobileDevice.dll");
 		return;
 	}
+
+	if ( (m_iTunesVersion.major < 7) || (m_iTunesVersion.major > 7) ) return;
+	
+	if ( (m_iTunesVersion.minor < 3) || (m_iTunesVersion.minor > 4) ) return;
 
 	if (m_iTunesVersion.minor == 4) {
         g_sendCommandToDevice = (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10008170);
@@ -1017,8 +1090,8 @@ bool PhoneInteraction::putFile(const char *src, char *dest, int failureMsg, int 
 	void *data = malloc(st.st_size);
 	memset(data, 0, st.st_size);
 
-	size_t count = 0;
-	
+	off_t count = 0;
+
 	while (count < st.st_size) {
 		size_t retval = fread(data, 1, st.st_size - count, fp);
 		
@@ -1259,7 +1332,6 @@ bool PhoneInteraction::putApplicationOnPhone(const char *applicationDir)
 
 bool PhoneInteraction::removeRingtone(const char *ringtoneFilename, bool bInSystemDir)
 {
-	struct afc_directory *dir;
 	const char *ringtoneDir = "/var/root/Library/Ringtones/";
 	
 	if (bInSystemDir) {
@@ -1275,7 +1347,6 @@ bool PhoneInteraction::removeRingtone(const char *ringtoneFilename, bool bInSyst
 
 bool PhoneInteraction::removeWallpaper(const char *wallpaperFilename, bool bInSystemDir)
 {
-	struct afc_directory *dir;
 	const char *wallpaperDir = "/var/root/Library/Wallpaper/";
 	
 	if (bInSystemDir) {
@@ -1291,7 +1362,6 @@ bool PhoneInteraction::removeWallpaper(const char *wallpaperFilename, bool bInSy
 
 bool PhoneInteraction::removeApplication(const char *applicationFilename)
 {
-	struct afc_directory *dir;
 	char applicationPath[PATH_MAX+1];
 	strcpy(applicationPath, "/Applications/");
 	strcat(applicationPath, applicationFilename);
@@ -1357,7 +1427,7 @@ bool PhoneInteraction::writeDataToFile(void *buf, int size, const char *file,
 		return false;
     }
 	
-	size_t count = 0;
+	off_t count = 0;
 	
 	while (count < size) {
 		size_t retval = fwrite(buf, 1, size - count, fp);
@@ -1985,9 +2055,6 @@ bool PhoneInteraction::removePathRecursive(const char *path)
 			strcat(filepath, "/");
 			len++;
 		}
-
-		struct afc_dictionary *info;
-		char *key, *val;
 
 		while (1) {
 			AFCDirectoryRead(m_hAFC, dir, &filename);
