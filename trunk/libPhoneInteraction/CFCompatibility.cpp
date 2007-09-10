@@ -347,6 +347,7 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 		bClosed = false;
 		closeindex = -1;
 
+		// get XML token
 		if (!GetNextToken(&buf, &bytesleft, &tok, &bClosed)) {
 
 			if (bAllocatedKey) free(key);
@@ -354,8 +355,53 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 			return false;
 		}
 
-		if (bClosed) continue;
+		// closed XML token?
+		if (bClosed) {
 
+			if (key == NULL) continue;
+
+			if (*dict == NULL) {
+
+				if (bAllocatedKey) free(key);
+
+				return false;
+			}
+
+			CFBooleanRef value = NULL;
+
+			if (!strcasecmp(tok.id, "true")) {
+				value = kCFBooleanTrue;
+			}
+			else if (!strcasecmp(tok.id, "false")) {
+				value = kCFBooleanFalse;
+			}
+
+			if (value != NULL) {
+				CFStringRef cfkey = CFStringCreateWithCString(kCFAllocatorDefault,
+															  key, kCFStringEncodingUTF8);
+
+				if (bAllocatedKey) {
+					free(key);
+					key = NULL;
+					bAllocatedKey = false;
+				}
+
+				if (cfkey == NULL) {
+					return false;
+				}
+
+				CFDictionaryAddValue(*dict, cfkey, value);
+			}
+			else if (bAllocatedKey) {
+				free(key);
+				key = NULL;
+				bAllocatedKey = false;
+			}
+
+			continue;
+		}
+
+		// check for token types we know about
 		if (!strcasecmp(tok.id, "key")) {
 
 			if (bAllocatedKey) free(key);
@@ -442,9 +488,12 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 				
 				CFStringRef cfkey = CFStringCreateWithCString(kCFAllocatorDefault,
 															  key, kCFStringEncodingUTF8);
-				free(key);
-				key = NULL;
-				bAllocatedKey = false;
+
+				if (bAllocatedKey) {
+					free(key);
+					key = NULL;
+					bAllocatedKey = false;
+				}
 
 				if (cfkey == NULL) {
 					CFRelease(dict2);
@@ -479,9 +528,12 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 			
 			CFStringRef cfkey = CFStringCreateWithCString(kCFAllocatorDefault,
 														  key, kCFStringEncodingUTF8);
-			free(key);
-			key = NULL;
-			bAllocatedKey = false;
+
+			if (bAllocatedKey) {
+				free(key);
+				key = NULL;
+				bAllocatedKey = false;
+			}
 			
 			if (cfkey == NULL) {
 				return false;
@@ -532,9 +584,12 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 			
 			CFStringRef cfkey = CFStringCreateWithCString(kCFAllocatorDefault,
 														  key, kCFStringEncodingUTF8);
-			free(key);
-			key = NULL;
-			bAllocatedKey = false;
+
+			if (bAllocatedKey) {
+				free(key);
+				key = NULL;
+				bAllocatedKey = false;
+			}
 			
 			if (cfkey == NULL) {
 				return false;
@@ -567,7 +622,7 @@ static bool CreateDictionaryFromXMLRecursive(char *data, int size, CFMutableDict
 		}
 		else {
 
-			// unknown tag -- just skip it
+			// unknown token -- just skip it
 			if (bAllocatedKey) {
 				free(key);
 				key = NULL;
@@ -595,6 +650,7 @@ CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file)
 {
 	struct stat st;
 
+	// check that file exists
 	if (stat(file, &st) == -1) {
 		return NULL;
 	}
@@ -603,6 +659,7 @@ CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file)
 		return NULL;
 	}
 
+	// read in the file
 	FILE *fp = fopen(file, "r");
 
 	if (fp == NULL) {
@@ -628,7 +685,7 @@ CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file)
 		return NULL;
 	}
 
-	// get the dictionary
+	// get the dictionary from the file data
 	int bytesleft = st.st_size;
 	CFMutableDictionaryRef dict = NULL;
 
