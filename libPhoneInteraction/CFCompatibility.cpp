@@ -18,6 +18,10 @@
 
 #include "CFCompatibility.h"
 #include "base64.h"
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -667,11 +671,12 @@ CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file)
 	}
 
 	char *data = (char*)malloc(st.st_size);
-	size_t count = 0, offset = 0, retval;
+	off_t count = 0;
+	size_t retval;
 
 	while (count < st.st_size) {
 
-		if ( (retval = fread(data + offset, 1, st.st_size - count, fp)) == 0 ) {
+		if ( (retval = fread(data + count, 1, st.st_size - count, fp)) == 0 ) {
 			break;
 		}
 
