@@ -52,20 +52,6 @@ void stopRunLoop()
 #endif
 }
 
-void utilityFunctionNotification(int type, const char *msg)
-{
-
-    switch (type) {
-    case NOTIFY_ACTIVATION_GEN_FAILED:
-	     cout << "Activation generation failed!  " << msg << endl;
-	     break;
-    case NOTIFY_ACTIVATION_GEN_SUCCESS:
-    default:
-	        break;
-    }
-
-}
-
 void executeCommand(const char *command)
 {
 
@@ -85,95 +71,6 @@ void executeCommand(const char *command)
 	    g_phoneInteraction->performJailbreak(firmwarePath.c_str(),
                                              "../Other Files/jailbreak files/fstab_mod",
 					                         "../Other Files/jailbreak files/Services_mod.plist");
-    }
-    else if (!strcmp(command, "putpem")) {
-
-    	if (!g_phoneInteraction->isPhoneJailbroken()) {
-           cout << "Error: phone is not jailbroken" << endl;
-	       stopRunLoop();
-	       return;
-        }
-
-	    g_phoneInteraction->putPEMOnPhone("../Other Files/PEMs/iPhoneActivation.pem");
-    }
-    else if (!strcmp(command, "genactivation")) {
-    	string imei;
-	    string iccid;
-	    char deviceid[41];
-
-	    while (1) {
-            cout << "Enter IMEI: ";
-            cin >> imei;
-
-	        if (!UtilityFunctions::validateIMEI(imei.c_str())) {
-		        cout << "Error: you entered an invalid IMEI value.  Try again." << endl;
-		        continue;
-            }
-
-	        cout << "Enter ICCID: ";
-	        cin >> iccid;
-
-	        if (!UtilityFunctions::validateICCID(iccid.c_str())) {
-		        cout << "Error: you entered an invalid ICCID value.  Try again." << endl;
-		        continue;
-            }
-
-	        break;
-        }
-
-	    if (!UtilityFunctions::findDeviceID(deviceid)) {
-	        cout << "Error: can't find device ID." << endl;
-	        stopRunLoop();
-	        return;
-        }
-
-	    CFDictionaryRef activationrequest;
-
-	    if (!UtilityFunctions::generateActivationRequest_All(&activationrequest,
-							     "../Other Files/PEMs/iPhoneActivation_private.pem",
-							     deviceid,
-							     imei.c_str(),
-							     iccid.c_str(),
-							     utilityFunctionNotification)) {
-            cout << "Error: error generating activation request" << endl;
-	        stopRunLoop();
-	        return;
-        }
-
-        if (!PICreatePlistFileFromDictionary(activationrequest, "activation.plist")) {
- 	        cout << "Error: error writing plist file" << endl;
-	        stopRunLoop();
-	        return;
-       }
-
-	    CFRelease(activationrequest);
-
-	    cout << "genact succeeded!  Activation file is saved to activation.plist" << endl;
-	    stopRunLoop();
-    }
-    else if (!strcmp(command, "activate")) {
-
-        if (g_phoneInteraction->isPhoneActivated()) {
-	        cout << "Error: phone is already activated" << endl;
-	        stopRunLoop();
-	        return;
-        }
-
-	    string actfile;
-	    cout << "Enter path to activation file: ";
-	    cin >> actfile;
-
-	    g_phoneInteraction->activate(actfile.c_str());
-    }
-    else if (!strcmp(command, "deactivate")) {
-
-        if (!g_phoneInteraction->isPhoneActivated()) {
-	        cout << "Error: phone is note activated" << endl;
-	        stopRunLoop();
-	        return;
-        }
-
-	    g_phoneInteraction->deactivate();
     }
     else if (!strcmp(command, "jailreturn")) {
 
@@ -198,16 +95,48 @@ void executeCommand(const char *command)
 	    g_returningToJail = true;
 	    cout << "Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it." << endl;
     }
-    else if (!strcmp(command, "deactivate")) {
+    else if (!strcmp(command, "activate")) {
 
-        if (!g_phoneInteraction->isPhoneActivated()) {
-	        cout << "Error: phone is not activated" << endl;
+        if (g_phoneInteraction->isPhoneActivated()) {
+	        cout << "Error: phone is already activated" << endl;
 	        stopRunLoop();
 	        return;
         }
 
-	    g_phoneInteraction->deactivate();
+	    if (!g_phoneInteraction->putPEMOnPhone("../Other Files/PEMs/iPhoneActivation.pem")) {
+            cout << "Error: couldn't write new PEM file to phone" << endl;
+            stopRunLoop();
+            return;
+        }
+
+	    if (!g_phoneInteraction->activate(NULL, "../Other Files/PEMs/iPhoneActivation_private.pem")) {
+            cout << "Error: couldn't activate phone" << endl;
+            stopRunLoop();
+            return;
+        }
+
     }
+    else if (!strcmp(command, "deactivate")) {
+
+        if (!g_phoneInteraction->isPhoneActivated()) {
+	        cout << "Error: phone is note activated" << endl;
+	        stopRunLoop();
+	        return;
+        }
+
+	    if (!g_phoneInteraction->putPEMOnPhone("../Other Files/PEMs/iPhoneActivation_original.pem")) {
+            cout << "Error: couldn't write original PEM file to phone" << endl;
+            stopRunLoop();
+            return;
+        }
+
+	    if (!g_phoneInteraction->deactivate()) {
+            cout << "Error: couldn't deactivate phone" << endl;
+            stopRunLoop();
+            return;
+        }
+
+   }
 
 }
 
@@ -323,11 +252,9 @@ int main(int argc, char **argv)
 	    cout << "Usage: " << argv[0] << " <command>" << endl << endl;
 	    cout << "where <command> is one of:" << endl;
 	    cout << "     jailbreak     - performs a jailbreak on the phone" << endl;
-	    cout << "     putpem        - puts a PEM file on the phone" << endl;
-	    cout << "     genactivation - generates an activation file" << endl;
+	    cout << "     jailreturn    - returns to jail" << endl; 
 	    cout << "     activate      - activates the phone" << endl;
 	    cout << "     deactivate    - deactivates the phone" << endl;
-	    cout << "     jailreturn    - returns to jail" << endl; 
 	    return -1;
     }
 

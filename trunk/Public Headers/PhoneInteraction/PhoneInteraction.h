@@ -111,8 +111,8 @@ public:
 	bool isConnected();
 
 	// activation related functions
-	void activate(const char* filename);
-	void deactivate();
+	bool activate(const char* filename, const char* pemfile = NULL);
+	bool deactivate();
 	bool isPhoneActivated();
 
 	// jailbreak related functions
@@ -125,6 +125,7 @@ public:
 	// used for notifications from MobileDevice library
 	void recoveryModeStarted(struct am_recovery_device *dev);
 	void recoveryModeFinished(struct am_recovery_device *dev);
+	void exitRecoveryMode(am_recovery_device *dev);
 
 	void restoreModeStarted();
 	void restoreModeFinished();
