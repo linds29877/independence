@@ -520,8 +520,6 @@ bool PhoneInteraction::determineiTunesVersion()
 bool PhoneInteraction::determineiTunesVersion()
 {
 	CFDictionaryRef iTunesVersionDict = NULL;
-
-#ifdef HAVE_CF_PLIST_READING_FUNCTIONS
 	CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
 												 CFSTR("/Applications/iTunes.app/Contents/version.plist"),
 												 kCFURLPOSIXPathStyle, false);
@@ -549,12 +547,6 @@ bool PhoneInteraction::determineiTunesVersion()
 		return false;
 	}
 	
-#else
-	// 0p: New CFCompatibility code (cross-platform) for reading plist files
-	// (seems to work well)
-	iTunesVersionDict = PICreateDictionaryFromPlistFile("/Applications/iTunes.app/Contents/version.plist");
-#endif
-
 	if (iTunesVersionDict == NULL) {
 		return false;
 	}
