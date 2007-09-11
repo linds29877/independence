@@ -378,6 +378,9 @@ void recoveryConnectNotificationCallback(am_recovery_device *dev)
 	if (g_phoneInteraction->m_waitingForRecovery) {
 		g_phoneInteraction->recoveryModeStarted(dev);
 	}
+	else if (g_phoneInteraction->m_finishingJailbreak) {
+		g_phoneInteraction->exitRecoveryMode(dev);
+	}
 
 }
 
@@ -386,7 +389,11 @@ void recoveryDisconnectNotificationCallback(am_recovery_device *dev)
 #ifdef DEBUG
 	CFShow(CFSTR("recoveryDisconnectNotificationCallback"));
 #endif
-	g_phoneInteraction->recoveryModeFinished(dev);
+
+	if (!g_phoneInteraction->m_finishingJailbreak) {
+		g_phoneInteraction->recoveryModeFinished(dev);
+	}
+
 }
 
 PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
@@ -660,16 +667,16 @@ void PhoneInteraction::setupPrivateFunctions()
 	if ( (m_iTunesVersion.minor < 3) || (m_iTunesVersion.minor > 4) ) return;
 	
 	if (m_iTunesVersion.minor == 4) {
-		g_performOperation = (t_performOperation)0x3c3a0e14;
-		g_socketForPort = (t_socketForPort)0x3c3a0644;
-		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a517c;
-		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a52dc;
-	}
-	else {
 		g_performOperation = (t_performOperation)0x3c3a0bc8;
 		g_socketForPort = (t_socketForPort)0x3c3a051c;
 		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a5bb0;
 		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a5d10;
+	}
+	else {
+		g_performOperation = (t_performOperation)0x3c3a0e14;
+		g_socketForPort = (t_socketForPort)0x3c3a0644;
+		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a517c;
+		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a52dc;
 	}
 
 	m_privateFunctionsSetup = true;
@@ -683,16 +690,16 @@ void PhoneInteraction::setupPrivateFunctions()
 	if ( (m_iTunesVersion.minor < 3) || (m_iTunesVersion.minor > 4) ) return;
 
 	if (m_iTunesVersion.minor == 4) {
-		g_performOperation = (t_performOperation)0x3c39fa4b;
-		g_socketForPort = (t_socketForPort)0x3c39f36c;
-		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a3e3b;
-		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a4087;
-	}
-	else {
 		g_performOperation = (t_performOperation)0x3c3a0599;
 		g_socketForPort = (t_socketForPort)0x3c39ffa3;
 		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a597f;
 		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a5bcb;
+	}
+	else {
+		g_performOperation = (t_performOperation)0x3c39fa4b;
+		g_socketForPort = (t_socketForPort)0x3c39f36c;
+		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a3e3b;
+		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a4087;
 	}
 
 	m_privateFunctionsSetup = true;
@@ -839,83 +846,164 @@ bool PhoneInteraction::isConnected()
 	return m_connected;
 }
 
-void PhoneInteraction::activate(const char* filename)
+bool PhoneInteraction::activate(const char* filename, const char *pemfile)
 {
 
 	if (!isConnected()) {
 		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Can't activate when no phone is connected.");
-		return;
+		return false;
+	}
+
+	if ( (filename == NULL) && (pemfile == NULL) ) {
+		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Invalid parameters.");
+		return false;
 	}
 
 	if (m_statusFunc) {
 		(*m_statusFunc)("Activating...", true);
 	}
 
-	CFDictionaryRef activationDict;
+	CFDictionaryRef activationRecord = NULL;
 
-#ifdef HAVE_CF_PLIST_READING_FUNCTIONS
-	CFStringRef fileString = CFStringCreateWithCString(kCFAllocatorDefault, filename, kCFStringEncodingUTF8);
-	CFStringRef errString;
-	CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, fileString, kCFURLPOSIXPathStyle, false);
-	CFReadStreamRef stream= CFReadStreamCreateWithFile(kCFAllocatorDefault, url);
-	
-	Boolean opened = CFReadStreamOpen(stream);
-	
-	if (opened == FALSE) {
-		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error creating dictionary from given plist file.");
-		CFRelease(fileString);
-		CFRelease(url);
-		CFRelease(stream);
-		return;
+	if (filename == NULL) {
+
+		// do everything for them
+		CFStringRef cfdeviceid = AMDeviceCopyDeviceIdentifier(m_iPhone);
+
+		if (cfdeviceid == NULL) {
+			(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error obtaining the Device ID.");
+			return false;
+		}
+
+		CFIndex cflen = CFStringGetLength(cfdeviceid);
+		char *deviceid = (char*)malloc(cflen+1);
+
+		if (CFStringGetCString(cfdeviceid, deviceid, cflen+1, kCFStringEncodingUTF8) == false) {
+			free(deviceid);
+			(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error obtaining the Device ID.");
+			return false;
+		}
+
+		CFStringRef cfimei = AMDeviceCopyValue(m_iPhone, 0, CFSTR("InternationalMobileEquipmentIdentity"));
+
+		if (cfimei == NULL) {
+			free(deviceid);
+			(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error obtaining the IMEI.");
+			return false;
+		}
+
+		cflen = CFStringGetLength(cfimei);
+		char *imei = (char*)malloc(cflen+1);
+
+		if (CFStringGetCString(cfimei, imei, cflen+1, kCFStringEncodingUTF8) == false) {
+			free(deviceid);
+			free(imei);
+			(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error obtaining the IMEI.");
+			return false;
+		}
+
+		CFStringRef cficcid = AMDeviceCopyValue(m_iPhone, 0, CFSTR("IntegratedCircuitCardIdentity"));
+
+		if (cficcid == NULL) {
+			free(deviceid);
+			free(imei);
+			(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error obtaining the ICCID (ensure there is a SIM card in your phone).");
+			return false;
+		}
+
+		cflen = CFStringGetLength(cficcid);
+		char *iccid = (char*)malloc(cflen+1);
+
+		if (CFStringGetCString(cficcid, iccid, cflen+1, kCFStringEncodingUTF8) == false) {
+			free(deviceid);
+			free(imei);
+			free(iccid);
+			(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error obtaining the ICCID.");
+			return false;
+		}
+		
+		if (!UtilityFunctions::generateActivationRecord(&activationRecord, pemfile,
+														deviceid, imei, iccid)) {
+			free(deviceid);
+			free(imei);
+			free(iccid);
+			(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error generating activation record.");
+			return false;
+		}
+
+		free(deviceid);
+		free(imei);
+		free(iccid);
 	}
+	else {
+		CFDictionaryRef activationDict;
+
+#if defined(__APPLE__)
+		CFStringRef fileString = CFStringCreateWithCString(kCFAllocatorDefault, filename, kCFStringEncodingUTF8);
+		CFStringRef errString;
+		CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, fileString, kCFURLPOSIXPathStyle, false);
+		CFReadStreamRef stream= CFReadStreamCreateWithFile(kCFAllocatorDefault, url);
 	
-	CFPropertyListFormat format;
-	activationDict = (CFDictionaryRef)CFPropertyListCreateFromStream(kCFAllocatorDefault,
+		Boolean opened = CFReadStreamOpen(stream);
+	
+		if (opened == FALSE) {
+			(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error creating dictionary from given plist file.");
+			CFRelease(fileString);
+			CFRelease(url);
+			CFRelease(stream);
+			return false;
+		}
+	
+		CFPropertyListFormat format;
+		activationDict = (CFDictionaryRef)CFPropertyListCreateFromStream(kCFAllocatorDefault,
 																	 stream, 0,
 																	 kCFPropertyListMutableContainersAndLeaves,
 																	 &format, &errString);
-	CFReadStreamClose(stream);
-	CFRelease(stream);
-	CFRelease(url);
-	CFRelease(fileString);
+		CFReadStreamClose(stream);
+		CFRelease(stream);
+		CFRelease(url);
+		CFRelease(fileString);
 	
-	if (errString != NULL) {
-		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error creating dictionary from given plist file.");
-		return;
-	}
+		if (errString != NULL) {
+			(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error creating dictionary from given plist file.");
+			return false;
+		}
 	
 #else
-	// 0p: New CFCompatibility code (cross-platform) for reading plist files
-	// (seems to work well)
-	activationDict = PICreateDictionaryFromPlistFile(filename);
+		// 0p: New CFCompatibility code (cross-platform) for reading plist files
+		// (seems to work well)
+		activationDict = PICreateDictionaryFromPlistFile(filename);
 #endif
 
-	if (activationDict == NULL) {
-		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error creating dictionary from given plist file.");
-		return;
-	}
-
-	CFMutableDictionaryRef activationRecord = (CFMutableDictionaryRef)CFDictionaryGetValue(activationDict,
-																						   CFSTR("ActivationRecord"));
-
-	if (activationRecord == NULL) {
-
-		// it may be an activation record from a phone with version 1.0.1 firmware,
-		// so check for the AccountToken in the original dictionary
-		if (!CFDictionaryContainsKey(activationDict, CFSTR("AccountToken"))) {
-			CFRelease(activationDict);
-			(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error obtaining activation record from dictionary.");
-			return;
+		if (activationDict == NULL) {
+			(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error creating dictionary from given plist file.");
+			return false;
 		}
 
-		activationRecord = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, activationDict);
+		activationRecord = (CFDictionaryRef)CFDictionaryGetValue(activationDict,
+																 CFSTR("ActivationRecord"));
 
 		if (activationRecord == NULL) {
-			CFRelease(activationDict);
-			(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error obtaining activation record from dictionary.");
-			return;
+
+			// it may be an activation record from a phone with version 1.0.1 firmware,
+			// so check for the AccountToken in the original dictionary
+			if (!CFDictionaryContainsKey(activationDict, CFSTR("AccountToken"))) {
+				CFRelease(activationDict);
+				(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error obtaining activation record from dictionary.");
+				return false;
+			}
+
+			activationRecord = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, activationDict);
+
+			if (activationRecord == NULL) {
+				CFRelease(activationDict);
+				(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Error obtaining activation record from dictionary.");
+				return false;
+			}
+
 		}
 
+		CFRelease(activationDict);
 	}
 
 	int retval;
@@ -924,6 +1012,8 @@ void PhoneInteraction::activate(const char* filename)
 		char resultCStr[50];
 		snprintf(resultCStr, 50, "Activation failed with code %d.", retval);
 		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, resultCStr);
+		CFRelease(activationRecord);
+		return false;
 	}
 	else {
 		CFStringRef result = AMDeviceCopyValue(m_iPhone, 0, CFSTR("ActivationState"));
@@ -942,15 +1032,16 @@ void PhoneInteraction::activate(const char* filename)
 		CFRelease(resultStr);
 	}
 
-	CFRelease(activationDict);
+	CFRelease(activationRecord);
+	return true;
 }
 
-void PhoneInteraction::deactivate()
+bool PhoneInteraction::deactivate()
 {
 
 	if (!isConnected()) {
 		(*m_notifyFunc)(NOTIFY_DEACTIVATION_FAILED, "Can't deactivate when no phone is connected.");
-		return;
+		return false;
 	}
 
 	if (m_statusFunc) {
@@ -963,6 +1054,7 @@ void PhoneInteraction::deactivate()
 		char resultCStr[50];
 		snprintf(resultCStr, 50, "Deactivation failed with code %d.", retval);
 		(*m_notifyFunc)(NOTIFY_DEACTIVATION_FAILED, resultCStr);
+		return false;
 	}
 	else {
 		CFStringRef result = AMDeviceCopyValue(m_iPhone, 0, CFSTR("ActivationState"));
@@ -981,6 +1073,7 @@ void PhoneInteraction::deactivate()
 		CFRelease(resultStr);
 	}
 
+	return true;
 }
 
 bool PhoneInteraction::isPhoneActivated()
@@ -2116,18 +2209,13 @@ void PhoneInteraction::performJailbreak(const char *firmwarePath, const char *mo
 		m_firmwarePath[len] = 0;
 	}
 
-	m_waitingForRecovery = true;
-	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_WAIT, "Please press and hold Home + Sleep on your iPhone for 25 seconds...");
-
-	// this would be the preferred way to put the iPhone in recovery mode, but things
-	// seem to go bad when i use it
-	/*
 	if (AMDeviceEnterRecovery(m_iPhone)) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error entering recovery mode.");
 		return;
 	}
-	 */
 
+	m_waitingForRecovery = true;
+	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_WAIT, "Waiting for jail break...");
 }
 
 void PhoneInteraction::cancelJailbreak(bool userCouldntHoldOn)
@@ -2164,11 +2252,9 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	m_recoveryDevice = rdev;
 	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_CONNECTED, "Recovery mode started");
 
-#ifdef USE_ALTERNATE_RESTORE_MODE_SWITCH
+#if 1
 
-	// Alternative way to get into restore mode which doesn't require firmware
-	// file paths
-	// NOTE: This doesn't work with iTunes 7.4 so I made it the alternative way
+	// Good way to get into recovery mode as it doesn't require firmware filenames
 
 	CFMutableDictionaryRef restoreOptions = AMRestoreCreateDefaultOptions(kCFAllocatorDefault);
 	
@@ -2203,7 +2289,7 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	CFRelease(cfFirmwarePath);
 #else
 
-	// Tried and true method using firmware file paths
+	// Tried and true method using firmware filenames
 
 	char ramdisk[PATH_MAX+1];
 	char kerncache[PATH_MAX+1];
@@ -2272,12 +2358,6 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 		return;
 	}
 
-	// turn off autoboot
-	if (PI_sendCommandToDevice(rdev, CFSTR("setenv auto-boot false"))) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error turning off auto-boot.");
-		return;
-	}
-
 	// send ramdisk file
 	if (PI_sendFileToDevice(rdev, cfRamdisk)) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error sending ramdisk file to device.");
@@ -2307,12 +2387,18 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	// set boot args
 	//
 	// alternative boot args for restore mode boot spew
-	if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -v"))) {
-	//if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -progress"))) {
+	//if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -v"))) {
+	if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -progress"))) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error setting boot args.");
 		return;
 	}
 
+	// turn off autoboot
+	if (PI_sendCommandToDevice(rdev, CFSTR("setenv auto-boot false"))) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error turning off auto-boot.");
+		return;
+	}
+	
 	m_switchingToRestoreMode = true;
 
 	// boot kernel cache to get to restore mode
@@ -2329,7 +2415,37 @@ void PhoneInteraction::recoveryModeFinished(am_recovery_device *dev)
 {
 	m_inRecoveryMode = false;
 	m_recoveryDevice = NULL;
+	setConnected(false);
 	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_DISCONNECTED, "Recovery mode ended");
+}
+
+void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
+{
+
+	// set device to auto boot
+	if (PI_sendCommandToDevice(dev, CFSTR("setenv auto-boot true"))) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error turning on auto-boot.");
+		return;
+	}
+
+	// clear boot args
+	if (PI_sendCommandToDevice(dev, CFSTR("setenv boot-args"))) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error setting boot args.");
+		return;
+	}
+
+	// save the environment
+	if (PI_sendCommandToDevice(dev, CFSTR("saveenv"))) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error saving environment.");
+		return;
+	}
+
+	// reboot into normal mode
+	if (PI_sendCommandToDevice(dev, CFSTR("fsboot"))) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error trying to reboot into normal mode.");
+		return;
+	}
+
 }
 
 void PhoneInteraction::restoreModeStarted()
@@ -2340,7 +2456,7 @@ void PhoneInteraction::restoreModeStarted()
     m_restoreDevice = AMRestoreModeDeviceCreate(0, AMDeviceGetConnectionID(m_iPhone), 0);
     m_restoreDevice->port = PI_socketForPort(m_restoreDevice, 0xf27e);
 
-	sleep(28);
+	sleep(5);
 
 	CFMutableDictionaryRef request = CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
 															   &kCFTypeDictionaryKeyCallBacks,

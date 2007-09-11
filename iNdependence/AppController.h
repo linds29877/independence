@@ -25,20 +25,14 @@ class PhoneInteraction;
 @interface AppController : NSObject
 {
 	IBOutlet MainWindow *mainWindow;
-	IBOutlet NSWindow* imeiDialog;
 	IBOutlet NSWindow* newPasswordDialog;
 	IBOutlet NSTextField* accountNameField;
 	IBOutlet NSSecureTextField* passwordField;
 	IBOutlet NSSecureTextField* passwordAgainField;
-	IBOutlet NSTextField* imeiTextField;
-	IBOutlet NSTextField* iccidTextField;
-	IBOutlet NSButton* putPEMButton;
-	IBOutlet NSButton* restorePEMButton;
+	IBOutlet NSButton* jailbreakButton;
 	IBOutlet NSButton* returnToJailButton;
 	IBOutlet NSButton* activateButton;
 	IBOutlet NSButton* deactivateButton;
-	IBOutlet NSButton* jailbreakButton;
-	IBOutlet NSButton* backupButton;
 	IBOutlet NSButton* installSSHButton;
 	IBOutlet NSButton* removeSSHButton;
 	IBOutlet NSButton* changePasswordButton;
@@ -76,10 +70,6 @@ class PhoneInteraction;
 
 - (bool)isSSHInstalled;
 
-- (IBAction)generateActivation:(id)sender;
-- (IBAction)backupActivation:(id)sender;
-- (IBAction)putPEMOnPhone:(id)sender;
-- (IBAction)restorePEM:(id)sender;
 - (IBAction)activate:(id)sender;
 - (IBAction)deactivate:(id)sender;
 - (IBAction)performJailbreak:(id)sender;
@@ -88,9 +78,6 @@ class PhoneInteraction;
 - (IBAction)installSSH:(id)sender;
 - (IBAction)removeSSH:(id)sender;
 - (void)finishInstallingSSH:(bool)bCancelled;
-
-- (IBAction)imeiDialogCancel:(id)sender;
-- (IBAction)imeiDialogOk:(id)sender;
 
 - (IBAction)waitDialogCancel:(id)sender;
 

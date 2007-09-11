@@ -28,17 +28,13 @@
 
 enum
 {
-	MENU_ITEM_GENERATE = 10,
-	MENU_ITEM_PUT_PEM = 11,
 	MENU_ITEM_ACTIVATE = 12,
 	MENU_ITEM_DEACTIVATE = 13,
 	MENU_ITEM_RETURN_TO_JAIL = 14,
 	MENU_ITEM_JAILBREAK = 15,
-	MENU_ITEM_BACKUP_ACTIVATION = 16,
 	MENU_ITEM_INSTALL_SSH = 17,
 	MENU_ITEM_CHANGE_PASSWORD = 18,
 	MENU_ITEM_REMOVE_SSH = 21,
-	MENU_ITEM_RESTORE_PEM = 22
 };
 
 extern MainWindow *g_mainWindow;
@@ -83,29 +79,27 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
 			case NOTIFY_ACTIVATION_FAILED:
-			case NOTIFY_DEACTIVATION_FAILED:
-			case NOTIFY_PUTPEM_FAILED:
 			case NOTIFY_PUTSERVICES_FAILED:
 			case NOTIFY_PUTFSTAB_FAILED:
 			case NOTIFY_JAILBREAK_FAILED:
 			case NOTIFY_JAILBREAK_FAIL_USER_COULDNT_HOLD:
 				[g_mainWindow endDisplayWaitingSheet];
+			case NOTIFY_DEACTIVATION_FAILED:
+			case NOTIFY_PUTPEM_FAILED:
 			case NOTIFY_GET_ACTIVATION_FAILED:
 				[g_mainWindow updateStatus];
 				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
-			case NOTIFY_PUTPEM_SUCCESS:
-				[g_mainWindow endDisplayWaitingSheet];
 			case NOTIFY_GET_ACTIVATION_SUCCESS:
 				[g_mainWindow updateStatus];
 				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
 			case NOTIFY_JAILBREAK_RECOVERY_WAIT:
-				[g_mainWindow startDisplayWaitingSheet:nil message:@"Please press and hold Home + Sleep on your iPhone until this dialog window disappears..." image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:true runModal:true];
+				//[g_mainWindow startDisplayWaitingSheet:nil message:@"Please press and hold Home + Sleep on your iPhone until this dialog window disappears..." image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:true runModal:true];
+				[g_mainWindow startDisplayWaitingSheet:nil message:@"Waiting for jail break..." image:[NSImage imageNamed:@"jailbreak"] cancelButton:false runModal:false];
 				break;
 			case NOTIFY_JAILBREAK_RECOVERY_CONNECTED:
-				[g_mainWindow endDisplayWaitingSheet];
-				[g_mainWindow startDisplayWaitingSheet:nil message:@"Waiting for jail break..." image:[NSImage imageNamed:@"jailbreak"] cancelButton:false runModal:false];
+				//[g_mainWindow endDisplayWaitingSheet];
 				[g_appController setRecoveryMode:true];
 				break;
 			case NOTIFY_JAILBREAK_RECOVERY_DISCONNECTED:
@@ -125,24 +119,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			case NOTIFY_INITIALIZATION_SUCCESS:
 			case NOTIFY_PUTFSTAB_SUCCESS:
 			case NOTIFY_PUTSERVICES_SUCCESS:
-			default:
-				break;
-		}
-		
-	}
-	
-}
-
-static void utilityFunctionNotification(int type, const char *msg)
-{
-	
-	if (g_mainWindow) {
-		
-		switch (type) {
-			case NOTIFY_ACTIVATION_GEN_FAILED:
-				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
-				break;
-			case NOTIFY_ACTIVATION_GEN_SUCCESS:
+			case NOTIFY_PUTPEM_SUCCESS:
 			default:
 				break;
 		}
@@ -259,20 +236,21 @@ static void utilityFunctionNotification(int type, const char *msg)
 	m_jailbroken = jailbroken;
 	
 	if (m_jailbroken) {
-		[putPEMButton setEnabled:YES];
-		[restorePEMButton setEnabled:YES];
+
+		if ([self isActivated]) {
+			[activateButton setEnabled:NO];
+			[deactivateButton setEnabled:YES];
+		}
+		else {
+			[activateButton setEnabled:YES];
+			[deactivateButton setEnabled:NO];
+		}
+
 		[returnToJailButton setEnabled:YES];
 		[changePasswordButton setEnabled:YES];
 		[customizeBrowser setEnabled:YES];
 		[jailbreakButton setEnabled:NO];
 		
-		if ([self isActivated]) {
-			[backupButton setEnabled:YES];
-		}
-		else {
-			[backupButton setEnabled:NO];
-		}
-
 		if ([self isSSHInstalled]) {
 			[installSSHButton setEnabled:NO];
 			[removeSSHButton setEnabled:YES];
@@ -284,14 +262,13 @@ static void utilityFunctionNotification(int type, const char *msg)
 
 	}
 	else {
-		[putPEMButton setEnabled:NO];
-		[restorePEMButton setEnabled:NO];
+		[activateButton setEnabled:NO];
+		[deactivateButton setEnabled:NO];
 		[returnToJailButton setEnabled:NO];
 		[installSSHButton setEnabled:NO];
 		[removeSSHButton setEnabled:NO];
 		[changePasswordButton setEnabled:NO];
 		[customizeBrowser setEnabled:NO];
-		[backupButton setEnabled:NO];
 		
 		if ([self isConnected]) {
 			[jailbreakButton setEnabled:YES];
@@ -313,32 +290,24 @@ static void utilityFunctionNotification(int type, const char *msg)
 - (void)setActivated:(bool)activated
 {
 	m_activated = activated;
-	
+
 	if (m_activated) {
-		[activateButton setEnabled:NO];
-		[deactivateButton setEnabled:YES];
-		
+
 		if ([self isJailbroken]) {
-			[backupButton setEnabled:YES];
+			[activateButton setEnabled:NO];
+			[deactivateButton setEnabled:YES];
 		}
-		else {
-			[backupButton setEnabled:NO];
-		}
-		
+
 	}
 	else {
-		
-		if (![self isConnected]) {
-			[activateButton setEnabled:NO];
-		}
-		else {
+
+		if ([self isJailbroken]) {
 			[activateButton setEnabled:YES];
+			[deactivateButton setEnabled:NO];
 		}
-		
-		[backupButton setEnabled:NO];
-		[deactivateButton setEnabled:NO];
+
 	}
-	
+
 	[mainWindow updateStatus];
 }
 
@@ -352,128 +321,50 @@ static void utilityFunctionNotification(int type, const char *msg)
 	return m_phoneInteraction->fileExists("/usr/bin/dropbear");
 }
 
-- (IBAction)generateActivation:(id)sender
+- (IBAction)performJailbreak:(id)sender
 {
-	[mainWindow setStatus:@"Generating activation..." spinning:true];
-
-	int retval;
-	const char *imeiVal;
-	const char *iccidVal;
-	char deviceid[41];
-
-	// get the IMEI and ICCID
-	[NSApp beginSheet:imeiDialog modalForWindow:mainWindow modalDelegate:nil
-	   didEndSelector:nil contextInfo:nil];
-
+	NSString *firmwarePath;
+	
+	// first things first -- get the path to the unzipped firmware files
+	NSOpenPanel *firmwareOpener = [NSOpenPanel openPanel];
+	[firmwareOpener setTitle:@"Select where you unzipped the firmware files"];
+	[firmwareOpener setCanChooseDirectories:YES];
+	[firmwareOpener setCanChooseFiles:NO];
+	[firmwareOpener setAllowsMultipleSelection:NO];
+	
 	while (1) {
-		retval = [NSApp runModalForWindow:imeiDialog];
-
-		if (retval == -1) {
-			[NSApp endSheet:imeiDialog];
-			[imeiDialog orderOut:self];
-			[mainWindow updateStatus];
+		
+		if ([firmwareOpener runModalForTypes:nil] != NSOKButton) {
 			return;
 		}
-
-		imeiVal = [[imeiTextField stringValue] UTF8String];
-
-		if (!UtilityFunctions::validateIMEI(imeiVal)) {
-			[mainWindow displayAlert:@"Error" message:@"You entered an invalid IMEI value.  Try again."];
-			continue;
+		
+		firmwarePath = [firmwareOpener filename];
+		
+		if ([[NSFileManager defaultManager] fileExistsAtPath:[firmwarePath stringByAppendingString:@"/Restore.plist"]]) {
+			break;
 		}
-
-		iccidVal = [[iccidTextField stringValue] UTF8String];
-	
-		if (!UtilityFunctions::validateICCID(iccidVal)) {
-			[mainWindow displayAlert:@"Error" message:@"You entered an invalid ICCID value.  Try again."];
-			continue;
-		}
-
-		if (!UtilityFunctions::findDeviceID(deviceid)) {
-			[mainWindow displayAlert:@"Error" message:@"Can't find device ID.  Check to ensure that ~/Library/Lockdown/ exists and contains a .plist file."];
-			[NSApp endSheet:imeiDialog];
-			[imeiDialog orderOut:self];
-			[mainWindow updateStatus];
-			return;
-		}
-
-		break;
-	}
-
-	[NSApp endSheet:imeiDialog];
-	[imeiDialog orderOut:self];
-
-	// now find the PEM file
-	NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation_private" ofType:@"pem"];
-	
-	if (pemfile == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding PEM file to sign activation with."];
-		[mainWindow updateStatus];
-		return;
-	}
-
-	CFDictionaryRef activationrequest;
-
-	if (!UtilityFunctions::generateActivationRequest_All(&activationrequest, [pemfile UTF8String],
-														 deviceid, imeiVal, iccidVal,
-														 utilityFunctionNotification)) {
-		[mainWindow displayAlert:@"Error" message:@"Error generating the activation file."];
-		[mainWindow updateStatus];
-		return;
-	}
-
-	NSSavePanel *plistSaver = [NSSavePanel savePanel];
-	[plistSaver setTitle:@"Choose a Location for the activation file"];
-	[plistSaver setRequiredFileType:@"plist"];
-
-	retval = [plistSaver runModal];
-
-	if (retval == NSFileHandlingPanelOKButton) {
-		[(NSDictionary*)activationrequest writeToFile:[plistSaver filename] atomically:YES];
-	}
-
-	CFRelease(activationrequest);
-	[mainWindow updateStatus];
-}
-
-- (IBAction)imeiDialogCancel:(id)sender
-{
-	[NSApp stopModalWithCode:-1];
-}
-
-- (IBAction)imeiDialogOk:(id)sender
-{
-	[NSApp stopModalWithCode:0];
-}
-
-- (IBAction)putPEMOnPhone:(id)sender
-{
-	[mainWindow setStatus:@"Putting PEM file on phone..." spinning:true];
-
-	NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation" ofType:@"pem"];
-
-	if (pemfile == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding PEM file in application bundle."];
-		[mainWindow updateStatus];
-		return;
-	}
-
-	m_phoneInteraction->putPEMOnPhone([pemfile UTF8String]);
-}
-
-- (IBAction)restorePEM:(id)sender
-{
-	[mainWindow setStatus:@"Restoring original PEM file on phone..." spinning:true];
-
-	NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation_original" ofType:@"pem"];
-
-	if (pemfile == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding PEM file in application bundle."];
-		[mainWindow updateStatus];
+		
+		[mainWindow displayAlert:@"Error" message:@"Specified path does not contain firmware files.  Try again."];
 		return;
 	}
 	
-	m_phoneInteraction->putPEMOnPhone([pemfile UTF8String]);
+	NSString *servicesFile = [[NSBundle mainBundle] pathForResource:@"Services_mod" ofType:@"plist"];
+	
+	if (servicesFile == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding modified Services.plist file."];
+		return;
+	}
+	
+	NSString *fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab_mod" ofType:@""];
+	
+	if (fstabFile == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding modified fstab file."];
+		return;
+	}
+	
+	m_performingJailbreak = true;
+	m_phoneInteraction->performJailbreak([firmwarePath UTF8String], [fstabFile UTF8String],
+										 [servicesFile UTF8String]);
 }
 
 - (IBAction)returnToJail:(id)sender
@@ -517,82 +408,41 @@ static void utilityFunctionNotification(int type, const char *msg)
 
 - (IBAction)activate:(id)sender
 {
-	NSOpenPanel *plistOpener = [NSOpenPanel openPanel];
-	[plistOpener setTitle:@"Select an Activation plist File"];
-	[plistOpener setCanChooseDirectories:NO];
-	[plistOpener setAllowsMultipleSelection:NO];
-
-	NSArray *fileTypes = [NSArray arrayWithObject:@"plist"];
-	int retval = [plistOpener runModalForTypes:fileTypes];
+	[mainWindow setStatus:@"Putting PEM file on phone..." spinning:true];
 	
-	if (retval != NSOKButton) {
+	NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation" ofType:@"pem"];
+	NSString *pemfile_priv = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation_private" ofType:@"pem"];
+
+	if ( (pemfile == nil) || (pemfile_priv == nil) ) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding PEM file in application bundle."];
+		[mainWindow updateStatus];
 		return;
 	}
-	
-	m_phoneInteraction->activate([[plistOpener filename] UTF8String]);
+
+	if (!m_phoneInteraction->putPEMOnPhone([pemfile UTF8String])) return;
+
+	[mainWindow setStatus:@"Activating..." spinning:true];
+
+	m_phoneInteraction->activate(NULL, [pemfile_priv UTF8String]);
 }
 
 - (IBAction)deactivate:(id)sender
 {
+	[mainWindow setStatus:@"Restoring original PEM file on phone..." spinning:true];
+	
+	NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation_original" ofType:@"pem"];
+	
+	if (pemfile == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding PEM file in application bundle."];
+		[mainWindow updateStatus];
+		return;
+	}
+	
+	if (!m_phoneInteraction->putPEMOnPhone([pemfile UTF8String])) return;
+
+	[mainWindow setStatus:@"Deactivating..." spinning:true];
+
 	m_phoneInteraction->deactivate();
-}
-
-- (IBAction)performJailbreak:(id)sender
-{
-	NSString *firmwarePath;
-
-	// first things first -- get the path to the unzipped firmware files
-	NSOpenPanel *firmwareOpener = [NSOpenPanel openPanel];
-	[firmwareOpener setTitle:@"Select where you unzipped the firmware files"];
-	[firmwareOpener setCanChooseDirectories:YES];
-	[firmwareOpener setCanChooseFiles:NO];
-	[firmwareOpener setAllowsMultipleSelection:NO];
-	
-	while (1) {
-		
-		if ([firmwareOpener runModalForTypes:nil] != NSOKButton) {
-			return;
-		}
-		
-		firmwarePath = [firmwareOpener filename];
-
-		if ([[NSFileManager defaultManager] fileExistsAtPath:[firmwarePath stringByAppendingString:@"/Restore.plist"]]) {
-			break;
-		}
-		
-		[mainWindow displayAlert:@"Error" message:@"Specified path does not contain firmware files.  Try again."];
-		return;
-	}
-
-	NSString *servicesFile = [[NSBundle mainBundle] pathForResource:@"Services_mod" ofType:@"plist"];
-	
-	if (servicesFile == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding modified Services.plist file."];
-		return;
-	}
-	
-	NSString *fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab_mod" ofType:@""];
-
-	if (fstabFile == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding modified fstab file."];
-		return;
-	}
-
-	m_performingJailbreak = true;
-	m_phoneInteraction->performJailbreak([firmwarePath UTF8String], [fstabFile UTF8String],
-										 [servicesFile UTF8String]);
-}
-
-- (IBAction)backupActivation:(id)sender
-{
-	NSSavePanel *plistSaver = [NSSavePanel savePanel];
-	[plistSaver setTitle:@"Choose a Location for the activation file"];
-	[plistSaver setRequiredFileType:@"plist"];
-
-	if ([plistSaver runModal] == NSFileHandlingPanelOKButton) {
-		m_phoneInteraction->getActivationFile([[plistSaver filename] UTF8String]);
-	}
-	
 }
 
 - (IBAction)waitDialogCancel:(id)sender
@@ -1140,14 +990,14 @@ static void utilityFunctionNotification(int type, const char *msg)
 	switch ([menuItem tag]) {
 		case MENU_ITEM_ACTIVATE:
 			
-			if (![self isConnected] || [self isActivated]) {
+			if (![self isConnected] || ![self isJailbroken] || [self isActivated]) {
 				return NO;
 			}
 			
 			break;
 		case MENU_ITEM_DEACTIVATE:
 			
-			if (![self isConnected] || ![self isActivated]) {
+			if (![self isConnected] || ![self isJailbroken] || ![self isActivated]) {
 				return NO;
 			}
 			
@@ -1174,9 +1024,6 @@ static void utilityFunctionNotification(int type, const char *msg)
 			
 			break;
 		case MENU_ITEM_RETURN_TO_JAIL:
-		case MENU_ITEM_PUT_PEM:
-		case MENU_ITEM_RESTORE_PEM:
-		case MENU_ITEM_BACKUP_ACTIVATION:
 		case MENU_ITEM_CHANGE_PASSWORD:
 			
 			if (![self isConnected] || ![self isJailbroken]) {
@@ -1184,7 +1031,6 @@ static void utilityFunctionNotification(int type, const char *msg)
 			}
 
 			break;
-		case MENU_ITEM_GENERATE:
 		default:
 			break;
 	}

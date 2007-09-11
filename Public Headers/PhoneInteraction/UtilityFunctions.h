@@ -19,16 +19,10 @@
 #pragma once
 
 #if defined(WIN32)
-#include <CoreFoundation.h>
+	#include <CoreFoundation.h>
 #elif defined(__APPLE__)
-#include <CoreFoundation/CoreFoundation.h>
+	#include <CoreFoundation/CoreFoundation.h>
 #endif
-
-
-enum {
-	NOTIFY_ACTIVATION_GEN_SUCCESS = 200,
-	NOTIFY_ACTIVATION_GEN_FAILED
-};
 
 
 class UtilityFunctions
@@ -36,31 +30,15 @@ class UtilityFunctions
 
 public:
 
-	// Used to find the device ID from the lockdown file
-	static bool findDeviceID(char *buf);
-
-	// Used to validate an IMEI
-	static bool validateIMEI(const char *imei);
-
-	// Used to validate an ICCID
-	static bool validateICCID(const char *iccid);
-
 	// Used to get the last path element from a given path (eg. /var/tmp -> tmp)
 	static const char *getLastPathElement(const char *path);
 
-	// These functions are used together to generate an activation plist dictionary
+	// These functions are used to generate an activation record or request
 	// from a device ID, IMEI, ICCID, and PEM file
-	static void generateAccountToken(char *token, const char *deviceid,
-									const char *imei, const char *iccid);
-	static bool generateAccountTokenSignature(CFDataRef *signature,
-											  const char *token, const char *pemfile);
-	static bool generateActivationRecord(CFDictionaryRef *activationrecord,
-										 CFDataRef token, CFDataRef signature);
+	static bool generateActivationRecord(CFDictionaryRef *activationRecord, const char *pemfile,
+										 const char *deviceid, const char *imei, const char *iccid);
 	static bool generateActivationRequest(CFDictionaryRef *activationrequest,
-										  CFDictionaryRef activationrecord);
-	static bool generateActivationRequest_All(CFDictionaryRef *activationrequest,
-											  const char *pemfile, const char *deviceid,
-											  const char *imei, const char *iccid,
-											  void (*notifyFunc)(int, const char*));
+										  const char *pemfile, const char *deviceid,
+										  const char *imei, const char *iccid);
 
 };
