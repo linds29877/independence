@@ -56,13 +56,15 @@ MainWindow *g_mainWindow;
 
 	if (img != nil) {
 		[waitDialogImage setImage:img];
+		[waitDialog setFrame:NSMakeRect(wndFrame.origin.x, wndFrame.origin.y, wndFrame.size.width, 286) display:NO];
 		[waitDialogMessage setFrame:NSMakeRect(msgFrame.origin.x, 231, msgFrame.size.width, msgFrame.size.height)];
-		[waitDialog setFrame:NSMakeRect(wndFrame.origin.x, wndFrame.origin.y, wndFrame.size.width, 286) display:YES];
 	}
 	else {
+		[waitDialog setFrame:NSMakeRect(wndFrame.origin.x, wndFrame.origin.y, wndFrame.size.width, 150) display:NO];
 		[waitDialogMessage setFrame:NSMakeRect(msgFrame.origin.x, 81, msgFrame.size.width, msgFrame.size.height)];
-		[waitDialog setFrame:NSMakeRect(wndFrame.origin.x, wndFrame.origin.y, wndFrame.size.width, 150) display:YES];
 	}
+
+	[waitDialog update];
 
 	if (cancel) {
 		[waitDialogCancel setHidden:NO];

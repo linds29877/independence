@@ -283,21 +283,20 @@ void deviceNotificationCallback(am_device_notification_callback_info *info)
 
 	if (info->msg == ADNCI_MSG_CONNECTED) {
 
-		if (g_phoneInteraction->m_waitingForRecovery) {
-			g_phoneInteraction->cancelJailbreak(true);
-		}
-
 		if (g_phoneInteraction->m_switchingToRestoreMode) {
 			g_phoneInteraction->m_switchingToRestoreMode = false;
 			g_phoneInteraction->restoreModeStarted();
 		}
 		else {
+			g_phoneInteraction->connectToPhone();
 
 			if (g_phoneInteraction->m_finishingJailbreak) {
 				g_phoneInteraction->jailbreakFinished();
 			}
+			else if (g_phoneInteraction->m_returningToJail) {
+				g_phoneInteraction->returnToJailFinished();
+			}
 
-			g_phoneInteraction->connectToPhone();
 		}
 
 	}
@@ -378,7 +377,8 @@ void recoveryConnectNotificationCallback(am_recovery_device *dev)
 	if (g_phoneInteraction->m_waitingForRecovery) {
 		g_phoneInteraction->recoveryModeStarted(dev);
 	}
-	else if (g_phoneInteraction->m_finishingJailbreak) {
+	else {
+		// just default to saving the user from recovery mode
 		g_phoneInteraction->exitRecoveryMode(dev);
 	}
 
@@ -409,6 +409,7 @@ PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 	m_inRestoreMode = false;
 	m_jailbroken = false;
 	m_finishingJailbreak = false;
+	m_returningToJail = false;
 	m_hAFC = NULL;
 	m_firmwarePath = NULL;
 	m_waitingForRecovery = false;
@@ -851,6 +852,11 @@ bool PhoneInteraction::activate(const char* filename, const char *pemfile)
 
 	if (!isConnected()) {
 		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Can't activate when no phone is connected.");
+		return false;
+	}
+
+	if (isPhoneJailbroken()) {
+		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Can't activate when phone is jailbroken.");
 		return false;
 	}
 
@@ -2218,20 +2224,37 @@ void PhoneInteraction::performJailbreak(const char *firmwarePath, const char *mo
 	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_WAIT, "Waiting for jail break...");
 }
 
-void PhoneInteraction::cancelJailbreak(bool userCouldntHoldOn)
+void PhoneInteraction::returnToJail(const char *servicesFile, const char *fstabFile)
 {
 
-	if (m_waitingForRecovery) {
-		m_waitingForRecovery = false;
+	if (!isConnected()) {
+		(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Can't return to jail when no phone is connected.");
+		return;
 	}
 
-	if (userCouldntHoldOn) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAIL_USER_COULDNT_HOLD, "Jailbreak failed (couldn't hold it eh?)");
+	if (!putServicesFileOnPhone(servicesFile)) {
+		(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error writing Services file to phone.");
+		return;
 	}
-	else {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_CANCEL, "Jailbreak cancelled");
+	
+	if (!putFstabFileOnPhone(fstabFile)) {
+		(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error writing fstab file to phone.");
+		return;
 	}
 
+	if (AMDeviceEnterRecovery(m_iPhone)) {
+		(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error entering recovery mode.");
+		return;
+	}
+	
+	m_returningToJail = true;
+	(*m_notifyFunc)(NOTIFY_JAILRETURN_RECOVERY_WAIT, "Waiting for return to jail...");
+}
+
+void PhoneInteraction::returnToJailFinished()
+{
+	m_returningToJail = false;
+	(*m_notifyFunc)(NOTIFY_JAILRETURN_SUCCESS, "Return to jail succeeded!");
 }
 
 void PhoneInteraction::jailbreakFinished()
@@ -2424,25 +2447,52 @@ void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 
 	// set device to auto boot
 	if (PI_sendCommandToDevice(dev, CFSTR("setenv auto-boot true"))) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error turning on auto-boot.");
+
+		if (m_finishingJailbreak) {
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error turning on auto-boot.");
+		}
+		else if (m_returningToJail) {
+			(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error turning on auto-boot.");
+		}
+
 		return;
 	}
 
 	// clear boot args
 	if (PI_sendCommandToDevice(dev, CFSTR("setenv boot-args"))) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error setting boot args.");
+		
+		if (m_finishingJailbreak) {
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error setting boot args.");
+		}
+		else if (m_returningToJail) {
+			(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error setting boot args.");
+		}
+		
 		return;
 	}
 
 	// save the environment
 	if (PI_sendCommandToDevice(dev, CFSTR("saveenv"))) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error saving environment.");
+
+		if (m_finishingJailbreak) {
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error saving environment.");
+		}
+		else if (m_returningToJail) {
+			(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error saving environment.");
+		}
 		return;
 	}
 
 	// reboot into normal mode
 	if (PI_sendCommandToDevice(dev, CFSTR("fsboot"))) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error trying to reboot into normal mode.");
+
+		if (m_finishingJailbreak) {
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error trying to reboot into normal mode.");
+		}
+		else if (m_returningToJail) {
+			(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error trying to reboot into normal mode.");
+		}
+
 		return;
 	}
 

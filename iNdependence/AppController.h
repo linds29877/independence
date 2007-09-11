@@ -49,6 +49,8 @@ class PhoneInteraction;
 	bool m_performingJailbreak;
 	bool m_returningToJail;
 	bool m_installingSSH;
+	bool m_waitingForActivation;
+	bool m_waitingForDeactivation;
 	int m_bootCount;
 	char *m_sshPath;
 }
@@ -68,7 +70,21 @@ class PhoneInteraction;
 - (void)setActivated:(bool)activated;
 - (bool)isActivated;
 
+- (void)setPerformingJailbreak:(bool)bJailbreaking;
+- (void)setReturningToJail:(bool)bReturning;
+
 - (bool)isSSHInstalled;
+
+- (bool)isWaitingForActivation;
+- (bool)isWaitingForDeactivation;
+
+- (bool)doPutPEM:(const char*)pemfile;
+- (void)activateStageTwo;
+- (void)activateStageThree;
+- (void)activationFailed:(const char*)msg;
+- (void)deactivateStageTwo;
+- (void)deactivateStageThree;
+- (void)deactivationFailed:(const char*)msg;
 
 - (IBAction)activate:(id)sender;
 - (IBAction)deactivate:(id)sender;

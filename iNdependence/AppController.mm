@@ -75,13 +75,71 @@ static void phoneInteractionNotification(int type, const char *msg)
 				break;
 			case NOTIFY_JAILBREAK_SUCCESS:
 				[g_mainWindow endDisplayWaitingSheet];
+				[g_appController setPerformingJailbreak:false];
 				[g_appController setJailbroken:true];
-				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
+
+				if ([g_appController isWaitingForActivation]) {
+					[g_appController activateStageTwo];
+				}
+				else if ([g_appController isWaitingForDeactivation]) {
+					[g_appController deactivateStageTwo];
+				}
+				else {
+					[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
+				}
+
+				break;
+			case NOTIFY_JAILRETURN_SUCCESS:
+				[g_mainWindow endDisplayWaitingSheet];
+				[g_appController setReturningToJail:false];
+				[g_appController setJailbroken:false];
+
+				if ([g_appController isWaitingForActivation]) {
+					[g_appController activateStageThree];
+				}
+				else if ([g_appController isWaitingForDeactivation]) {
+					[g_appController deactivateStageThree];
+				}
+				else {
+					[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
+				}
+
+				break;
+			case NOTIFY_JAILBREAK_FAILED:
+				[g_mainWindow endDisplayWaitingSheet];
+				[g_appController setPerformingJailbreak:false];
+				[g_mainWindow updateStatus];
+
+				if ([g_appController isWaitingForActivation]) {
+					[g_appController activationFailed:msg];
+				}
+				else if ([g_appController isWaitingForDeactivation]) {
+					[g_appController deactivationFailed:msg];
+				}
+				else {
+					[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
+				}
+
+				break;
+			case NOTIFY_JAILRETURN_FAILED:
+				[g_mainWindow endDisplayWaitingSheet];
+				[g_appController setReturningToJail:false];
+				[g_mainWindow updateStatus];
+
+				if ([g_appController isWaitingForActivation]) {
+					[g_appController activationFailed:msg];
+				}
+				else if ([g_appController isWaitingForDeactivation]) {
+					[g_appController deactivationFailed:msg];
+				}
+				else {
+					[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
+				}
+
 				break;
 			case NOTIFY_ACTIVATION_FAILED:
 			case NOTIFY_PUTSERVICES_FAILED:
 			case NOTIFY_PUTFSTAB_FAILED:
-			case NOTIFY_JAILBREAK_FAILED:
 			case NOTIFY_JAILBREAK_FAIL_USER_COULDNT_HOLD:
 				[g_mainWindow endDisplayWaitingSheet];
 			case NOTIFY_DEACTIVATION_FAILED:
@@ -95,11 +153,12 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
 			case NOTIFY_JAILBREAK_RECOVERY_WAIT:
-				//[g_mainWindow startDisplayWaitingSheet:nil message:@"Please press and hold Home + Sleep on your iPhone until this dialog window disappears..." image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:true runModal:true];
 				[g_mainWindow startDisplayWaitingSheet:nil message:@"Waiting for jail break..." image:[NSImage imageNamed:@"jailbreak"] cancelButton:false runModal:false];
 				break;
+			case NOTIFY_JAILRETURN_RECOVERY_WAIT:
+				[g_mainWindow startDisplayWaitingSheet:nil message:@"Waiting for return to jail..." image:[NSImage imageNamed:@"jailbreak"] cancelButton:false runModal:false];
+				break;
 			case NOTIFY_JAILBREAK_RECOVERY_CONNECTED:
-				//[g_mainWindow endDisplayWaitingSheet];
 				[g_appController setRecoveryMode:true];
 				break;
 			case NOTIFY_JAILBREAK_RECOVERY_DISCONNECTED:
@@ -160,6 +219,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_performingJailbreak = false;
 	m_returningToJail = false;
 	m_installingSSH = false;
+	m_waitingForActivation = false;
+	m_waitingForDeactivation = false;
 	m_bootCount = 0;
 	m_sshPath = NULL;
 	[customizeBrowser setEnabled:NO];
@@ -174,12 +235,15 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[self setActivated:m_phoneInteraction->isPhoneActivated()];
 		[self setJailbroken:m_phoneInteraction->isPhoneJailbroken()];
 		
-		if (m_returningToJail) {
-			m_returningToJail = false;
-			[mainWindow endDisplayWaitingSheet];
-			[mainWindow displayAlert:@"Success" message:@"Successfully returned to jail."];
+		if ([self isActivated]) {
+			[activateButton setEnabled:NO];
+			[deactivateButton setEnabled:YES];
 		}
-
+		else {
+			[activateButton setEnabled:YES];
+			[deactivateButton setEnabled:NO];
+		}
+		
 		if (m_installingSSH) {
 			m_bootCount++;
 			[mainWindow endDisplayWaitingSheet];
@@ -199,6 +263,9 @@ static void phoneInteractionNotification(int type, const char *msg)
 	else {
 		[self setActivated:false];
 		[self setJailbroken:false];
+
+		[activateButton setEnabled:NO];
+		[deactivateButton setEnabled:NO];
 	}
 	
 	[mainWindow updateStatus];
@@ -236,16 +303,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_jailbroken = jailbroken;
 	
 	if (m_jailbroken) {
-
-		if ([self isActivated]) {
-			[activateButton setEnabled:NO];
-			[deactivateButton setEnabled:YES];
-		}
-		else {
-			[activateButton setEnabled:YES];
-			[deactivateButton setEnabled:NO];
-		}
-
 		[returnToJailButton setEnabled:YES];
 		[changePasswordButton setEnabled:YES];
 		[customizeBrowser setEnabled:YES];
@@ -262,8 +319,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	}
 	else {
-		[activateButton setEnabled:NO];
-		[deactivateButton setEnabled:NO];
 		[returnToJailButton setEnabled:NO];
 		[installSSHButton setEnabled:NO];
 		[removeSSHButton setEnabled:NO];
@@ -319,6 +374,26 @@ static void phoneInteractionNotification(int type, const char *msg)
 - (bool)isSSHInstalled
 {
 	return m_phoneInteraction->fileExists("/usr/bin/dropbear");
+}
+
+- (void)setPerformingJailbreak:(bool)bJailbreaking
+{
+	m_performingJailbreak = bJailbreaking;
+}
+
+- (void)setReturningToJail:(bool)bReturning
+{
+	m_returningToJail = bReturning;
+}
+
+- (bool)isWaitingForActivation
+{
+	return m_waitingForActivation;
+}
+
+- (bool)isWaitingForDeactivation
+{
+	return m_waitingForDeactivation;
 }
 
 - (IBAction)performJailbreak:(id)sender
@@ -386,76 +461,121 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[mainWindow updateStatus];
 		return;
 	}
-	
-	if (!m_phoneInteraction->putServicesFileOnPhone([servicesFile UTF8String])) {
-		[mainWindow displayAlert:@"Error" message:@"Error writing Services.plist file to phone."];
-		[mainWindow updateStatus];
-		return;
-	}
-
-	if (!m_phoneInteraction->putFstabFileOnPhone([fstabFile UTF8String])) {
-		[mainWindow displayAlert:@"Error" message:@"Error writing fstab file to phone."];
-		[mainWindow updateStatus];
-		return;
-	}
 
 	m_returningToJail = true;
-
-	[mainWindow startDisplayWaitingSheet:nil
-						   message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it..."
-							 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:true runModal:true];
+	m_phoneInteraction->returnToJail([servicesFile UTF8String], [fstabFile UTF8String]);
 }
 
-- (IBAction)activate:(id)sender
+- (bool)doPutPEM:(const char*)pemfile
 {
 	[mainWindow setStatus:@"Putting PEM file on phone..." spinning:true];
-	
-	NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation" ofType:@"pem"];
-	NSString *pemfile_priv = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation_private" ofType:@"pem"];
+	return m_phoneInteraction->putPEMOnPhone(pemfile);
+}
 
-	if ( (pemfile == nil) || (pemfile_priv == nil) ) {
+- (void)activateStageTwo
+{
+	NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation" ofType:@"pem"];
+	
+	if (pemfile == nil) {
+		m_waitingForActivation = false;
 		[mainWindow displayAlert:@"Error" message:@"Error finding PEM file in application bundle."];
 		[mainWindow updateStatus];
 		return;
 	}
 
-	if (!m_phoneInteraction->putPEMOnPhone([pemfile UTF8String])) return;
+	if (![self doPutPEM:[pemfile UTF8String]]) {
+		m_waitingForActivation = false;
+		return;
+	}
 
+	[self returnToJail:self];
+}
+
+- (void)activateStageThree
+{
+	m_waitingForActivation = false;
+
+	NSString *pemfile_priv = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation_private" ofType:@"pem"];
+	
+	if (pemfile_priv == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding PEM file in application bundle."];
+		[mainWindow updateStatus];
+		return;
+	}
+	
 	[mainWindow setStatus:@"Activating..." spinning:true];
-
+	
 	m_phoneInteraction->activate(NULL, [pemfile_priv UTF8String]);
 }
 
-- (IBAction)deactivate:(id)sender
+- (void)activationFailed:(const char*)msg
+{
+	m_waitingForActivation = false;
+	[mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
+}
+
+- (void)deactivateStageTwo
 {
 	[mainWindow setStatus:@"Restoring original PEM file on phone..." spinning:true];
 	
 	NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation_original" ofType:@"pem"];
 	
 	if (pemfile == nil) {
+		m_waitingForDeactivation = false;
 		[mainWindow displayAlert:@"Error" message:@"Error finding PEM file in application bundle."];
 		[mainWindow updateStatus];
 		return;
 	}
 	
-	if (!m_phoneInteraction->putPEMOnPhone([pemfile UTF8String])) return;
+	if (![self doPutPEM:[pemfile UTF8String]]) {
+		m_waitingForDeactivation = false;
+		return;
+	}
+	
+	[self returnToJail:self];
+}
 
+- (void)deactivateStageThree
+{
+	m_waitingForDeactivation = false;
 	[mainWindow setStatus:@"Deactivating..." spinning:true];
-
 	m_phoneInteraction->deactivate();
+}
+
+- (void)deactivationFailed:(const char*)msg
+{
+	m_waitingForDeactivation = false;
+	[mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
+}
+
+- (IBAction)activate:(id)sender
+{
+	m_waitingForActivation = true;
+
+	if (!m_phoneInteraction->isPhoneJailbroken()) {
+		[self performJailbreak:sender];
+		return;
+	}
+
+	[self activateStageTwo];
+}
+
+- (IBAction)deactivate:(id)sender
+{
+	m_waitingForDeactivation = true;
+
+	if (!m_phoneInteraction->isPhoneJailbroken()) {
+		[self performJailbreak:sender];
+		return;
+	}
+	
+	[self deactivateStageTwo];
 }
 
 - (IBAction)waitDialogCancel:(id)sender
 {
-	
-	if (m_performingJailbreak) {
-		m_performingJailbreak = false;
-		m_phoneInteraction->cancelJailbreak();
-	}
-	else if (m_returningToJail) {
-		m_returningToJail = false;
-	}
-	else if (m_installingSSH) {
+
+	if (m_installingSSH) {
 		[self finishInstallingSSH:true];
 	}
 	
@@ -990,14 +1110,14 @@ static void phoneInteractionNotification(int type, const char *msg)
 	switch ([menuItem tag]) {
 		case MENU_ITEM_ACTIVATE:
 			
-			if (![self isConnected] || ![self isJailbroken] || [self isActivated]) {
+			if (![self isConnected] || [self isActivated]) {
 				return NO;
 			}
 			
 			break;
 		case MENU_ITEM_DEACTIVATE:
 			
-			if (![self isConnected] || ![self isJailbroken] || ![self isActivated]) {
+			if (![self isConnected] || ![self isActivated]) {
 				return NO;
 			}
 			

@@ -65,6 +65,10 @@ enum
 	NOTIFY_JAILBREAK_RECOVERY_DISCONNECTED,
 	NOTIFY_JAILBREAK_RESTORE_CONNECTED,
 	NOTIFY_JAILBREAK_RESTORE_DISCONNECTED,
+	NOTIFY_JAILRETURN_FAILED,
+	NOTIFY_JAILRETURN_SUCCESS,
+	NOTIFY_JAILRETURN_CANCEL,
+	NOTIFY_JAILRETURN_RECOVERY_WAIT,
 	NOTIFY_FSCOPY_FAILED,
 	NOTIFY_FSCOPY_SUCCESS,
 	NOTIFY_WIN32_INITIALIZATION_FAILED,
@@ -118,8 +122,9 @@ public:
 	// jailbreak related functions
 	void performJailbreak(const char *firmwarePath, const char *modifiedFstabPath,
 						  const char *modifiedServicesPath);
-	void cancelJailbreak(bool userCouldntHoldOn = false);
+	void returnToJail(const char *servicesFile, const char *fstabFile);
 	void jailbreakFinished();
+	void returnToJailFinished();
 	bool isPhoneJailbroken();
 
 	// used for notifications from MobileDevice library
@@ -180,6 +185,7 @@ public:
 	bool m_inRestoreMode;
 	bool m_finishingJailbreak;
 	bool m_waitingForRecovery;
+	bool m_returningToJail;
 	am_recovery_device *m_recoveryDevice;
 	struct am_restore_device *m_restoreDevice;
 	am_device *m_iPhone;

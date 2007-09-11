@@ -103,11 +103,13 @@ void executeCommand(const char *command)
 	        return;
         }
 
+        /*
 	    if (!g_phoneInteraction->putPEMOnPhone("../Other Files/PEMs/iPhoneActivation.pem")) {
             cout << "Error: couldn't write new PEM file to phone" << endl;
             stopRunLoop();
             return;
         }
+        */
 
 	    if (!g_phoneInteraction->activate(NULL, "../Other Files/PEMs/iPhoneActivation_private.pem")) {
             cout << "Error: couldn't activate phone" << endl;
@@ -207,16 +209,16 @@ void phoneInteractionNotification(int type, const char *msg)
 	    stopRunLoop();
 	    break;
     case NOTIFY_JAILBREAK_RECOVERY_WAIT:
-	    cout << "Please press and hold Home + Sleep on your phone for 25 seconds..." << endl;
+	    cout << "Waiting for jailbreak..." << endl;
+	    g_performingJailbreak = true;
 	    break;
     case NOTIFY_JAILBREAK_FAIL_USER_COULDNT_HOLD:
         cout << msg << endl;
 	    stopRunLoop();
 	    break;
     case NOTIFY_JAILBREAK_RECOVERY_CONNECTED:
-	    g_performingJailbreak = true;
-        cout << "Waiting for jailbreak..." << endl;
-	    break;
+        cout << ".rcc." << endl;
+ 	    break;
     case NOTIFY_JAILBREAK_RECOVERY_DISCONNECTED:
 	    cout << ".rcd." << endl;
 	    break;
