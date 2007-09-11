@@ -31,6 +31,9 @@ extern "C" {
 // on Windows doesn't contain anything for this.
 CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file);
 
+// Used to write a CFDictionaryRef out to a file
+bool PICreatePlistFileFromDictionary(CFDictionaryRef dict, const char *file);
+
 #ifdef __cplusplus
 }
 #endif
