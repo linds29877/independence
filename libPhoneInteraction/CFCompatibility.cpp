@@ -702,3 +702,183 @@ CFDictionaryRef PICreateDictionaryFromPlistFile(const char *file)
 	free(data);
 	return dict;
 }
+
+static bool writeDictToFileRecursive(CFDictionaryRef dict, int level, FILE *fp)
+{
+	for (int i = 0; i < level; i++) fwrite("\t", 1, 1, fp);
+	fwrite("<dict>\n", 1, 7, fp);
+
+	CFIndex len = CFDictionaryGetCount(dict);
+
+	if (len == 0) {
+		for (int i = 0; i < level; i++) fwrite("\t", 1, 1, fp);
+		fwrite("</dict>\n", 1, 8, fp);
+
+		return true;
+	}
+
+	CFStringRef *keys = (CFStringRef*)malloc(len * sizeof(CFStringRef));
+	CFTypeRef *values = (CFTypeRef*)malloc(len * sizeof(CFTypeRef));
+
+	CFDictionaryGetKeysAndValues(dict, (const void**)keys, (const void**)values);
+
+	for (CFIndex ci = 0; ci < len; ci++) {
+		for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+		fwrite("<key>", 1, 5, fp);
+
+		CFIndex cflen = CFStringGetLength(keys[ci]);
+
+		if (cflen > 0) {
+			char buf[cflen+1];
+
+			if (CFStringGetCString(keys[ci], buf, cflen+1, kCFStringEncodingUTF8) == false) {
+				free(keys);
+				free(values);
+				return false;
+			}
+
+			fwrite(buf, 1, cflen, fp);
+		}
+
+		fwrite("</key>\n", 1, 7, fp);
+		CFTypeID valtype = CFGetTypeID(values[ci]);
+
+		if (valtype == CFStringGetTypeID()) {
+			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+			fwrite("<string>", 1, 8, fp);
+
+			cflen = CFStringGetLength((CFStringRef)values[ci]);
+
+			if (cflen > 0) {
+				char buf[cflen+1];
+				
+				if (CFStringGetCString((CFStringRef)values[ci], buf, cflen+1, kCFStringEncodingUTF8) == false) {
+					free(keys);
+					free(values);
+					return false;
+				}
+				
+				fwrite(buf, 1, cflen, fp);
+			}
+
+			fwrite("</string>\n", 1, 10, fp);
+		}
+		else if (valtype == CFDictionaryGetTypeID()) {
+
+			if (!writeDictToFileRecursive((CFDictionaryRef)values[ci], level+1, fp)) {
+				free(keys);
+				free(values);
+				return false;
+			}
+
+		}
+		else if (valtype == CFDataGetTypeID()) {
+			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+			fwrite("<data>\n", 1, 7, fp);
+
+			CFIndex datalen = CFDataGetLength((CFDataRef)values[ci]);
+
+			if (datalen > 0) {
+				int encodedlen = Base64encode_len((int)datalen);
+				char encodeddata[encodedlen];
+
+				Base64encode(encodeddata, (const char*)CFDataGetBytePtr((CFDataRef)values[ci]),
+							 (int)datalen);
+
+				encodedlen = strlen(encodeddata);
+				int count = 0;
+
+				while (count < encodedlen) {
+					for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+
+					if ( (encodedlen-count) > 60 ) {
+						fwrite(encodeddata+count, 1, 60, fp);
+						count += 60;
+					}
+					else {
+						fwrite(encodeddata+count, 1, encodedlen-count, fp);
+						count = encodedlen;
+					}
+
+					fwrite("\n", 1, 1, fp);
+				}
+
+			}
+
+			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+			fwrite("</data>\n", 1, 8, fp);
+		}
+		else if (valtype == CFBooleanGetTypeID()) {
+
+			if (CFBooleanGetValue((CFBooleanRef)values[ci]) == true) {
+				for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+				fwrite("<true/>\n", 1, 8, fp);
+			}
+			else {
+				for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+				fwrite("<false/>\n", 1, 9, fp);
+			}
+
+		}
+		else if (valtype == CFArrayGetTypeID()) {
+			// TODO: Array output is not supported yet
+			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+			fwrite("<array>\n", 1, 8, fp);
+			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+			fwrite("</array>\n", 1, 9, fp);
+		}
+		else if (valtype == CFDateGetTypeID()) {
+			// TODO: Date output is not supported yet
+			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+			fwrite("<date>\n", 1, 7, fp);
+			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+			fwrite("</date>\n", 1, 8, fp);
+		}
+		else if (valtype == CFNumberGetTypeID()) {
+			// TODO: Number output is not supported yet
+			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+			fwrite("<real>\n", 1, 7, fp);
+			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
+			fwrite("</real>\n", 1, 8, fp);
+		}
+		else {
+			// unknown type
+			free(keys);
+			free(values);
+			return false;
+		}
+
+	}
+
+	free(keys);
+	free(values);
+
+	for (int i = 0; i < level; i++) fwrite("\t", 1, 1, fp);
+	fwrite("</dict>\n", 1, 8, fp);
+
+	return true;
+}
+
+bool PICreatePlistFileFromDictionary(CFDictionaryRef dict, const char *file)
+{
+	FILE *fp = fopen(file, "w");
+
+	if (fp == NULL) {
+		return false;
+	}
+
+	fwrite("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", 1, 39, fp);
+	fwrite("<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n", 1, 112, fp);
+	fwrite("<plist version=\"1.0\">\n", 1, 22, fp);
+
+	if (!writeDictToFileRecursive(dict, 0, fp)) {
+		fclose(fp);
+		remove(file);
+		return false;
+	}
+
+	fwrite("</plist>\n", 1, 9, fp);
+	fflush(fp);
+	fclose(fp);
+	return true;
+}
