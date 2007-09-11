@@ -140,8 +140,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 			case NOTIFY_ACTIVATION_FAILED:
 			case NOTIFY_PUTSERVICES_FAILED:
 			case NOTIFY_PUTFSTAB_FAILED:
-			case NOTIFY_JAILBREAK_FAIL_USER_COULDNT_HOLD:
-				[g_mainWindow endDisplayWaitingSheet];
 			case NOTIFY_DEACTIVATION_FAILED:
 			case NOTIFY_PUTPEM_FAILED:
 			case NOTIFY_GET_ACTIVATION_FAILED:
