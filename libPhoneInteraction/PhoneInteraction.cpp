@@ -180,6 +180,8 @@ static char *g_symlinkOriginals[] =
 
 static int g_numSymlinks = 55;
 
+static int g_recoveryAttempts = 0;
+
 static t_socketForPort g_socketForPort;
 static t_performOperation g_performOperation;
 static t_sendCommandToDevice g_sendCommandToDevice;
@@ -290,11 +292,16 @@ void deviceNotificationCallback(am_device_notification_callback_info *info)
 		else {
 			g_phoneInteraction->connectToPhone();
 
-			if (g_phoneInteraction->m_finishingJailbreak) {
-				g_phoneInteraction->jailbreakFinished();
-			}
-			else if (g_phoneInteraction->m_returningToJail) {
-				g_phoneInteraction->returnToJailFinished();
+			if (g_phoneInteraction->m_recoveryOccurred) {
+				g_phoneInteraction->m_recoveryOccurred = false;
+
+				if (g_phoneInteraction->m_finishingJailbreak) {
+					g_phoneInteraction->jailbreakFinished();
+				}
+				else if (g_phoneInteraction->m_returningToJail) {
+					g_phoneInteraction->returnToJailFinished();
+				}
+
 			}
 
 		}
@@ -377,8 +384,16 @@ void recoveryConnectNotificationCallback(am_recovery_device *dev)
 	if (g_phoneInteraction->m_waitingForRecovery) {
 		g_phoneInteraction->recoveryModeStarted(dev);
 	}
-	else {
-		// just default to saving the user from recovery mode
+	else if ( g_phoneInteraction->m_finishingJailbreak || g_phoneInteraction->m_returningToJail ) {
+
+		if (!g_phoneInteraction->m_recoveryOccurred) {
+			g_phoneInteraction->m_recoveryOccurred = true;
+			g_phoneInteraction->exitRecoveryMode(dev);
+		}
+
+	}
+	else if (g_recoveryAttempts++ == 0) {
+		// try once to save them from recovery mode
 		g_phoneInteraction->exitRecoveryMode(dev);
 	}
 
@@ -414,6 +429,7 @@ PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 	m_firmwarePath = NULL;
 	m_waitingForRecovery = false;
 	m_privateFunctionsSetup = false;
+	m_recoveryOccurred = false;
 	m_iTunesVersion.major = 0;
 	m_iTunesVersion.minor = 0;
 	m_iTunesVersion.point = 0;
@@ -2220,6 +2236,7 @@ void PhoneInteraction::performJailbreak(const char *firmwarePath, const char *mo
 		return;
 	}
 
+	m_recoveryOccurred = false;
 	m_waitingForRecovery = true;
 	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_WAIT, "Waiting for jail break...");
 }
@@ -2247,6 +2264,7 @@ void PhoneInteraction::returnToJail(const char *servicesFile, const char *fstabF
 		return;
 	}
 	
+	m_recoveryOccurred = false;
 	m_returningToJail = true;
 	(*m_notifyFunc)(NOTIFY_JAILRETURN_RECOVERY_WAIT, "Waiting for return to jail...");
 }

@@ -38,6 +38,8 @@ static char *g_command;
 static PhoneInteraction *g_phoneInteraction;
 static bool g_returningToJail;
 static bool g_performingJailbreak;
+static bool g_waitingForActivation;
+static bool g_waitingForDeactivation;
 
 #ifdef WIN32
 static bool g_run;
@@ -52,6 +54,82 @@ void stopRunLoop()
 #endif
 }
 
+void performJailbreak()
+{
+    string firmwarePath;
+
+    cout << "Enter path to firmware files: ";
+    cin >> firmwarePath;
+
+    g_performingJailbreak = true;
+    g_phoneInteraction->performJailbreak(firmwarePath.c_str(),
+                                         "../Other Files/jailbreak files/fstab_mod",
+                                         "../Other Files/jailbreak files/Services_mod.plist");
+}
+
+void returnToJail()
+{
+    g_returningToJail = true;
+    g_phoneInteraction->returnToJail("../Other Files/jailbreak files/Services.plist",
+                                     "../Other Files/jailbreak files/fstab");
+}
+
+bool doPutPEM(const char *pemfile)
+{
+    cout << "Putting PEM file on phone..." << endl;
+	return g_phoneInteraction->putPEMOnPhone(pemfile);
+}
+
+void activateStageTwo()
+{
+
+	if (!doPutPEM("../Other Files/PEMs/iPhoneActivation.pem")) {
+		g_waitingForActivation = false;
+		cout << "Error writing PEM file to phone." << endl;
+        stopRunLoop();
+		return;
+	}
+
+    returnToJail();
+}
+
+void activateStageThree()
+{
+	g_waitingForActivation = false;
+	g_phoneInteraction->activate(NULL, "../Other Files/PEMs/iPhoneActivation_private.pem");
+}
+
+void activationFailed(const char *msg)
+{
+    g_waitingForActivation = false;
+    cout << "Activation failed: " << msg << endl;
+}
+
+void deactivateStageTwo()
+{
+	cout << "Restoring original PEM file on phone..." << endl;
+
+	if (!doPutPEM("../Other Files/PEMs/iPhoneActivation_original.pem")) {
+		g_waitingForDeactivation = false;
+		stopRunLoop();
+		return;
+	}
+
+    returnToJail();	
+}
+
+void deactivateStageThree()
+{
+	g_waitingForDeactivation = false;
+	g_phoneInteraction->deactivate();
+}
+
+void deactivationFailed(const char *msg)
+{
+	g_waitingForDeactivation = false;
+    cout << "Deactivation failed: " << msg << endl;
+}
+
 void executeCommand(const char *command)
 {
 
@@ -63,14 +141,7 @@ void executeCommand(const char *command)
      	    return;
     	}
 
-     	string firmwarePath;
-
-        cout << "Enter path to firmware files: ";
-	    cin >> firmwarePath;
-
-	    g_phoneInteraction->performJailbreak(firmwarePath.c_str(),
-                                             "../Other Files/jailbreak files/fstab_mod",
-					                         "../Other Files/jailbreak files/Services_mod.plist");
+        performJailbreak();
     }
     else if (!strcmp(command, "jailreturn")) {
 
@@ -80,20 +151,7 @@ void executeCommand(const char *command)
 	        return;
         }
 
-	    if (!g_phoneInteraction->putServicesFileOnPhone("../Other Files/jailbreak files/Services.plist")) {
-	        cout << "Error: couldn't write Services.plist to phone" << endl;
-	        stopRunLoop();
-	        return;
-        }
-
-	    if (!g_phoneInteraction->putFstabFileOnPhone("../Other Files/jailbreak files/fstab")) {
-	        cout << "Error: couldn't write fstab to phone" << endl;
-	        stopRunLoop();
-	        return;
-        }
-
-	    g_returningToJail = true;
-	    cout << "Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it." << endl;
+        returnToJail();
     }
     else if (!strcmp(command, "activate")) {
 
@@ -103,41 +161,31 @@ void executeCommand(const char *command)
 	        return;
         }
 
-        /*
-	    if (!g_phoneInteraction->putPEMOnPhone("../Other Files/PEMs/iPhoneActivation.pem")) {
-            cout << "Error: couldn't write new PEM file to phone" << endl;
-            stopRunLoop();
-            return;
-        }
-        */
+        g_waitingForActivation = true;
 
-	    if (!g_phoneInteraction->activate(NULL, "../Other Files/PEMs/iPhoneActivation_private.pem")) {
-            cout << "Error: couldn't activate phone" << endl;
-            stopRunLoop();
+        if (!g_phoneInteraction->isPhoneJailbroken()) {
+            performJailbreak();
             return;
         }
 
+        activateStageTwo();
     }
     else if (!strcmp(command, "deactivate")) {
 
         if (!g_phoneInteraction->isPhoneActivated()) {
-	        cout << "Error: phone is note activated" << endl;
+	        cout << "Error: phone is not activated" << endl;
 	        stopRunLoop();
 	        return;
         }
 
-	    if (!g_phoneInteraction->putPEMOnPhone("../Other Files/PEMs/iPhoneActivation_original.pem")) {
-            cout << "Error: couldn't write original PEM file to phone" << endl;
-            stopRunLoop();
+        g_waitingForDeactivation = true;
+
+        if (!g_phoneInteraction->isPhoneJailbroken()) {
+            performJailbreak();
             return;
         }
 
-	    if (!g_phoneInteraction->deactivate()) {
-            cout << "Error: couldn't deactivate phone" << endl;
-            stopRunLoop();
-            return;
-        }
-
+        deactivateStageTwo();
    }
 
 }
@@ -162,12 +210,8 @@ void phoneInteractionNotification(int type, const char *msg)
     case NOTIFY_CONNECTED:
 	    cout << "connected!" << endl;
 
-	    if (g_returningToJail) {
-	        g_returningToJail = false;
-	        cout << "Successfully returned to jail!" << endl;
-	        stopRunLoop();
-        }
-	    else if (!g_performingJailbreak) {
+	    if ( !g_performingJailbreak && !g_returningToJail &&
+             !g_waitingForActivation && !g_waitingForDeactivation ) {
 	        executeCommand(g_command);
 	    }
 
@@ -181,14 +225,13 @@ void phoneInteractionNotification(int type, const char *msg)
 	    break;
     case NOTIFY_DEACTIVATION_FAILED:
         cout << "deactivation failed!  " << msg << endl;
+        stopRunLoop();
 	    break;
     case NOTIFY_PUTPEM_SUCCESS:
 	    cout << "putpem succeeded!" << endl;
-	    stopRunLoop();
 	    break;
     case NOTIFY_PUTPEM_FAILED:
 	    cout << "putpem failed!  " << msg << endl;
-	    stopRunLoop();
 	    break;
     case NOTIFY_ACTIVATION_SUCCESS:
 	    cout << "activation succeeded!" << endl;
@@ -201,20 +244,68 @@ void phoneInteractionNotification(int type, const char *msg)
     case NOTIFY_JAILBREAK_SUCCESS:
 	    g_performingJailbreak = false;
 	    cout << "jailbreak succeeded!" << endl;
-	    stopRunLoop();
+
+        if (g_waitingForActivation) {
+            activateStageTwo();
+        }
+        else if (g_waitingForDeactivation) {
+            deactivateStageTwo();
+        }
+        else {
+	        stopRunLoop();
+        }
+
 	    break;
     case NOTIFY_JAILBREAK_FAILED:
 	    g_performingJailbreak = false;
-	    cout << "jailbreak failed!  " << msg << endl;
-	    stopRunLoop();
+
+        if (g_waitingForActivation) {
+            activationFailed(msg);
+        }
+        else if (g_waitingForDeactivation) {
+            deactivationFailed(msg);
+        }
+        else {
+	        cout << "jailbreak failed!  " << msg << endl;
+        }
+
+        stopRunLoop();
+	    break;
+    case NOTIFY_JAILRETURN_SUCCESS:
+	    g_returningToJail = false;
+	    cout << "return to jail succeeded!" << endl;
+
+        if (g_waitingForActivation) {
+            activateStageThree();
+        }
+        else if (g_waitingForDeactivation) {
+            deactivateStageThree();
+        }
+        else {
+	        stopRunLoop();
+        }
+
+	    break;
+    case NOTIFY_JAILRETURN_FAILED:
+	    g_returningToJail = false;
+
+        if (g_waitingForActivation) {
+            activationFailed(msg);
+        }
+        else if (g_waitingForDeactivation) {
+            deactivationFailed(msg);
+        }
+        else {
+	        cout << "return to jail failed!  " << msg << endl;
+        }
+
+        stopRunLoop();
 	    break;
     case NOTIFY_JAILBREAK_RECOVERY_WAIT:
 	    cout << "Waiting for jailbreak..." << endl;
-	    g_performingJailbreak = true;
 	    break;
-    case NOTIFY_JAILBREAK_FAIL_USER_COULDNT_HOLD:
-        cout << msg << endl;
-	    stopRunLoop();
+    case NOTIFY_JAILRETURN_RECOVERY_WAIT:
+	    cout << "Waiting for return to jail..." << endl;
 	    break;
     case NOTIFY_JAILBREAK_RECOVERY_CONNECTED:
         cout << ".rcc." << endl;
@@ -233,9 +324,6 @@ void phoneInteractionNotification(int type, const char *msg)
     case NOTIFY_CONNECTION_FAILED:
     case NOTIFY_PUTSERVICES_FAILED:
     case NOTIFY_PUTFSTAB_FAILED:
-	    cout << "Failure: " << msg << endl;
-	    stopRunLoop();
-	    break;
     case NOTIFY_PUTSERVICES_SUCCESS:
     case NOTIFY_PUTFSTAB_SUCCESS:
     case NOTIFY_JAILBREAK_CANCEL:
@@ -263,6 +351,8 @@ int main(int argc, char **argv)
     g_command = argv[1];
     g_returningToJail = false;
     g_performingJailbreak = false;
+    g_waitingForActivation = false;
+    g_waitingForDeactivation = false;
     g_phoneInteraction = PhoneInteraction::getInstance(updateStatus,
 						       phoneInteractionNotification);
 

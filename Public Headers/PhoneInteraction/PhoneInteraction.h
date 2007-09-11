@@ -59,7 +59,6 @@ enum
 	NOTIFY_JAILBREAK_FAILED,
 	NOTIFY_JAILBREAK_SUCCESS,
 	NOTIFY_JAILBREAK_CANCEL,
-	NOTIFY_JAILBREAK_FAIL_USER_COULDNT_HOLD,
 	NOTIFY_JAILBREAK_RECOVERY_WAIT,
 	NOTIFY_JAILBREAK_RECOVERY_CONNECTED,
 	NOTIFY_JAILBREAK_RECOVERY_DISCONNECTED,
@@ -186,6 +185,7 @@ public:
 	bool m_finishingJailbreak;
 	bool m_waitingForRecovery;
 	bool m_returningToJail;
+	bool m_recoveryOccurred;
 	am_recovery_device *m_recoveryDevice;
 	struct am_restore_device *m_restoreDevice;
 	am_device *m_iPhone;
