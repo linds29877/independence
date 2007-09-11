@@ -41,8 +41,8 @@
 
 #include "PhoneInteraction/PhoneInteraction.h"
 #include "PhoneInteraction/UtilityFunctions.h"
+#include "PhoneInteraction/CFCompatibility.h"
 #include "MobileDevice/MobileDevice.h"
-#include "CFCompatibility.h"
 
 
 using namespace std;

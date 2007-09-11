@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		8DD76F770486A8DE00D96B5E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* main.cpp */; settings = {ATTRIBUTES = (); }; };
 		8DD76F790486A8DE00D96B5E /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09AB6884FE841BABC02AAC07 /* CoreFoundation.framework */; };
+		F24BD4380C965A6900AA3B91 /* CFCompatibility.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = F24BD4370C965A6900AA3B91 /* CFCompatibility.h */; };
 		F2818FC30C949BC900C34484 /* CFCompatibility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F2818FC10C949BC900C34484 /* CFCompatibility.cpp */; };
 		F281913C0C94BEA000C34484 /* base64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F281913A0C94BEA000C34484 /* base64.cpp */; };
 /* End PBXBuildFile section */
@@ -20,6 +21,7 @@
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
+				F24BD4380C965A6900AA3B91 /* CFCompatibility.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
@@ -29,8 +31,8 @@
 		08FB7796FE84155DC02AAC07 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		09AB6884FE841BABC02AAC07 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
 		8DD76F7E0486A8DE00D96B5E /* plisttest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = plisttest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F24BD4370C965A6900AA3B91 /* CFCompatibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CFCompatibility.h; path = "../Public Headers/PhoneInteraction/CFCompatibility.h"; sourceTree = SOURCE_ROOT; };
 		F2818FC10C949BC900C34484 /* CFCompatibility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CFCompatibility.cpp; path = ../libPhoneInteraction/CFCompatibility.cpp; sourceTree = SOURCE_ROOT; };
-		F2818FC20C949BC900C34484 /* CFCompatibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CFCompatibility.h; path = ../libPhoneInteraction/CFCompatibility.h; sourceTree = SOURCE_ROOT; };
 		F281913A0C94BEA000C34484 /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = base64.cpp; path = ../libPhoneInteraction/base64.cpp; sourceTree = SOURCE_ROOT; };
 		F281913B0C94BEA000C34484 /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = base64.h; path = ../libPhoneInteraction/base64.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -62,7 +64,7 @@
 			children = (
 				F281913A0C94BEA000C34484 /* base64.cpp */,
 				F281913B0C94BEA000C34484 /* base64.h */,
-				F2818FC20C949BC900C34484 /* CFCompatibility.h */,
+				F24BD4370C965A6900AA3B91 /* CFCompatibility.h */,
 				F2818FC10C949BC900C34484 /* CFCompatibility.cpp */,
 				08FB7796FE84155DC02AAC07 /* main.cpp */,
 			);
@@ -142,6 +144,11 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../Public Headers\"";
 				PREBINDING = NO;
 				PRODUCT_NAME = plisttest;
 			};
@@ -156,6 +163,11 @@
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../Public Headers\"";
 				PREBINDING = NO;
 				PRODUCT_NAME = plisttest;
 			};

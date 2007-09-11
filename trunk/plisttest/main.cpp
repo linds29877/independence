@@ -6,7 +6,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
-#include "CFCompatibility.h"
+#include "PhoneInteraction/CFCompatibility.h"
 
 
 int main (int argc, const char **argv)
