@@ -80,7 +80,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit6]
-FileName=..\libPhoneInteraction\CFCompatibility.h
+FileName=..\libPhoneInteraction\PhoneInteraction.cpp
 CompileCpp=1
 Folder=iNdependence
 Compile=1
@@ -90,7 +90,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit7]
-FileName=..\libPhoneInteraction\PhoneInteraction.cpp
+FileName=..\Public Headers\PhoneInteraction\CFCompatibility.h
 CompileCpp=1
 Folder=iNdependence
 Compile=1

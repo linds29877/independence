@@ -5,7 +5,7 @@ UnitCount=5
 Type=1
 Ver=1
 ObjFiles=
-Includes="C:\Program Files\QuickTime SDK\CIncludes";..\libPhoneInteraction
+Includes="C:\Program Files\QuickTime SDK\CIncludes";"..\Public Headers"
 Libs="C:\Program Files\QuickTime SDK\Libraries"
 PrivateResource=
 ResourceIncludes=
@@ -40,16 +40,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit2]
-FileName=..\libPhoneInteraction\CFCompatibility.h
-CompileCpp=1
-Folder=plisttest
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit3]
 FileName=..\libPhoneInteraction\base64.cpp
 CompileCpp=1
 Folder=plisttest
@@ -59,7 +49,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit4]
+[Unit3]
 FileName=..\libPhoneInteraction\base64.h
 CompileCpp=1
 Folder=plisttest
@@ -69,8 +59,18 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit5]
+[Unit4]
 FileName=..\libPhoneInteraction\CFCompatibility.cpp
+CompileCpp=1
+Folder=plisttest
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit5]
+FileName=..\Public Headers\PhoneInteraction\CFCompatibility.h
 CompileCpp=1
 Folder=plisttest
 Compile=1

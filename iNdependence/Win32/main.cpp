@@ -29,6 +29,7 @@
 #include <iostream>
 #include "PhoneInteraction/PhoneInteraction.h"
 #include "PhoneInteraction/UtilityFunctions.h"
+#include "PhoneInteraction/CFCompatibility.h"
 
 
 using namespace std;
@@ -139,26 +140,13 @@ void executeCommand(const char *command)
 	        return;
         }
 
-	    CFURLRef file = CFURLCreateFromFileSystemRepresentation(NULL,
-								(const UInt8*)"activation.plist",
-								strlen("activation.plist"),
-								false);
-
-        // 0p: TODO -- Figure out how to do this on Windows since these
-	    // functions aren't in the CF headers that come with the Quicktime SDK
-	    /*
-	    CFDataRef xml = CFPropertyListCreateXMLData(NULL, activationrequest);
-  
-	    if (!CFURLWriteDataAndPropertiesToResource(file, xml, NULL, NULL)) {
-	        cout << "Error: error writing plist fileError code: " << endl;
+        if (!PICreatePlistFileFromDictionary(activationrequest, "activation.plist")) {
+ 	        cout << "Error: error writing plist file" << endl;
 	        stopRunLoop();
 	        return;
-        }
-	    */
+       }
 
 	    CFRelease(activationrequest);
-	    //CFRelease(xml);
-	    CFRelease(file);
 
 	    cout << "genact succeeded!  Activation file is saved to activation.plist" << endl;
 	    stopRunLoop();

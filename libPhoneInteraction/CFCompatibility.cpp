@@ -16,7 +16,7 @@
  * See the GNU General Public License version 2 for more details
  */
 
-#include "CFCompatibility.h"
+#include "PhoneInteraction/CFCompatibility.h"
 #include "base64.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -827,6 +827,7 @@ static bool writeDictToFileRecursive(CFDictionaryRef dict, int level, FILE *fp)
 			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
 			fwrite("</array>\n", 1, 9, fp);
 		}
+#if defined(__APPLE__)
 		else if (valtype == CFDateGetTypeID()) {
 			// TODO: Date output is not supported yet
 			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
@@ -834,6 +835,7 @@ static bool writeDictToFileRecursive(CFDictionaryRef dict, int level, FILE *fp)
 			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
 			fwrite("</date>\n", 1, 8, fp);
 		}
+#endif
 		else if (valtype == CFNumberGetTypeID()) {
 			// TODO: Number output is not supported yet
 			for (int i = 0; i <= level; i++) fwrite("\t", 1, 1, fp);
