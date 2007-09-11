@@ -1,5 +1,5 @@
  *
- * iNdependence v1.1.2
+ * iNdependence v1.2
  * Copyright 2007 The Operator
  *
  * This software is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@ Disclaimer: I am not responsible for any damage caused to your phone by this too
 
 Platforms and configurations known to work with iNdependence:
 
-Intel Mac, Mac OS X 10.4.10 - Firmware 1.0, 1.0.1, 1.0.2
-PPC Mac, Mac OS X 10.4.10 - Firmware 1.0, 1.0.1, 1.0.2
+Intel Mac, Mac OS X 10.4.10 - Firmware 1.0, 1.0.1, 1.0.2 - iTunes 7.3 to 7.4.1
+PPC Mac, Mac OS X 10.4.10 - Firmware 1.0, 1.0.1, 1.0.2 - iTunes 7.3 to 7.4.1
 
 -----
 
@@ -31,32 +31,41 @@ Activation - For tasks related to activating your phone.
 SSH        - For tasks related to installing and maintaining SSH on your phone
 Customize  - For tasks related to customization of your phone.
 
-The most complicated task is Activation, so I'll include instructions for it here.  If you've used iActivator before, it's exactly the same.
+* Notes *
 
-* Note about jailbreak *
+Before using iNdependence, it's best to kill off the "iTunes Helper" application so that it doesn't interfere with iNdependence.
 
-Please note that if iTunes launches and communicates with your iPhone at any point during the jailbreak process, it will mess up iNdependence and cause strange errors.  This usually happens after you perform a jailbreak and the phone reboots.
-
-To avoid this, kill off the "iTunes Helper" program using /Applications/Utilities/Activity Monitor (or the command-line if you prefer).  Otherwise, you will need to quit and restart iNdependence before you proceed with the next step.
+To do this, run /Applications/Utilities/Activity Monitor and look for the process named "iTunes Helper".  Select it and press the "Quit Process" button.  Then choose "Force Quit"
 
 * To activate your phone *
 
-1) Download the iPhone firmware zip file from Apple which corresponds to the version of the firmware you have on your phone:
+1) Download any iPhone firmware zip file from Apple:
 
 (For 1.0) http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPhone/061-3538.20070629.B7vXa/iPhone1,1_1.0_1A543a_Restore.ipsw
 (For 1.0.1) http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPhone/061-3614.20070731.Nt6Y7/iPhone1,1_1.0.1_1C25_Restore.ipsw
 (For 1.0.2) http://content.info.apple.com/iPhone/061-3823.20070821.vormd/iPhone1,1_1.0.2_1C28_Restore.ipsw
 
+It doesn't matter which one, they all work equally well. :)
 2) If your web browser didn't automatically decompress it to a folder, then change the file extension from ".ipsw" to ".zip" and unzip it yourself.
 3) Launch iNdependence.
-4) Select the Jailbreak tab and press the "Perform Jailbreak" button.  Follow the instructions.  You'll be prompted to select the directory where you unzipped the firmware files.
-5) Select the Activation tab and press the "Put PEM File" button.
-6) Again in the Activation tab, press the "Generate Activation" button to create an activation file.  Choose a location to save this file on your computer.
-7) Now press the "Activate Phone" button and select the activation file you saved in the previous step.
+4) Select the Activation tab and press the "Activate Phone" button.
+5) You'll be prompted to choose the directory where you unzipped the firmware files.
 
-If any of the above steps fail, quit iNdependence, restart it, and continue at the same step again.  Also, it has been noted that the "Activate Phone" step tends to fail quite often.  If this happens, you can either quit iNdependence, restart it, and try again, or you can try returning your phone to jail (in the Jailbreak tab) and then attempt to activate it again (some people have reported better success doing it that way).
+Sit back and wait until it's done.  Yes, that's it.
 
-Beyond that, installing SSH is a breeze.  The default accounts on the phone are:
+Note that if your phone was previously jailbroken, activating it this way will return it to jail again.
+
+* To jailbreak your phone *
+
+1) Same as step 1 above
+2) Same as step 2 above
+3) Same as step 3 above
+4) Select the Jailbreak tab and press the "Perform Jailbreak" button.
+5) Same as step 5 above.
+
+* SSH and beyond *
+
+Installing SSH is a breeze once your phone is jailbroken.  The default accounts on the phone are:
 
 username: root
 password: dottie
@@ -81,7 +90,7 @@ Have fun!
 
 Credit to:
 
-  - iZsh for the code based on iASign
+  - iZsh for the code based on iASign and for the new (fast) jailbreak method
   - geohot, ixtli, nightwatch, warren, ziel for the code based on iPhoneInterface
   - nightwatch again for jailbreak exploit
   - ixtli again for helping fix jailbreak on PPC
