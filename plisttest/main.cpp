@@ -12,8 +12,8 @@
 int main (int argc, const char **argv)
 {
 	
-    if (argc < 2) {
-		printf("Usage: %s <plist file>\n", argv[0]);
+    if (argc < 3) {
+		printf("Usage: %s <plist file> <new file>\n", argv[0]);
 		return -1;
     }
 	
@@ -47,7 +47,6 @@ int main (int argc, const char **argv)
 
 	printf("Dictionary created using PICreateDictionaryFromPlistFile:\n");
     CFShow(plistDict1);
- 	CFRelease(plistDict1);
 
 #ifdef __APPLE__
 	printf("\n\nDictionary created using CFPropertyListCreateFromStream:\n");
@@ -55,5 +54,12 @@ int main (int argc, const char **argv)
 	CFRelease(plistDict2);
 #endif
 
+	if (!PICreatePlistFileFromDictionary(plistDict1, argv[2])) {
+		printf("Error creating plist file from dictionary\n");
+		CFRelease(plistDict1);
+		return -1;
+	}
+
+ 	CFRelease(plistDict1);
     return 0;
 }
