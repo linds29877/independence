@@ -30,6 +30,7 @@
 #include <openssl/pem.h>
 
 #include "PhoneInteraction/UtilityFunctions.h"
+#include "base64.h"
 
 
 using namespace std;
@@ -104,7 +105,21 @@ bool UtilityFunctions::generateActivationRecord(CFDictionaryRef *activationRecor
 		CFRelease(tokensignature);
 		return false;
 	}
-	
+
+	char *dev_cert_b64 = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURQekNDQXFpZ0F3SUJBZ0lLQTUrbnZmT2paZlFjQkRBTkJna3Foa2lHOXcwQkFRc0ZBREJhTVFzd0NRWUQKVlFRR0V3SlZVekVUTUJFR0ExVUVDaE1LUVhCd2JHVWdTVzVqTGpFVk1CTUdBMVVFQ3hNTVFYQndiR1VnYVZCbwpiMjVsTVI4d0hRWURWUVFERXhaQmNIQnNaU0JwVUdodmJtVWdSR1YyYVdObElFTkJNQjRYRFRBM01EZ3hNVEF6Ck1Ua3dNbG9YRFRFd01EZ3hNVEF6TVRrd01sb3dnWWN4TVRBdkJnTlZCQU1US0RZMk5qRTNabVptT0RNeU1Ua3kKWmpBeU5XUXlabUV4TVdFNU1UaGpPVFk0TVdaaVpEQTRZMk14Q3pBSkJnTlZCQVlUQWxWVE1Rc3dDUVlEVlFRSQpFd0pEUVRFU01CQUdBMVVFQnhNSlEzVndaWEowYVc1dk1STXdFUVlEVlFRS0V3cEJjSEJzWlNCSmJtTXVNUTh3CkRRWURWUVFMRXdacFVHaHZibVV3Z1o4d0RRWUpLb1pJaHZjTkFRRUJCUUFEZ1kwQU1JR0pBb0dCQU1MdkRIU0sKb2F0ZFI0aC94WVZWZ1M2S3JZN0gzUHEzK3kwQ21nbkdMOHBuNWVqaFdURmIrYlp5bktIbUZjTVBMcWVCUUFaWQoxMWVHWFhqWVVnSkExVG1DY1FmKytRS1RzQ2NnUHJ4S2N6S3IwaUxPa1liQkE4K29FQ2R0ZjA3OXB6YjEwaVQwCk1pTlJ3Y0tPU3pwMnRFWXlaWFBBZUJtdG0zL3dnb3JVMjdpTEFnTUJBQUdqZ2Qwd2dkb3dnWUlHQTFVZEl3UjcKTUhtQUZMTCtJU05FaHBWcWVkV0JKbzV6RU5pblRJNTBvVjZrWERCYU1Rc3dDUVlEVlFRR0V3SlZVekVUTUJFRwpBMVVFQ2hNS1FYQndiR1VnU1c1akxqRVZNQk1HQTFVRUN4TU1RWEJ3YkdVZ2FWQm9iMjVsTVI4d0hRWURWUVFECkV4WkJjSEJzWlNCcFVHaHZibVVnUkdWMmFXTmxJRU5CZ2dFQk1CMEdBMVVkRGdRV0JCU1dDTkw3VU5JU3BMZ1gKZkQ3ejZIallZeTZ0elRBTUJnTlZIUk1CQWY4RUFqQUFNQTRHQTFVZER3RUIvd1FFQXdJRm9EQVdCZ05WSFNVQgpBZjhFRERBS0JnZ3JCZ0VGQlFjREFUQU5CZ2txaGtpRzl3MEJBUXNGQUFPQmdRQWhKTEVKN2I2WVZoTGFhQlVTCm50NTFZQUtBVVZEb1B0bVRrTHpNSmJuMXlSNVVSYnpuMjRiQW9vZlNrWFBDem14cHU2R2NJVkdqU3hRTmFOUXQKS2ZKcEkxa2dhMHBhNjhlb1NDc1FodVh3OHVPSmVzUVAwQjdScEs3Rk1QVkFlVnQxVWpVSk83QldyUkJDNTZKVgp3blpobjlSK3NNUGF5TlJFelBHT29hRjBVUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K";
+	int decodelen = Base64decode_len(dev_cert_b64);
+	char *dev_cert = (char*)malloc(decodelen);
+
+	Base64decode(dev_cert, dev_cert_b64);
+	CFDataRef devicecertificate = CFDataCreate(NULL, (const UInt8*)dev_cert, decodelen);
+	free(dev_cert);
+
+	if (devicecertificate == NULL) {
+		CFRelease(tokensignature);
+		CFRelease(accounttoken);
+		return false;
+	}
+
 	const void *keys[] = {
 		CFSTR("AccountToken"),
 		CFSTR("AccountTokenCertificate"),
@@ -116,7 +131,7 @@ bool UtilityFunctions::generateActivationRecord(CFDictionaryRef *activationRecor
 		accounttoken,
 		CFDataCreate(NULL, NULL, 0),
 		tokensignature,
-		CFDataCreate(NULL, NULL, 0),
+		devicecertificate,
 		CFDataCreate(NULL, NULL, 0)
 	};
 	

@@ -1,5 +1,5 @@
  *
- * iNdependence v1.2
+ * iNdependence v1.2.1
  * Copyright 2007 The Operator
  *
  * This software is free software; you can redistribute it and/or
@@ -79,6 +79,8 @@ Remember to change the default passwords after installing SSH.  I'm not responsi
 The customization interface has been completely reworked for version 1.1.  It now uses a Finder-style interface and allows for drag and drop installation of ringtones, wallpapers, and applications.  It also has preview images for wallpapers and application icons.
 
 Please note that in order to install/remove applications, you'll need to have SSH installed on the phone as you'll be asked for the phone's IP address and root password.
+
+To find the phone's IP address, launch the Settings application, navigate to "Wi-Fi" and press the blue arrow beside the Wi-Fi network your phone is connected to.
 
 Also note that ringtones must be MPEG-4 audio (.m4a) files as the file chooser will only allow you to choose .m4a files. Wallpapers must be 2 PNG (.png) files (the main image and the thumbnail image).  The wallpaper image sizes I use are 320x480 for the main image and 75x75 for the thumbnail image.  These seem to work well for me.
 
