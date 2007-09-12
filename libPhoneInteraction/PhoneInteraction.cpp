@@ -578,70 +578,156 @@ bool PhoneInteraction::determineiTunesVersion()
 	CFStringRef versionStr = (CFStringRef)CFDictionaryGetValue(iTunesVersionDict, CFSTR("CFBundleVersion"));
 
 	if (versionStr == NULL) {
+		CFRelease(iTunesVersionDict);
 		return false;
 	}
 
 	CFIndex len = CFStringGetLength(versionStr);
-	char version[len+1];
 
-	if (CFStringGetCString(versionStr, version, len+1, kCFStringEncodingUTF8) == false) {
+	if (len < 1) {
+		CFRelease(iTunesVersionDict);
 		return false;
 	}
 
-	int i, count = 0;
+	// get the major version
+	CFRange dot = CFStringFind(versionStr, CFSTR("."), 0);
+	CFRange sub;
 
-	// major version number
-	for (i = count; i <= len; i++) {
+	if (dot.location == kCFNotFound) {
+		SInt32 major = CFStringGetIntValue(versionStr);
 
-		if ( (version[i] == '.') || (version[i] == 0) ) {
-
-			if (i > count) {
-				char tmp[i-count+1];
-				strncpy(tmp, version + count, i-count);
-				m_iTunesVersion.major = atoi(tmp);
-			}
-
-			break;
+		if ( (major == INT_MAX) || (major == INT_MIN) ) {
+			CFRelease(iTunesVersionDict);
+			return false;
 		}
 
+		m_iTunesVersion.major = (int)major;
+		CFRelease(iTunesVersionDict);
+		return true;
 	}
+	else if (dot.location > 0) {
+		sub.location = 0;
+		sub.length = dot.location;
+		CFStringRef majorStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
+														   sub);
 
-	count = i + 1;
+		if (majorStr == NULL) {
+			CFRelease(iTunesVersionDict);
+			return false;
+		}
 
-	// minor version number
-	for (i = count; i <= len; i++) {
-		
-		if ( (version[i] == '.') || (version[i] == 0) ) {
-			
-			if (i > count) {
-				char tmp[i-count+1];
-				strncpy(tmp, version + count, i-count);
-				m_iTunesVersion.minor = atoi(tmp);
-			}
-			
-			break;
+		SInt32 major = CFStringGetIntValue(majorStr);
+		CFRelease(majorStr);
+
+		if ( (major == INT_MAX) || (major == INT_MIN) ) {
+			CFRelease(iTunesVersionDict);
+			return false;
 		}
 		
+		m_iTunesVersion.major = (int)major;
 	}
 
-	count = i + 1;
+	sub.location = dot.location + dot.length;
+	sub.length = len - (dot.location + dot.length);
 
-	// point release
-	for (i = count; i <= len; i++) {
+	if (sub.length < 1) {
+		CFRelease(iTunesVersionDict);
+		return true;
+	}
+
+	// get the minor version
+	if (!CFStringFindWithOptions(versionStr, CFSTR("."), sub, 0, &dot)) {
+		CFStringRef minorStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
+														   sub);
+
+		if (minorStr == NULL) {
+			CFRelease(iTunesVersionDict);
+			return false;
+		}
+
+		SInt32 minor = CFStringGetIntValue(minorStr);
+		CFRelease(minorStr);
 		
-		if ( (version[i] == '.') || (version[i] == 0) ) {
-			
-			if (i > count) {
-				char tmp[i-count+1];
-				strncpy(tmp, version + count, i-count);
-				m_iTunesVersion.point = atoi(tmp);
-			}
-
-			break;
+		if ( (minor == INT_MAX) || (minor == INT_MIN) ) {
+			CFRelease(iTunesVersionDict);
+			return false;
 		}
 		
+		m_iTunesVersion.minor = (int)minor;
+		CFRelease(iTunesVersionDict);
+		return true;
+	}
+	else if (dot.location > sub.location) {
+		sub.length = dot.location - sub.location;
+		CFStringRef minorStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
+														   sub);
+		
+		if (minorStr == NULL) {
+			CFRelease(iTunesVersionDict);
+			return false;
+		}
+		
+		SInt32 minor = CFStringGetIntValue(minorStr);
+		CFRelease(minorStr);
+		
+		if ( (minor == INT_MAX) || (minor == INT_MIN) ) {
+			CFRelease(iTunesVersionDict);
+			return false;
+		}
+		
+		m_iTunesVersion.minor = (int)minor;
+	}
+	
+	sub.location = dot.location + dot.length;
+	sub.length = len - (dot.location + dot.length);
+	
+	if (sub.length < 1) {
+		CFRelease(iTunesVersionDict);
+		return true;
 	}
 
+	// get the point release
+	if (!CFStringFindWithOptions(versionStr, CFSTR("."), sub, 0, &dot)) {
+		CFStringRef pointStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
+														   sub);
+
+		if (pointStr == NULL) {
+			CFRelease(iTunesVersionDict);
+			return false;
+		}
+		
+		SInt32 point = CFStringGetIntValue(pointStr);
+		CFRelease(pointStr);
+		
+		if ( (point == INT_MAX) || (point == INT_MIN) ) {
+			CFRelease(iTunesVersionDict);
+			return false;
+		}
+		
+		m_iTunesVersion.point = (int)point;
+	}
+	else if (dot.location > sub.location) {
+		sub.length = dot.location - sub.location;
+		CFStringRef pointStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
+														   sub);
+
+		if (pointStr == NULL) {
+			CFRelease(iTunesVersionDict);
+			return false;
+		}
+		
+		SInt32 point = CFStringGetIntValue(pointStr);
+		CFRelease(pointStr);
+
+		if ( (point == INT_MAX) || (point == INT_MIN) ) {
+			CFRelease(iTunesVersionDict);
+			return false;
+		}
+		
+		m_iTunesVersion.point = (int)point;
+	}
+	
+	CFRelease(iTunesVersionDict);
 	return true;
 }
 #endif
@@ -732,8 +818,8 @@ void PhoneInteraction::subscribeToNotifications()
 {
 
 	if (!arePrivateFunctionsSetup()) {
-		char msg[128];
-		snprintf(msg, 128, "Unsupported version of iTunes is installed.  Detected iTunes version is %d.%d.%d.\n",
+		char msg[256];
+		snprintf(msg, 256, "Unsupported version of iTunes is installed.\nDetected iTunes version is %d.%d.%d\n",
 				 m_iTunesVersion.major, m_iTunesVersion.minor, m_iTunesVersion.point);
 		(*m_notifyFunc)(NOTIFY_INITIALIZATION_FAILED, msg);
 		return;
