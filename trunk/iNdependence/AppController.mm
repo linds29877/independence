@@ -62,9 +62,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_appController setConnected:false];
 				break;
 			case NOTIFY_INITIALIZATION_FAILED:
-			case NOTIFY_CONNECTION_FAILED:
 				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				[NSApp terminate:g_appController];
+				break;
+			case NOTIFY_CONNECTION_FAILED:
+				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
 			case NOTIFY_ACTIVATION_SUCCESS:
 				[g_appController setActivated:true];

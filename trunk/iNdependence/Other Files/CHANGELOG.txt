@@ -35,3 +35,4 @@ v1.2.1
 - Added YouTube fix to activation process
 - Fixed problem where Activation/Deactivation buttons are enabled when no phone is connected
 - Put detected iTunes version number in unsupported version error message
+- Made it so that iNdependence will terminate if it can't initialize properly (eg. bad iTunes version)
