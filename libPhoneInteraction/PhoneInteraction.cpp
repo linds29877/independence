@@ -732,7 +732,10 @@ void PhoneInteraction::subscribeToNotifications()
 {
 
 	if (!arePrivateFunctionsSetup()) {
-		(*m_notifyFunc)(NOTIFY_INITIALIZATION_FAILED, "Unsupported version of iTunes is installed");
+		char msg[128];
+		snprintf(msg, 128, "Unsupported version of iTunes is installed.  Detected iTunes version is %d.%d.%d.\n",
+				 m_iTunesVersion.major, m_iTunesVersion.minor, m_iTunesVersion.point);
+		(*m_notifyFunc)(NOTIFY_INITIALIZATION_FAILED, msg);
 		return;
 	}
 
