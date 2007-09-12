@@ -473,16 +473,25 @@ static void phoneInteractionNotification(int type, const char *msg)
 - (void)activateStageTwo
 {
 	NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation" ofType:@"pem"];
-	
-	if (pemfile == nil) {
+	NSString *device_private_key_file = [[NSBundle mainBundle] pathForResource:@"device_private_key" ofType:@"pem"];
+
+	if ( (pemfile == nil) || (device_private_key_file == nil) ) {
 		m_waitingForActivation = false;
-		[mainWindow displayAlert:@"Error" message:@"Error finding PEM file in application bundle."];
+		[mainWindow displayAlert:@"Error" message:@"Error finding necessary files in application bundle."];
 		[mainWindow updateStatus];
 		return;
 	}
 
 	if (![self doPutPEM:[pemfile UTF8String]]) {
 		m_waitingForActivation = false;
+		return;
+	}
+
+	if (!m_phoneInteraction->putFile([device_private_key_file UTF8String], "/private/var/root/Library/Lockdown/device_private_key.pem",
+									 0, 0)) {
+		m_waitingForActivation = false;
+		[mainWindow displayAlert:@"Error" message:@"Error writing device_private_key.pem to phone."];
+		[mainWindow updateStatus];
 		return;
 	}
 

@@ -1111,11 +1111,12 @@ bool PhoneInteraction::isPhoneActivated()
 		return false;
 	}
 
-	if (CFStringCompare(result, CFSTR("Activated"), 0) != kCFCompareEqualTo) {
-		return false;
+	if ( (CFStringCompare(result, CFSTR("Activated"), kCFCompareCaseInsensitive) == kCFCompareEqualTo) ||
+		 (CFStringCompare(result, CFSTR("FactoryActivated"), kCFCompareCaseInsensitive) == kCFCompareEqualTo) ) {
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 bool PhoneInteraction::putData(void *data, int len, char *dest, int failureMsg, int successMsg)
