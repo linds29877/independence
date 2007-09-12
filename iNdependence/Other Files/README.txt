@@ -52,7 +52,7 @@ It doesn't matter which one, they all work equally well. :)
 4) Select the Activation tab and press the "Activate Phone" button.
 5) You'll be prompted to choose the directory where you unzipped the firmware files.
 
-Sit back and wait until it's done.  Yes, that's it.
+Sit back and wait until it's done.  Yes, that's it.  The activation process will also enable YouTube for you.
 
 Note that if your phone was previously jailbroken, activating it this way will return it to jail again.
 
