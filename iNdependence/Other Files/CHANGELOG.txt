@@ -30,7 +30,7 @@ v1.2 (Éphémère) - 09/11/07
 - Made it so that if iNdependence detects a phone in restore mode, it will attempt to unbrick it
 
 
-v1.2.1
+v1.2.1 (Aventinius) - 09/13/07
 
 - Added YouTube fix to activation process
 - Fixed bug where Activation/Deactivation buttons are enabled when no phone is connected
@@ -38,6 +38,7 @@ v1.2.1
 - Made it so that iNdependence will terminate if it can't initialize properly (eg. bad iTunes version)
 - Fixed iTunes version detection on international (ie. non North American localized) computers
 - Added handling for case where SSH is connecting to the phone for the first time (doesn't know about IP address)
-- Also added handling for case where SSH fails because there is an invalid entry in ~/.ssh/known_hosts
+- Also added handling for case where SSH fails because there is an invalid entry in ~/.ssh/known_hosts.  iNdependence will offer to remove the invalid entry.
 - Added wait dialog when removing applications (restarting Springboard)
 - Fixed bug where, after removing SSH, the install/remove SSH buttons weren't being updated properly
+- Added better wallpaper filename handling

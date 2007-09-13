@@ -65,13 +65,9 @@
 			
 			if (sourceDragMask & NSDragOperationCopy) {
 				NSArray *files = [pboard propertyListForType:NSFilenamesPboardType];
-				
-				for (int i = 0; i < [files count]; i++) {
-					
-					if ([(CustomizeBrowserDelegate*)[self delegate] acceptFileType:[[files objectAtIndex:i] pathExtension]]) {
-						return NSDragOperationCopy;
-					}
-					
+
+				if ([(CustomizeBrowserDelegate*)[self delegate] acceptDraggedFiles:files]) {
+					return NSDragOperationCopy;
 				}
 				
 			}

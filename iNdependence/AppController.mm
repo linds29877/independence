@@ -146,6 +146,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			case NOTIFY_DEACTIVATION_FAILED:
 			case NOTIFY_PUTPEM_FAILED:
 			case NOTIFY_GET_ACTIVATION_FAILED:
+			case NOTIFY_PUTFILE_FAILED:
 				[g_mainWindow updateStatus];
 				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;

@@ -50,6 +50,60 @@ static int g_numSystemApps = 17;
 	[m_col2Dictionary retain];
 }
 
+- (bool)removeKnownHostsEntry:(NSString*)ipAddress
+{
+	NSString *homedir = NSHomeDirectory();
+
+	if (homedir == nil) {
+		return false;
+	}
+
+	NSMutableString *filepath = [NSMutableString stringWithString:homedir];
+
+	if ([filepath hasSuffix:@"/"]) {
+		[filepath appendString:@".ssh/known_hosts"];
+	}
+	else {
+		[filepath appendString:@"/.ssh/known_hosts"];
+	}
+
+	NSData *filedata  = [NSData dataWithContentsOfFile:filepath];
+
+	if (filedata == nil) {
+		return false;
+	}
+
+	NSMutableString *filecontents = [[NSMutableString alloc] initWithData:filedata encoding:NSASCIIStringEncoding];
+
+	if (filecontents == nil) {
+		return false;
+	}
+
+	NSRange iprange = [filecontents rangeOfString:ipAddress];
+
+	if (iprange.location == NSNotFound) {
+		[filecontents release];
+		return false;
+	}
+
+	NSRange linerange = [filecontents lineRangeForRange:iprange];
+
+	if (linerange.location == NSNotFound) {
+		[filecontents release];
+		return false;
+	}
+
+	[filecontents deleteCharactersInRange:linerange];
+
+	if ([filecontents writeToFile:filepath atomically:YES encoding:NSASCIIStringEncoding error:nil] == NO) {
+		[filecontents release];
+		return false;
+	}
+
+	[filecontents release];
+	return true;
+}
+
 - (NSImage*)loadAndConvertPNG:(const char*)path
 {
 	NSImage *retimg = nil;
@@ -468,30 +522,54 @@ static int g_numSystemApps = 17;
 	return YES;
 }
 
-- (bool)acceptFileType:(NSString*)extension
+- (bool)acceptDraggedFiles:(NSArray*)files
 {
 	NSString *col1sel = (NSString*)[m_col1Items objectAtIndex:[m_browser selectedRowInColumn:0]];
 
 	if ([col1sel isEqualToString:@"Ringtones"]) {
+		NSString *file;
 
-		if ( [extension caseInsensitiveCompare:@"m4a"] == NSOrderedSame ) {
-			return true;
+		for (int i = 0; i < [files count]; i++) {
+			file = (NSString*)[files objectAtIndex:i];
+
+			if ( [[file pathExtension] caseInsensitiveCompare:@"m4a"] != NSOrderedSame ) {
+				return false;
+			}
+
 		}
 
+		return true;
 	}
 	else if ([col1sel isEqualToString:@"Wallpapers"]) {
 
-		if ( [extension caseInsensitiveCompare:@"png"] == NSOrderedSame ) {
-			return true;
-		}
+		if ([files count] < 2) return false;
 
+		NSString *file;
+		
+		for (int i = 0; i < [files count]; i++) {
+			file = (NSString*)[files objectAtIndex:i];
+
+			if ( [[file pathExtension] caseInsensitiveCompare:@"png"] != NSOrderedSame ) {
+				return false;
+			}
+			
+		}
+		
+		return true;
 	}
 	else if ([col1sel isEqualToString:@"Applications"]) {
+		NSString *file;
+		
+		for (int i = 0; i < [files count]; i++) {
+			file = (NSString*)[files objectAtIndex:i];
 
-		if ( [extension caseInsensitiveCompare:@"app"] == NSOrderedSame ) {
-			return true;
+			if ( [[file pathExtension] caseInsensitiveCompare:@"app"] != NSOrderedSame ) {
+				return false;
+			}
+			
 		}
-
+		
+		return true;
 	}
 
 	return false;
@@ -633,7 +711,6 @@ static int g_numSystemApps = 17;
 				}
 
 				if (!PhoneInteraction::getInstance()->putRingtoneOnPhone([filename UTF8String], bInSystemDir)) {
-					[m_mainWindow displayAlert:@"Failed" message:@"Error adding ringtone to phone"];
 					return false;
 				}
 
@@ -643,6 +720,17 @@ static int g_numSystemApps = 17;
 
 	}
 	else if ([title isEqualToString:@"Wallpapers"]) {
+
+		if ([files count] < 2) {
+			return false;
+		}
+
+		NSString *nsFilename = [files objectAtIndex:0], *nsFilename2 = [files objectAtIndex:1];
+		
+		if ( ([nsFilename hasSuffix:@".png"] == NO) || ([nsFilename2 hasSuffix:@".png"] == NO) ) {
+			return false;
+		}
+		
 		row = [m_browser selectedRowInColumn:1];
 		title = (NSString*)[[m_col2Dictionary objectForKey:title] objectAtIndex:row];
 		bool bInSystemDir = false;
@@ -651,59 +739,26 @@ static int g_numSystemApps = 17;
 			bInSystemDir = true;
 		}
 
-		NSString *nsFilename, *nsFilename2;
-		const char *filename, *filename2;
+		if (PhoneInteraction::getInstance()->wallpaperExists([[nsFilename lastPathComponent] UTF8String], bInSystemDir)) {
+			int retval = NSRunAlertPanel(@"Wallpaper Exists",
+										 [NSString stringWithFormat:@"Wallpaper file %@ already exists.  Do you wish to keep the existing file or replace it?", [nsFilename lastPathComponent]],
+										 @"Keep", @"Replace", nil);
 
-		for (int i = 0; i < [files count]; i++) {
-			nsFilename = [files objectAtIndex:i];
-			filename = [nsFilename UTF8String];
-			char *index = strstr(filename, ".png");
-
-			if (index != NULL) {
-				
-				if (!strstr(filename, ".poster.png") && !strstr(filename, ".thumbnail.png")) {
-					int baselen = index - filename;
-
-					for (int j = 0; j < [files count]; j++) {
-						nsFilename2 = [files objectAtIndex:j];
-						filename2 = [nsFilename2 UTF8String];
-
-						if (strstr(filename2, ".thumbnail.png")) {
-
-							if (!strncmp(filename, filename2, baselen)) {
-
-								if (PhoneInteraction::getInstance()->wallpaperExists([[nsFilename lastPathComponent] UTF8String], bInSystemDir)) {
-									int retval = NSRunAlertPanel(@"Wallpaper Exists",
-																 [NSString stringWithFormat:@"Wallpaper file %@ already exists.  Do you wish to keep the existing file or replace it?", [nsFilename lastPathComponent]],
-																 @"Keep", @"Replace", nil);
-									
-									if (retval == 1) {
-										break;
-									}
-
-									if (!PhoneInteraction::getInstance()->removeWallpaper([[nsFilename lastPathComponent] UTF8String], bInSystemDir)) {
-										[m_mainWindow displayAlert:@"Failed" message:@"Error removing old wallpaper from phone"];
-										return false;
-									}
-									
-								}
-
-								if (!PhoneInteraction::getInstance()->putWallpaperOnPhone(filename, filename2, bInSystemDir)) {
-									[m_mainWindow displayAlert:@"Failed" message:@"Error adding wallpaper to phone"];
-									return false;
-								}
-
-								break;
-							}
-
-						}
-						
-					}
-
-				}
-
+			if (retval == NSAlertDefaultReturn) {
+				return true;
 			}
-			
+
+			if (!PhoneInteraction::getInstance()->removeWallpaper([[nsFilename lastPathComponent] UTF8String], bInSystemDir)) {
+				[m_mainWindow displayAlert:@"Failed" message:@"Error removing old wallpaper from phone"];
+				return false;
+			}
+
+		}
+
+		const char *filename = [nsFilename UTF8String], *filename2 = [nsFilename UTF8String];
+		
+		if (!PhoneInteraction::getInstance()->putWallpaperOnPhone(filename, filename2, bInSystemDir)) {
+			return false;
 		}
 
 	}
@@ -736,43 +791,68 @@ static int g_numSystemApps = 17;
 				}
 				
 				if (!PhoneInteraction::getInstance()->putApplicationOnPhone([filename UTF8String])) {
-					[m_mainWindow displayAlert:@"Failed" message:@"Error adding application to phone"];
 					return false;
 				}
 
 				appName = [NSString stringWithFormat:@"%@/%@", @"/Applications", [filename lastPathComponent]];
 
-				[m_mainWindow startDisplayWaitingSheet:@"Setting Permissions" message:@"Setting application permissions..." image:nil
-										  cancelButton:false runModal:false];
+				bool done = false;
+				int retval;
 
-				int retval = SSHHelper::copyPermissions([filename UTF8String], [appName UTF8String], [ipAddress UTF8String],
+				while (!done) {
+					[m_mainWindow startDisplayWaitingSheet:@"Setting Permissions" message:@"Setting application permissions..." image:nil
+											  cancelButton:false runModal:false];
+					retval = SSHHelper::copyPermissions([filename UTF8String], [appName UTF8String], [ipAddress UTF8String],
 														[password UTF8String]);
+					[m_mainWindow endDisplayWaitingSheet];
 
-				[m_mainWindow endDisplayWaitingSheet];
+					if (retval != SSH_HELPER_SUCCESS) {
 
-				if (retval != SSH_HELPER_SUCCESS) {
-					PhoneInteraction::getInstance()->removeApplication([[filename lastPathComponent] UTF8String]);
+						switch (retval)
+						{
+							case SSH_HELPER_ERROR_NO_RESPONSE:
+								PhoneInteraction::getInstance()->removeApplication([[filename lastPathComponent] UTF8String]);
+								[m_mainWindow displayAlert:@"Failed" message:@"Couldn't connect to SSH server.  Ensure IP address is correct, phone is connected to a network, and SSH is installed correctly."];
+								done = true;
+								break;
+							case SSH_HELPER_ERROR_BAD_PASSWORD:
+								PhoneInteraction::getInstance()->removeApplication([[filename lastPathComponent] UTF8String]);
+								[m_mainWindow displayAlert:@"Failed" message:@"root password is incorrect."];
+								done = true;
+								break;
+							case SSH_HELPER_VERIFICATION_FAILED:
+								int retval = NSRunAlertPanel(@"Failed", @"Host verification failed.  Would you like iNdependence to try and fix this for you by editing ~/.ssh/known_hosts?", @"No", @"Yes", nil);
 
-					switch (retval)
-					{
-						case SSH_HELPER_ERROR_NO_RESPONSE:
-							[m_mainWindow displayAlert:@"Failed" message:@"Couldn't connect to SSH server.  Ensure IP address is correct, phone is connected to a network, and SSH is installed correctly."];
-							break;
-						case SSH_HELPER_ERROR_BAD_PASSWORD:
-							[m_mainWindow displayAlert:@"Failed" message:@"root password is incorrect."];
-							break;
-						case SSH_HELPER_VERIFICATION_FAILED:
-							[m_mainWindow displayAlert:@"Failed" message:@"Host verification failed.\nPlease edit the ~/.ssh/known_hosts file and remove the line with your phone's IP address in it."];
-							break;
-						default:
-							[m_mainWindow displayAlert:@"Failed" message:@"Error setting permissions for application."];
-							break;
+								if (retval == NSAlertAlternateReturn) {
+
+									if (![self removeKnownHostsEntry:ipAddress]) {
+										PhoneInteraction::getInstance()->removeApplication([[filename lastPathComponent] UTF8String]);
+										[m_mainWindow displayAlert:@"Failed" message:@"Couldn't remove entry from ~/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address."];
+										done = true;
+									}
+
+								}
+								else {
+									done = true;
+								}
+
+								break;
+							default:
+								PhoneInteraction::getInstance()->removeApplication([[filename lastPathComponent] UTF8String]);
+								[m_mainWindow displayAlert:@"Failed" message:@"Error setting permissions for application."];
+								done = true;
+								break;
+						}
+
+					}
+					else {
+						done = true;
 					}
 
-					[m_browser validateVisibleColumns];
-					return false;
 				}
 
+				[m_browser validateVisibleColumns];
+				return false;
 			}
 
 		}
@@ -987,7 +1067,6 @@ static int g_numSystemApps = 17;
 		if (bCancelled) return;
 
 		if (!retval) {
-			[m_mainWindow displayAlert:@"Failed" message:@"Error adding ringtone to phone"];
 			return;
 		}
 
@@ -1006,7 +1085,6 @@ static int g_numSystemApps = 17;
 		if (bCancelled) return;
 
 		if (!retval) {
-			[m_mainWindow displayAlert:@"Failed" message:@"Error adding wallpaper to phone"];
 			return;
 		}
 		
@@ -1018,7 +1096,6 @@ static int g_numSystemApps = 17;
 		if (bCancelled) return;
 		
 		if (!retval) {
-			[m_mainWindow displayAlert:@"Failed" message:@"Error adding application to phone"];
 			return;
 		}
 		
