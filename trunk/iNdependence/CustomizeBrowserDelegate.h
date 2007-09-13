@@ -36,9 +36,10 @@
 	NSDictionary *m_col2Dictionary;
 }
 
-- (bool)acceptFileType:(NSString*)extension;
+- (bool)acceptDraggedFiles:(NSArray*)files;
 - (bool)addFilesToPhone:(NSArray*)files wasCancelled:(bool*)bCancelled;
 - (bool)getSSHInfo:(NSString**)ipAddress password:(NSString**)password wasCancelled:(bool*)bCancelled;
+- (bool)removeKnownHostsEntry:(NSString*)ipAddress;
 
 - (IBAction)sshDialogCancel:(id)sender;
 - (IBAction)sshDialogOk:(id)sender;

@@ -1486,6 +1486,13 @@ bool PhoneInteraction::putWallpaperOnPhone(const char *wallpaperFile, const char
 	AFCDirectoryClose(m_hAFC, dir);
 	
 	const char *wallpaperFilename = UtilityFunctions::getLastPathElement(wallpaperFile);
+
+	// validate the main wallpaper filename (should not contain .thumbnail)
+	if (strstr(wallpaperFilename, ".thumbnail") != NULL) {
+		(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Main wallpaper filename cannot contain .thumbnail.  Please rename it.");
+		return false;
+	}
+
 	char wallpaperPath[PATH_MAX+1];
 	strcpy(wallpaperPath, wallpaperDir);
 	strcat(wallpaperPath, "/");
@@ -1496,13 +1503,36 @@ bool PhoneInteraction::putWallpaperOnPhone(const char *wallpaperFile, const char
 		return false;
 	}
 
-	memset(wallpaperPath, 0, PATH_MAX+1);
-	wallpaperFilename = UtilityFunctions::getLastPathElement(wallpaperThumb);
-	strcpy(wallpaperPath, wallpaperDir);
-	strcat(wallpaperPath, "/");
-	strcat(wallpaperPath, wallpaperFilename);
+	// 0p: Here things get a bit tricky.  Instead of blindly taking their wallpaper thumbnail
+	// filename (which could be invalid), we generate a valid one from the wallpaper filename
+	// and use that.
+	int len = strlen(wallpaperFilename);
+	char thumbnailFilename[len+11];
+	int count = len-1;
 
-	if (!putFile(wallpaperFile, wallpaperPath)) {
+	while (count >= 0) {
+
+		if (wallpaperFilename[count] == '.') {
+			strncpy(thumbnailFilename, wallpaperFilename, count);
+			strcpy(thumbnailFilename + count, ".thumbnail");
+			strcat(thumbnailFilename, wallpaperFilename + count);
+			break;
+		}
+
+		count--;
+	}
+
+	if (count < 0) {
+		(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error putting wallpaper file on phone.");
+		return false;
+	}
+
+	char thumbnailPath[PATH_MAX+1];
+	strcpy(thumbnailPath, wallpaperDir);
+	strcat(thumbnailPath, "/");
+	strcat(thumbnailPath, thumbnailFilename);
+
+	if (!putFile(wallpaperThumb, thumbnailPath)) {
 		(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error putting wallpaper thumbnail on phone.");
 		return false;
 	}
