@@ -30,7 +30,7 @@ v1.2 (Éphémère) - 09/11/07
 - Made it so that if iNdependence detects a phone in restore mode, it will attempt to unbrick it
 
 
-v1.2.1 (Aventinius) - 09/13/07
+v1.2.1 (Aventinus) - 09/13/07
 
 - Added YouTube fix to activation process
 - Fixed bug where Activation/Deactivation buttons are enabled when no phone is connected
