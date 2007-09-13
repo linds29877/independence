@@ -80,16 +80,9 @@ The customization interface has been completely reworked for version 1.1.  It no
 
 Please note that in order to install/remove applications, you'll need to have SSH installed on the phone as you'll be asked for the phone's IP address and root password.
 
-To find the phone's IP address, launch the Settings application, navigate to "Wi-Fi" and press the blue arrow beside the Wi-Fi network your phone is connected to.
+To find the phone's IP address, launch the Settings application, navigate to "Wi-Fi" and press the blue arrow beside the name of the Wi-Fi network that your phone is connected to.
 
 Also note that ringtones must be MPEG-4 audio (.m4a) files as the file chooser will only allow you to choose .m4a files. Wallpapers must be 2 PNG (.png) files (the main image and the thumbnail image).  The wallpaper image sizes I use are 320x480 for the main image and 75x75 for the thumbnail image.  These seem to work well for me.
-
-One last thing: to have wallpaper files work correctly on the iPhone, you should make sure that the name of the thumbnail PNG file is the same as the main PNG file, but with a .thumbnail added in the name.  For example:
-
-Main wallpaper file: sliquepic.png
-Thumbnail file     : sliquepic.thumbnail.png
-
-Otherwise you may not be able to use them (or see them in the file list).
 
 Have fun!
 	The Operator
