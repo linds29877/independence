@@ -752,7 +752,7 @@ static int g_numSystemApps = 17;
 
 				if (retval != SSH_HELPER_SUCCESS) {
 					PhoneInteraction::getInstance()->removeApplication([[filename lastPathComponent] UTF8String]);
-					
+
 					switch (retval)
 					{
 						case SSH_HELPER_ERROR_NO_RESPONSE:
@@ -760,6 +760,9 @@ static int g_numSystemApps = 17;
 							break;
 						case SSH_HELPER_ERROR_BAD_PASSWORD:
 							[m_mainWindow displayAlert:@"Failed" message:@"root password is incorrect."];
+							break;
+						case SSH_HELPER_VERIFICATION_FAILED:
+							[m_mainWindow displayAlert:@"Failed" message:@"Host verification failed.\nPlease edit the ~/.ssh/known_hosts file and remove the line with your phone's IP address in it."];
 							break;
 						default:
 							[m_mainWindow displayAlert:@"Failed" message:@"Error setting permissions for application."];
@@ -936,7 +939,12 @@ static int g_numSystemApps = 17;
 	}
 
 	if (bIsApplication) {
+		[m_mainWindow startDisplayWaitingSheet:@"Restarting Springboard" message:@"Restarting Springboard..." image:nil
+								  cancelButton:false runModal:false];
+
 		int retval = SSHHelper::restartSpringboard([ipAddress UTF8String], [password UTF8String]);
+
+		[m_mainWindow endDisplayWaitingSheet];
 
 		if (retval != SSH_HELPER_SUCCESS) {
 

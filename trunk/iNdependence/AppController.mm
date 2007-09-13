@@ -828,18 +828,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 
-	NSString *dropbearFile = [[NSBundle mainBundle] pathForResource:@"dropbear" ofType:@""];
-	
-	if (dropbearFile == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding dropbear in bundle."];
-		return;
-	}
-	
-	if (!m_phoneInteraction->putFile([dropbearFile UTF8String], "/usr/bin/dropbear")) {
-		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/bin/dropbear to phone."];
-		return;
-	}
-
 	NSString *sftpFile = [[NSBundle mainBundle] pathForResource:@"sftp-server" ofType:@""];
 
 	if (sftpFile == nil) {
@@ -873,6 +861,18 @@ static void phoneInteractionNotification(int type, const char *msg)
 	
 	if (!m_phoneInteraction->putFile([libarmfpFile UTF8String], "/usr/lib/libarmfp.dylib")) {
 		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/lib/libarmfp.dylib to phone."];
+		return;
+	}
+	
+	NSString *dropbearFile = [[NSBundle mainBundle] pathForResource:@"dropbear" ofType:@""];
+	
+	if (dropbearFile == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding dropbear in bundle."];
+		return;
+	}
+	
+	if (!m_phoneInteraction->putFile([dropbearFile UTF8String], "/usr/bin/dropbear")) {
+		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/bin/dropbear to phone."];
 		return;
 	}
 	
@@ -1061,11 +1061,34 @@ static void phoneInteractionNotification(int type, const char *msg)
 - (IBAction)removeSSH:(id)sender
 {
 
+	if (!m_phoneInteraction->removePath("/usr/bin/dropbear")) {
+		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/dropbear from phone."];
+		return;
+	}
+	
+	[installSSHButton setEnabled:YES];
+	[removeSSHButton setEnabled:NO];
+
+	if (!m_phoneInteraction->removePath("/usr/libexec/sftp-server")) {
+		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/libexec/sftp-server from phone."];
+		return;
+	}
+	
+	if (!m_phoneInteraction->removePath("/usr/bin/scp")) {
+		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/scp from phone."];
+		return;
+	}
+	
+	if (!m_phoneInteraction->removePath("/usr/lib/libarmfp.dylib")) {
+		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/lib/libarmfp.dylib from phone."];
+		return;
+	}
+	
 	if (!m_phoneInteraction->removePath("/etc/dropbear/dropbear_rsa_host_key")) {
 		[mainWindow displayAlert:@"Error" message:@"Error removing /etc/dropbear/dropbear_rsa_host_key from phone."];
 		return;
 	}
-	
+
 	if (!m_phoneInteraction->removePath("/etc/dropbear/dropbear_dss_host_key")) {
 		[mainWindow displayAlert:@"Error" message:@"Error removing /etc/dropbear/dropbear_dss_host_key from phone."];
 		return;
@@ -1083,26 +1106,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 	
 	if (!m_phoneInteraction->removePath("/bin/sh")) {
 		[mainWindow displayAlert:@"Error" message:@"Error removing /bin/sh from phone."];
-		return;
-	}
-	
-	if (!m_phoneInteraction->removePath("/usr/bin/dropbear")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/dropbear from phone."];
-		return;
-	}
-	
-	if (!m_phoneInteraction->removePath("/usr/libexec/sftp-server")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/libexec/sftp-server from phone."];
-		return;
-	}
-	
-	if (!m_phoneInteraction->removePath("/usr/bin/scp")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/scp from phone."];
-		return;
-	}
-	
-	if (!m_phoneInteraction->removePath("/usr/lib/libarmfp.dylib")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/lib/libarmfp.dylib from phone."];
 		return;
 	}
 	

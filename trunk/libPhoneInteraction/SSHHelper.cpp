@@ -97,6 +97,14 @@ static FILE *buildInitialSSHScript(const char *ipAddress, const char *password, 
 	fputs("expect {\n", fp);
 	fputs("    timeout          { exit 1 }\n", fp);
 	fputs("    eof              { exit 1 }\n", fp);
+	fputs("    \"(yes/no)?\"    { exp_send \"yes\n\"\n", fp);
+	fputs("                       expect {\n", fp);
+	fputs("                           timeout          { exit 1 }\n", fp);
+	fputs("                           eof              { exit 1 }\n", fp);
+	fputs("                           \"password:\"\n", fp);
+	fputs("                       }\n", fp);
+	fputs("                     }\n", fp);
+	fputs("    \"failed.\"      { exit 3 }\n", fp);
 	fputs("    \"password:\"\n", fp);
 	fputs("}\n\n", fp);
 	snprintf(cmd2, len2, "exp_send \"%s\n\"\n\n", password);
