@@ -104,8 +104,8 @@ public:
 	~PhoneInteraction();
 
 	// singleton pattern for object instantiation
-	static PhoneInteraction* PhoneInteraction::getInstance(void (*statusFunc)(const char*, bool) = NULL,
-														   void (*notifyFunc)(int, const char*) = NULL);
+	static PhoneInteraction* getInstance(void (*statusFunc)(const char*, bool) = NULL,
+										 void (*notifyFunc)(int, const char*) = NULL);
 
 	// connection related functions
 	void connectToPhone();

@@ -21,7 +21,7 @@ class PNGHelper
 {
 public:
 
-	// Used to convert PNG files in Apple's format to something usefule
+	// Used to convert PNG files in Apple's format to something useful
 	static bool convertPNGToUseful(unsigned char *buf, int size,
 								   unsigned char **newbuf, int *newsize);
 
