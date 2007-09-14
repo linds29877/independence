@@ -91,12 +91,13 @@ Have fun!
 
 Credit to:
 
-  - iZsh for the code based on iASign and for the new (fast) jailbreak method
+  - iZsh for the code based on iASign
   - geohot, ixtli, nightwatch, warren, ziel for the code based on iPhoneInterface
   - nightwatch again for jailbreak exploit
   - ixtli again for helping fix jailbreak on PPC
   - Matt Johnston for DropbearSSH
   - nightwatch, netkas, and nervegas for the binkit binaries
   - MHW for the code based on iphone-fixpng
+  - anonymous for the new (fast) jailbreak method
 
 Cheers to the iPhoneDev team!
