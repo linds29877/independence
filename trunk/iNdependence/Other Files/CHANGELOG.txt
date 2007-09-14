@@ -23,7 +23,7 @@ v1.1.1 - 09/06/07
 v1.2 (Éphémère) - 09/11/07
 
 - Added better iTunes version checking so that iNdependence will fail if an unsupported version of iTunes is installed (thus avoiding the nasty problems seen with the iTunes 7.4 update)
-- Put in new fast jailbreak method (thanks to iZsh)
+- Put in new fast jailbreak method (thanks to anonymous)
 - Made Activation/Deactivation all-in-one steps (no more fiddling with activation files)
 - Removed PEM and activation file related buttons/menus
 - Created a Windows command-line version of iNdependence (has everything except SSH and Customization)
