@@ -42,3 +42,9 @@ v1.2.1 (Aventinus) - 09/13/07
 - Added wait dialog when removing applications (restarting Springboard)
 - Fixed bug where, after removing SSH, the install/remove SSH buttons weren't being updated properly
 - Added better wallpaper filename handling
+
+
+v1.2.2 (Coopers) - 09/23/07
+
+- Added install/remove anySIM buttons.  This allows for easy SIM unlocking
+- Fixed up problems with the wait dialog/sheet being too small on occasion
