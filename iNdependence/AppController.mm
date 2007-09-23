@@ -34,9 +34,10 @@ enum
 	MENU_ITEM_DEACTIVATE = 13,
 	MENU_ITEM_RETURN_TO_JAIL = 14,
 	MENU_ITEM_JAILBREAK = 15,
-	MENU_ITEM_SIM_UNLOCK = 16,
+	MENU_ITEM_INSTALL_SIM_UNLOCK = 16,
 	MENU_ITEM_INSTALL_SSH = 17,
 	MENU_ITEM_CHANGE_PASSWORD = 18,
+	MENU_ITEM_REMOVE_SIM_UNLOCK = 19,
 	MENU_ITEM_REMOVE_SSH = 21,
 };
 
@@ -316,12 +317,22 @@ static void phoneInteractionNotification(int type, const char *msg)
 		if ([self isSSHInstalled]) {
 			[installSSHButton setEnabled:NO];
 			[removeSSHButton setEnabled:YES];
-			[simUnlockButton setEnabled:YES];
+
+			if ([self isanySIMInstalled]) {
+				[installSimUnlockButton setEnabled:NO];
+				[removeSimUnlockButton setEnabled:YES];
+			}
+			else {
+				[installSimUnlockButton setEnabled:YES];
+				[removeSimUnlockButton setEnabled:NO];
+			}
+
 		}
 		else {
 			[installSSHButton setEnabled:YES];
 			[removeSSHButton setEnabled:NO];
-			[simUnlockButton setEnabled:NO];
+			[installSimUnlockButton setEnabled:NO];
+			[removeSimUnlockButton setEnabled:NO];
 		}
 
 	}
@@ -329,7 +340,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[returnToJailButton setEnabled:NO];
 		[installSSHButton setEnabled:NO];
 		[removeSSHButton setEnabled:NO];
-		[simUnlockButton setEnabled:NO];
+		[installSimUnlockButton setEnabled:NO];
+		[removeSimUnlockButton setEnabled:NO];
 		[changePasswordButton setEnabled:NO];
 		[customizeBrowser setEnabled:NO];
 		
@@ -382,6 +394,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 - (bool)isSSHInstalled
 {
 	return m_phoneInteraction->fileExists("/usr/bin/dropbear");
+}
+
+- (bool)isanySIMInstalled
+{
+	return m_phoneInteraction->applicationExists("anySIM.app");
 }
 
 - (void)setPerformingJailbreak:(bool)bJailbreaking
@@ -474,7 +491,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_phoneInteraction->returnToJail([servicesFile UTF8String], [fstabFile UTF8String]);
 }
 
-- (IBAction)SIMUnlock:(id)sender
+- (IBAction)installSimUnlock:(id)sender
 {
 	bool bCancelled = false;
 	NSString *ipAddress, *password;
@@ -556,7 +573,95 @@ static void phoneInteractionNotification(int type, const char *msg)
 		
 	}
 
-	[mainWindow displayAlert:@"Success" message:@"The anySIM application should now be installed on your phone.  Simply run it and it will finish the SIM unlock process."];
+	if ([self isanySIMInstalled]) {
+		[installSimUnlockButton setEnabled:NO];
+		[removeSimUnlockButton setEnabled:YES];
+	}
+	else {
+		[installSimUnlockButton setEnabled:YES];
+		[removeSimUnlockButton setEnabled:NO];
+	}
+
+	[mainWindow displayAlert:@"Success" message:@"The anySIM application should now be installed on your phone.  Simply run it and it will finish the SIM unlock process.\n\nAfter you are done, you can remove it from your phone."];
+}
+
+- (void)removeSimUnlock:(id)sender
+{
+	bool bCancelled = false;
+	NSString *ipAddress, *password;
+	
+	if ([sshHandler getSSHInfo:&ipAddress password:&password wasCancelled:&bCancelled] == false) {
+		return;
+	}
+	
+	if (bCancelled) {
+		return;
+	}
+
+	if (!m_phoneInteraction->removeApplication("anySIM.app")) {
+		return;
+	}
+
+	if ([self isanySIMInstalled]) {
+		[installSimUnlockButton setEnabled:NO];
+		[removeSimUnlockButton setEnabled:YES];
+	}
+	else {
+		[installSimUnlockButton setEnabled:YES];
+		[removeSimUnlockButton setEnabled:NO];
+	}
+	
+	bool done = false;
+	int retval;
+	
+	while (!done) {
+		[mainWindow startDisplayWaitingSheet:@"Restarting SpringBoard" message:@"Restarting SpringBoard..." image:nil
+								cancelButton:false runModal:false];
+		retval = SSHHelper::restartSpringboard([ipAddress UTF8String], [password UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
+
+		if (retval != SSH_HELPER_SUCCESS) {
+			
+			switch (retval)
+			{
+				case SSH_HELPER_ERROR_NO_RESPONSE:
+					[mainWindow displayAlert:@"Failed" message:@"Couldn't connect to SSH server.  Ensure IP address is correct, phone is connected to a network, and SSH is installed correctly."];
+					done = true;
+					break;
+				case SSH_HELPER_ERROR_BAD_PASSWORD:
+					[mainWindow displayAlert:@"Failed" message:@"root password is incorrect."];
+					done = true;
+					break;
+				case SSH_HELPER_VERIFICATION_FAILED:
+					int retval = NSRunAlertPanel(@"Failed", @"Host verification failed.  Would you like iNdependence to try and fix this for you by editing ~/.ssh/known_hosts?", @"No", @"Yes", nil);
+					
+					if (retval == NSAlertAlternateReturn) {
+						
+						if (![sshHandler removeKnownHostsEntry:ipAddress]) {
+							[mainWindow displayAlert:@"Failed" message:@"Couldn't remove entry from ~/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address."];
+							done = true;
+						}
+						
+					}
+					else {
+						done = true;
+					}
+
+					break;
+				default:
+					[mainWindow displayAlert:@"Failed" message:@"Error restarting SpringBoard."];
+					done = true;
+					break;
+			}
+			
+		}
+		else {
+			done = true;
+		}
+		
+	}
+	
+	[mainWindow displayAlert:@"Success" message:@"The anySIM application was successfully removed from your phone."];
 }
 
 - (bool)doPutPEM:(const char*)pemfile
@@ -678,6 +783,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 {
 
 	if (m_installingSSH) {
+		[mainWindow endDisplayWaitingSheet];
 		[self finishInstallingSSH:true];
 	}
 	
@@ -1242,7 +1348,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 			break;
 		case MENU_ITEM_REMOVE_SSH:
-		case MENU_ITEM_SIM_UNLOCK:
 
 			if (![self isConnected] || ![self isJailbroken] || ![self isSSHInstalled]) {
 				return NO;
@@ -1256,6 +1361,22 @@ static void phoneInteractionNotification(int type, const char *msg)
 				return NO;
 			}
 
+			break;
+		case MENU_ITEM_INSTALL_SIM_UNLOCK:
+
+			if (![self isConnected] || ![self isJailbroken] || ![self isSSHInstalled] ||
+				[self isanySIMInstalled]) {
+				return NO;
+			}
+
+			break;
+		case MENU_ITEM_REMOVE_SIM_UNLOCK:
+
+			if (![self isConnected] || ![self isJailbroken] || ![self isSSHInstalled] ||
+				![self isanySIMInstalled]) {
+				return NO;
+			}
+			
 			break;
 		default:
 			break;

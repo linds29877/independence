@@ -20,16 +20,17 @@
 
 @interface MainWindow : NSWindow
 {
-	IBOutlet NSWindow* waitDialog;
-	IBOutlet NSTextField* waitDialogMessage;
-	IBOutlet NSImageView* waitDialogImage;
-	IBOutlet NSButton* waitDialogCancel;
-	IBOutlet NSProgressIndicator* waitDialogSpinner;
-	IBOutlet NSTextField* statusLabel;
-	IBOutlet NSTextField* statusBar;
-	IBOutlet NSProgressIndicator* statusSpinner;
-	IBOutlet NSWindow* aboutBox;
-	IBOutlet AppController* appController;
+	IBOutlet NSTextField *statusLabel;
+	IBOutlet NSTextField *statusBar;
+	IBOutlet NSProgressIndicator *statusSpinner;
+	IBOutlet NSWindow *aboutBox;
+	IBOutlet AppController *appController;
+
+	NSWindow *waitDialog;
+	NSTextField *waitDialogMessage;
+	NSImageView *waitDialogImage;
+	NSButton *waitDialogCancel;
+	NSProgressIndicator *waitDialogSpinner;
 
 	bool m_statusSpinning;
 	bool m_modal;
