@@ -38,4 +38,8 @@ public:
 	// Used to restart Springboard after adding/removing an application
 	static int restartSpringboard(const char *ipAddress, const char *password);
 
+	// Used to launch a particular program on the phone
+	static int launchApplication(const char *ipAddress, const char *password,
+								 const char *applicationID);
+
 };

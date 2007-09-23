@@ -22,8 +22,10 @@
 
 #import "AppController.h"
 #import "MainWindow.h"
+#import "SSHHandler.h"
 #include "PhoneInteraction/UtilityFunctions.h"
 #include "PhoneInteraction/PhoneInteraction.h"
+#include "PhoneInteraction/SSHHelper.h"
 
 
 enum
@@ -32,6 +34,7 @@ enum
 	MENU_ITEM_DEACTIVATE = 13,
 	MENU_ITEM_RETURN_TO_JAIL = 14,
 	MENU_ITEM_JAILBREAK = 15,
+	MENU_ITEM_SIM_UNLOCK = 16,
 	MENU_ITEM_INSTALL_SSH = 17,
 	MENU_ITEM_CHANGE_PASSWORD = 18,
 	MENU_ITEM_REMOVE_SSH = 21,
@@ -313,10 +316,12 @@ static void phoneInteractionNotification(int type, const char *msg)
 		if ([self isSSHInstalled]) {
 			[installSSHButton setEnabled:NO];
 			[removeSSHButton setEnabled:YES];
+			[simUnlockButton setEnabled:YES];
 		}
 		else {
 			[installSSHButton setEnabled:YES];
 			[removeSSHButton setEnabled:NO];
+			[simUnlockButton setEnabled:NO];
 		}
 
 	}
@@ -324,6 +329,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[returnToJailButton setEnabled:NO];
 		[installSSHButton setEnabled:NO];
 		[removeSSHButton setEnabled:NO];
+		[simUnlockButton setEnabled:NO];
 		[changePasswordButton setEnabled:NO];
 		[customizeBrowser setEnabled:NO];
 		
@@ -466,6 +472,91 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	m_returningToJail = true;
 	m_phoneInteraction->returnToJail([servicesFile UTF8String], [fstabFile UTF8String]);
+}
+
+- (IBAction)SIMUnlock:(id)sender
+{
+	bool bCancelled = false;
+	NSString *ipAddress, *password;
+
+	if ([sshHandler getSSHInfo:&ipAddress password:&password wasCancelled:&bCancelled] == false) {
+		return;
+	}
+
+	if (bCancelled) {
+		return;
+	}
+
+	NSString *simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM" ofType:@"app"];
+
+	if (simUnlockApp == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding SIM unlock application in bundle."];
+		return;
+	}
+
+	if (!m_phoneInteraction->putApplicationOnPhone([simUnlockApp UTF8String])) {
+		[mainWindow displayAlert:@"Error" message:@"Couldn't put application on phone"];
+		return;
+	}
+
+	NSString *appName = [NSString stringWithFormat:@"%@/%@", @"/Applications", [simUnlockApp lastPathComponent]];
+
+	bool done = false;
+	int retval;
+	
+	while (!done) {
+		[mainWindow startDisplayWaitingSheet:@"Setting Permissions" message:@"Setting application permissions..." image:nil
+								cancelButton:false runModal:false];
+		retval = SSHHelper::copyPermissions([simUnlockApp UTF8String], [appName UTF8String], [ipAddress UTF8String],
+											[password UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
+		
+		if (retval != SSH_HELPER_SUCCESS) {
+			
+			switch (retval)
+			{
+				case SSH_HELPER_ERROR_NO_RESPONSE:
+					PhoneInteraction::getInstance()->removeApplication([[simUnlockApp lastPathComponent] UTF8String]);
+					[mainWindow displayAlert:@"Failed" message:@"Couldn't connect to SSH server.  Ensure IP address is correct, phone is connected to a network, and SSH is installed correctly."];
+					done = true;
+					break;
+				case SSH_HELPER_ERROR_BAD_PASSWORD:
+					PhoneInteraction::getInstance()->removeApplication([[simUnlockApp lastPathComponent] UTF8String]);
+					[mainWindow displayAlert:@"Failed" message:@"root password is incorrect."];
+					done = true;
+					break;
+				case SSH_HELPER_VERIFICATION_FAILED:
+					int retval = NSRunAlertPanel(@"Failed", @"Host verification failed.  Would you like iNdependence to try and fix this for you by editing ~/.ssh/known_hosts?", @"No", @"Yes", nil);
+					
+					if (retval == NSAlertAlternateReturn) {
+						
+						if (![sshHandler removeKnownHostsEntry:ipAddress]) {
+							PhoneInteraction::getInstance()->removeApplication([[simUnlockApp lastPathComponent] UTF8String]);
+							[mainWindow displayAlert:@"Failed" message:@"Couldn't remove entry from ~/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address."];
+							done = true;
+						}
+						
+					}
+					else {
+						done = true;
+					}
+
+					break;
+				default:
+					PhoneInteraction::getInstance()->removeApplication([[simUnlockApp lastPathComponent] UTF8String]);
+					[mainWindow displayAlert:@"Failed" message:@"Error setting permissions for application."];
+					done = true;
+					break;
+			}
+			
+		}
+		else {
+			done = true;
+		}
+		
+	}
+
+	[mainWindow displayAlert:@"Success" message:@"The anySIM application should now be installed on your phone.  Simply run it and it will finish the SIM unlock process."];
 }
 
 - (bool)doPutPEM:(const char*)pemfile
@@ -1151,6 +1242,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 			break;
 		case MENU_ITEM_REMOVE_SSH:
+		case MENU_ITEM_SIM_UNLOCK:
 
 			if (![self isConnected] || ![self isJailbroken] || ![self isSSHInstalled]) {
 				return NO;
