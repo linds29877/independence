@@ -1,5 +1,5 @@
  *
- * iNdependence v1.2.1
+ * iNdependence v1.2.2
  * Copyright 2007 The Operator
  *
  * This software is free software; you can redistribute it and/or
@@ -26,14 +26,14 @@ PPC Mac, Mac OS X 10.4.10 - Firmware 1.0, 1.0.1, 1.0.2 - iTunes 7.3 to 7.4.1
 
 The interface is pretty straightforward.  The tabs are arranged as follows:
 
-Activation - For tasks related to activating your phone.
+Activation/SIM - For tasks related to activating and SIM unlocking your phone.
 Jailbreak  - For tasks related to jailbreaking your phone (ie. making it so that you can read/write files from/to the entire filesystem on your phone).
 SSH        - For tasks related to installing and maintaining SSH on your phone
 Customize  - For tasks related to customization of your phone.
 
 * Notes *
 
-Before using iNdependence, it's best to kill off the "iTunes Helper" application so that it doesn't interfere with iNdependence.
+Before using iNdependence, you need to kill off the "iTunes Helper" application so that it doesn't interfere with iNdependence.
 
 To do this, run /Applications/Utilities/Activity Monitor and look for the process named "iTunes Helper".  Select it and press the "Quit Process" button.  Then choose "Force Quit".
 
@@ -74,6 +74,10 @@ password: alpine
 
 Remember to change the default passwords after installing SSH.  I'm not responsible if someone hacks your phone.
 
+* SIM Unlocking *
+
+In order to SIM unlock your phone, you need to first jailbreak it, then install SSH, then set it up so that you can SSH into it (via Wi-Fi).  Once that's done, just install anySIM, run it, and you're done.  You can safely delete anySIM from your phone after the SIM unlock has been performed.
+
 * Customization *
 
 The customization interface has been completely reworked for version 1.1.  It now uses a Finder-style interface and allows for drag and drop installation of ringtones, wallpapers, and applications.  It also has preview images for wallpapers and application icons.
@@ -99,5 +103,6 @@ Credit to:
   - nightwatch, netkas, and nervegas for the binkit binaries
   - MHW for the code based on iphone-fixpng
   - anonymous for the new (fast) jailbreak method
+  - Daeken, Darkment, guest184, gray, iZsh, leachbj, pytey, roxfan, Sam, uns, zappaz, Zf, Erica, Kroo, darkten, Wheat, Doc, drudge for anySIM
 
 Cheers to the iPhoneDev team!
