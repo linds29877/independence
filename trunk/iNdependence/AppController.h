@@ -37,7 +37,8 @@ class PhoneInteraction;
 	IBOutlet NSButton* installSSHButton;
 	IBOutlet NSButton* removeSSHButton;
 	IBOutlet NSButton* changePasswordButton;
-	IBOutlet NSButton* simUnlockButton;
+	IBOutlet NSButton* installSimUnlockButton;
+	IBOutlet NSButton* removeSimUnlockButton;
 	IBOutlet CustomizeBrowser* customizeBrowser;
 	IBOutlet NSWindow* keyGenerationOutput;
 	IBOutlet NSTextView* logOutput;
@@ -77,6 +78,7 @@ class PhoneInteraction;
 - (void)setReturningToJail:(bool)bReturning;
 
 - (bool)isSSHInstalled;
+- (bool)isanySIMInstalled;
 
 - (bool)isWaitingForActivation;
 - (bool)isWaitingForDeactivation;
@@ -93,7 +95,8 @@ class PhoneInteraction;
 - (IBAction)deactivate:(id)sender;
 - (IBAction)performJailbreak:(id)sender;
 - (IBAction)returnToJail:(id)sender;
-- (IBAction)SIMUnlock:(id)sender;
+- (IBAction)installSimUnlock:(id)sender;
+- (IBAction)removeSimUnlock:(id)sender;
 - (IBAction)changePassword:(id)sender;
 - (IBAction)installSSH:(id)sender;
 - (IBAction)removeSSH:(id)sender;

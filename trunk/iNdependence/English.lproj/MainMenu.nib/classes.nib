@@ -2,7 +2,6 @@
     IBClasses = (
         {
             ACTIONS = {
-                SIMUnlock = id; 
                 activate = id; 
                 backupActivation = id; 
                 changePassword = id; 
@@ -11,12 +10,14 @@
                 imeiDialogCancel = id; 
                 imeiDialogOk = id; 
                 installSSH = id; 
+                installSimUnlock = id; 
                 keyGenerationOutputDismiss = id; 
                 passwordDialogCancel = id; 
                 passwordDialogOk = id; 
                 performJailbreak = id; 
                 putPEMOnPhone = id; 
                 removeSSH = id; 
+                removeSimUnlock = id; 
                 restorePEM = id; 
                 returnToJail = id; 
                 showAboutPanel = id; 
@@ -35,6 +36,7 @@
                 imeiDialog = NSWindow; 
                 imeiTextField = NSTextField; 
                 installSSHButton = NSButton; 
+                installSimUnlockButton = NSButton; 
                 jailbreakButton = NSButton; 
                 keyGenerationOutput = NSWindow; 
                 logOutput = NSTextView; 
@@ -44,9 +46,9 @@
                 passwordField = NSSecureTextField; 
                 putPEMButton = NSButton; 
                 removeSSHButton = NSButton; 
+                removeSimUnlockButton = NSButton; 
                 restorePEMButton = NSButton; 
                 returnToJailButton = NSButton; 
-                simUnlockButton = NSButton; 
                 sshHandler = SSHHandler; 
             }; 
             SUPERCLASS = NSObject; 

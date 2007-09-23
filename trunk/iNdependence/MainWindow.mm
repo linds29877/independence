@@ -43,37 +43,71 @@ MainWindow *g_mainWindow;
 					cancelButton:(bool)cancel runModal:(bool)modal
 {
 
+	if (img != nil) {
+		waitDialog = [[NSPanel alloc] initWithContentRect:NSMakeRect(0, 0, 496, 286)
+												styleMask:NSTitledWindowMask
+												  backing:NSBackingStoreBuffered
+													defer:NO];
+		waitDialogImage = [[NSImageView alloc] initWithFrame:NSMakeRect(20, 69, 456, 150)];
+		[waitDialogImage setImage:img];
+		[waitDialogImage setImageAlignment:NSImageAlignCenter];
+		[waitDialogImage setImageScaling:NSScaleProportionally];
+		[waitDialogImage setImageFrameStyle:NSImageFrameNone];
+		[[waitDialog contentView] addSubview:waitDialogImage];
+	}
+	else {
+		waitDialog = [[NSPanel alloc] initWithContentRect:NSMakeRect(0, 0, 496, 150)
+												styleMask:NSTitledWindowMask
+												  backing:NSBackingStoreBuffered
+													defer:NO];
+		waitDialogImage = nil;
+	}
+
 	if (title != nil) {
 		[waitDialog setTitle:title];
 	}
 
 	if (msg != nil) {
+
+		if (img != nil) {
+			waitDialogMessage = [[NSTextField alloc] initWithFrame:NSMakeRect(17, 231, 461, 35)];
+		}
+		else {
+			waitDialogMessage = [[NSTextField alloc] initWithFrame:NSMakeRect(17, 81, 461, 35)];
+		}
+
 		[waitDialogMessage setStringValue:msg];
-	}
-
-	NSRect msgFrame = [waitDialogMessage frame];
-	NSRect wndFrame = [waitDialog frame];
-
-	if (img != nil) {
-		[waitDialogImage setImage:img];
-		[waitDialog setFrame:NSMakeRect(wndFrame.origin.x, wndFrame.origin.y, wndFrame.size.width, 286) display:NO];
-		[waitDialogMessage setFrame:NSMakeRect(msgFrame.origin.x, 231, msgFrame.size.width, msgFrame.size.height)];
+		[waitDialogMessage setEditable:NO];
+		[waitDialogMessage setSelectable:NO];
+		[waitDialogMessage setBezeled:NO];
+		[waitDialogMessage setBackgroundColor:[NSColor clearColor]];
+		[waitDialogMessage setDrawsBackground:NO];
+		[waitDialogMessage setAlignment:NSCenterTextAlignment];
+		[[waitDialog contentView] addSubview:waitDialogMessage];
 	}
 	else {
-		[waitDialog setFrame:NSMakeRect(wndFrame.origin.x, wndFrame.origin.y, wndFrame.size.width, 150) display:NO];
-		[waitDialogMessage setFrame:NSMakeRect(msgFrame.origin.x, 81, msgFrame.size.width, msgFrame.size.height)];
+		waitDialogMessage = nil;
 	}
-
-	[waitDialog update];
 
 	if (cancel) {
-		[waitDialogCancel setHidden:NO];
+		waitDialogCancel = [[NSButton alloc] initWithFrame:NSMakeRect(400, 12, 82, 32)];
+		[waitDialogCancel setButtonType:NSMomentaryLightButton];
+		[waitDialogCancel setBezelStyle:NSRoundedBezelStyle];
+		[waitDialogCancel setTitle:@"Cancel"];
+		[waitDialogCancel setTarget:appController];
+		[waitDialogCancel setAction:@selector(waitDialogCancel:)];
+		[[waitDialog contentView] addSubview:waitDialogCancel];
 	}
 	else {
-		[waitDialogCancel setHidden:YES];
+		waitDialogCancel = nil;
 	}
 
+	waitDialogSpinner = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(231, 20, 32, 32)];
+	[waitDialogSpinner setIndeterminate:YES];
+	[waitDialogSpinner setControlSize:NSRegularControlSize];
+	[waitDialogSpinner setStyle:NSProgressIndicatorSpinningStyle];
 	[waitDialogSpinner startAnimation:self];
+	[[waitDialog contentView] addSubview:waitDialogSpinner];
 
 	[NSApp beginSheet:waitDialog modalForWindow:self modalDelegate:nil
 	   didEndSelector:nil contextInfo:nil];
@@ -96,6 +130,28 @@ MainWindow *g_mainWindow;
 		[NSApp stopModal];
 	}
 
+	[waitDialogSpinner release];
+	waitDialogSpinner = nil;
+
+	if (waitDialogCancel != nil) {
+		[waitDialogCancel setTarget:nil];
+		[waitDialogCancel setAction:nil];
+		[waitDialogCancel release];
+		waitDialogCancel = nil;
+	}
+
+	if (waitDialogMessage != nil) {
+		[waitDialogMessage release];
+		waitDialogMessage = nil;
+	}
+
+	if (waitDialogImage != nil) {
+		[waitDialogImage release];
+		waitDialogImage = nil;
+	}
+
+	[waitDialog release];
+	waitDialog = nil;
 }
 
 - (void)setStatus:(NSString*)text spinning:(bool)spin
