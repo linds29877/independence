@@ -2,6 +2,7 @@
     IBClasses = (
         {
             ACTIONS = {
+                SIMUnlock = id; 
                 activate = id; 
                 backupActivation = id; 
                 changePassword = id; 
@@ -45,19 +46,15 @@
                 removeSSHButton = NSButton; 
                 restorePEMButton = NSButton; 
                 returnToJailButton = NSButton; 
+                simUnlockButton = NSButton; 
+                sshHandler = SSHHandler; 
             }; 
             SUPERCLASS = NSObject; 
         }, 
         {CLASS = CustomizeBrowser; LANGUAGE = ObjC; SUPERCLASS = NSBrowser; }, 
         {CLASS = CustomizeBrowserCell; LANGUAGE = ObjC; SUPERCLASS = NSBrowserCell; }, 
         {
-            ACTIONS = {
-                addButtonPressed = id; 
-                deleteButtonPressed = id; 
-                selectionChanged = id; 
-                sshDialogCancel = id; 
-                sshDialogOk = id; 
-            }; 
+            ACTIONS = {addButtonPressed = id; deleteButtonPressed = id; selectionChanged = id; }; 
             CLASS = CustomizeBrowserDelegate; 
             LANGUAGE = ObjC; 
             OUTLETS = {
@@ -65,12 +62,7 @@
                 "m_browser" = CustomizeBrowser; 
                 "m_deleteButton" = NSButton; 
                 "m_mainWindow" = MainWindow; 
-                "m_sshIPText1" = NSTextField; 
-                "m_sshIPText2" = NSTextField; 
-                "m_sshIPText3" = NSTextField; 
-                "m_sshIPText4" = NSTextField; 
-                "m_sshPassword" = NSSecureTextField; 
-                "m_sshWindow" = NSWindow; 
+                "m_sshHandler" = SSHHandler; 
             }; 
             SUPERCLASS = NSObject; 
         }, 
@@ -92,6 +84,21 @@
                 waitDialogSpinner = NSProgressIndicator; 
             }; 
             SUPERCLASS = NSWindow; 
+        }, 
+        {
+            ACTIONS = {sshDialogCancel = id; sshDialogOk = id; }; 
+            CLASS = SSHHandler; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                "m_mainWindow" = MainWindow; 
+                "m_sshIPText1" = NSTextField; 
+                "m_sshIPText2" = NSTextField; 
+                "m_sshIPText3" = NSTextField; 
+                "m_sshIPText4" = NSTextField; 
+                "m_sshPassword" = NSSecureTextField; 
+                "m_sshWindow" = NSWindow; 
+            }; 
+            SUPERCLASS = NSObject; 
         }
     ); 
     IBVersion = 1; 

@@ -253,3 +253,38 @@ int SSHHelper::restartSpringboard(const char *ipAddress, const char *password)
 	remove(filename);
 	return retval;
 }
+
+int SSHHelper::launchApplication(const char *ipAddress, const char *password,
+								 const char *applicationID)
+{
+	char *filename;
+	FILE *fp = buildInitialSSHScript(ipAddress, password, &filename);
+	
+	if (fp == NULL) {
+		return -1;
+	}
+	
+	int len = 31 + strlen(applicationID);
+	char cmd[len];
+
+	snprintf(cmd, len, "exp_send \"launchctl start %s\n\"\n\n", applicationID);
+	fputs(cmd, fp);
+	fputs("expect {\n", fp);
+	fputs("    timeout          { exit 1 }\n", fp);
+	fputs("    eof              { exit 1 }\n", fp);
+	fputs("    \"#\"\n", fp);
+	fputs("}\n\n", fp);
+	fputs("exp_send \"exit\n\"\n", fp);
+	fputs("exit 0\n", fp);
+	fflush(fp);
+	fclose(fp);
+	
+	if (chmod(filename, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1) {
+		remove(filename);
+		return -1;
+	}
+
+	int retval = system(filename);
+	remove(filename);
+	return retval;
+}

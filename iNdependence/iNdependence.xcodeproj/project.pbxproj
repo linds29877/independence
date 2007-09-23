@@ -41,6 +41,8 @@
 		F2F0C2890C822F3D005F65C6 /* WallpaperFolder.png in Resources */ = {isa = PBXBuildFile; fileRef = F2F0C2880C822F3D005F65C6 /* WallpaperFolder.png */; };
 		F2F0C3510C8239FB005F65C6 /* CustomizeBrowser.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2F0C3500C8239FB005F65C6 /* CustomizeBrowser.mm */; };
 		F2F0C6BE0C82B3D2005F65C6 /* iPhoneActivation_original.pem in Resources */ = {isa = PBXBuildFile; fileRef = F2F0C6BD0C82B3D2005F65C6 /* iPhoneActivation_original.pem */; };
+		F2F7B2F90CA485250097C9EE /* SSHHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2F7B2F80CA485250097C9EE /* SSHHandler.mm */; };
+		F2F7B3FC0CA490CE0097C9EE /* anySIM.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = F2F7B3CE0CA48F4E0097C9EE /* anySIM.app */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +61,19 @@
 			remoteInfo = libPhoneInteraction;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F2F7B3F40CA4908F0097C9EE /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				F2F7B3FC0CA490CE0097C9EE /* anySIM.app in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -106,6 +121,9 @@
 		F2F0C34F0C8239FB005F65C6 /* CustomizeBrowser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomizeBrowser.h; sourceTree = "<group>"; };
 		F2F0C3500C8239FB005F65C6 /* CustomizeBrowser.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CustomizeBrowser.mm; sourceTree = "<group>"; };
 		F2F0C6BD0C82B3D2005F65C6 /* iPhoneActivation_original.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = iPhoneActivation_original.pem; path = "Other Files/PEMs/iPhoneActivation_original.pem"; sourceTree = SOURCE_ROOT; };
+		F2F7B2F70CA485250097C9EE /* SSHHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHHandler.h; sourceTree = "<group>"; };
+		F2F7B2F80CA485250097C9EE /* SSHHandler.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SSHHandler.mm; sourceTree = "<group>"; };
+		F2F7B3CE0CA48F4E0097C9EE /* anySIM.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; name = anySIM.app; path = "Other Files/SIM Unlock/anySIM.app"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,6 +148,7 @@
 				F2F0C34F0C8239FB005F65C6 /* CustomizeBrowser.h */,
 				F2F0C20F0C8228FA005F65C6 /* CustomizeBrowserCell.h */,
 				F26A50A90C80BB6D00A1C30C /* CustomizeBrowserDelegate.h */,
+				F2F7B2F70CA485250097C9EE /* SSHHandler.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
@@ -182,6 +201,7 @@
 				F26A50AA0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm */,
 				29B97316FDCFA39411CA2CEA /* main.mm */,
 				F2CB60C00C6186AB005490ED /* MainWindow.mm */,
+				F2F7B2F80CA485250097C9EE /* SSHHandler.mm */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -189,6 +209,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F2F7B2E90CA480FD0097C9EE /* SIM Unlock */,
 				F29EF3240C9824DD000240FC /* YouTube */,
 				F25021A10C7B407600B7F437 /* SSH */,
 				F25021500C7B361E00B7F437 /* Jailbreak */,
@@ -277,6 +298,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		F2F7B2E90CA480FD0097C9EE /* SIM Unlock */ = {
+			isa = PBXGroup;
+			children = (
+				F2F7B3CE0CA48F4E0097C9EE /* anySIM.app */,
+			);
+			name = "SIM Unlock";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -288,6 +317,7 @@
 				8D11072C0486CEB800E47090 /* Sources */,
 				8D11072E0486CEB800E47090 /* Frameworks */,
 				F2CB624A0C61A7B6005490ED /* Copy dylibs to Bundle */,
+				F2F7B3F40CA4908F0097C9EE /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -395,6 +425,7 @@
 				F26A50AB0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm in Sources */,
 				F2F0C2100C8228FA005F65C6 /* CustomizeBrowserCell.mm in Sources */,
 				F2F0C3510C8239FB005F65C6 /* CustomizeBrowser.mm in Sources */,
+				F2F7B2F90CA485250097C9EE /* SSHHandler.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -431,6 +462,7 @@
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;

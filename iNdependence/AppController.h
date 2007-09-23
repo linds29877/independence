@@ -20,6 +20,7 @@
 
 
 class PhoneInteraction;
+@class SSHHandler;
 @class MainWindow;
 
 @interface AppController : NSObject
@@ -36,9 +37,11 @@ class PhoneInteraction;
 	IBOutlet NSButton* installSSHButton;
 	IBOutlet NSButton* removeSSHButton;
 	IBOutlet NSButton* changePasswordButton;
+	IBOutlet NSButton* simUnlockButton;
 	IBOutlet CustomizeBrowser* customizeBrowser;
 	IBOutlet NSWindow* keyGenerationOutput;
 	IBOutlet NSTextView* logOutput;
+	IBOutlet SSHHandler* sshHandler;
 
 	PhoneInteraction *m_phoneInteraction;
 	bool m_connected;
@@ -90,6 +93,7 @@ class PhoneInteraction;
 - (IBAction)deactivate:(id)sender;
 - (IBAction)performJailbreak:(id)sender;
 - (IBAction)returnToJail:(id)sender;
+- (IBAction)SIMUnlock:(id)sender;
 - (IBAction)changePassword:(id)sender;
 - (IBAction)installSSH:(id)sender;
 - (IBAction)removeSSH:(id)sender;

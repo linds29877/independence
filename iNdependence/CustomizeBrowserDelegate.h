@@ -18,6 +18,7 @@
 
 #import "MainWindow.h"
 #import "CustomizeBrowser.h"
+#import "SSHHandler.h"
 
 
 @interface CustomizeBrowserDelegate : NSObject
@@ -26,23 +27,14 @@
 	IBOutlet CustomizeBrowser *m_browser;
 	IBOutlet NSButton *m_deleteButton;
 	IBOutlet NSButton *m_addButton;
-	IBOutlet NSWindow *m_sshWindow;
-	IBOutlet NSTextField *m_sshIPText1;
-	IBOutlet NSTextField *m_sshIPText2;
-	IBOutlet NSTextField *m_sshIPText3;
-	IBOutlet NSTextField *m_sshIPText4;
-	IBOutlet NSSecureTextField *m_sshPassword;
+	IBOutlet SSHHandler *m_sshHandler;
 	NSArray *m_col1Items;
 	NSDictionary *m_col2Dictionary;
 }
 
 - (bool)acceptDraggedFiles:(NSArray*)files;
 - (bool)addFilesToPhone:(NSArray*)files wasCancelled:(bool*)bCancelled;
-- (bool)getSSHInfo:(NSString**)ipAddress password:(NSString**)password wasCancelled:(bool*)bCancelled;
-- (bool)removeKnownHostsEntry:(NSString*)ipAddress;
 
-- (IBAction)sshDialogCancel:(id)sender;
-- (IBAction)sshDialogOk:(id)sender;
 - (IBAction)selectionChanged:(id)sender;
 - (IBAction)deleteButtonPressed:(id)sender;
 - (IBAction)addButtonPressed:(id)sender;
