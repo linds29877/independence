@@ -17,8 +17,8 @@ Disclaimer: I am not responsible for any damage caused to your phone by this too
 
 Platforms and configurations known to work with iNdependence:
 
-Intel Mac, Mac OS X 10.4.10 - Firmware 1.0, 1.0.1, 1.0.2 - iTunes 7.3 to 7.4.1
-PPC Mac, Mac OS X 10.4.10 - Firmware 1.0, 1.0.1, 1.0.2 - iTunes 7.3 to 7.4.1
+Intel Mac, Mac OS X 10.4.10 - Firmware 1.0, 1.0.1, 1.0.2 - iTunes 7.3 to 7.4.2
+PPC Mac, Mac OS X 10.4.10 - Firmware 1.0, 1.0.1, 1.0.2 - iTunes 7.3 to 7.4.2
 
 -----
 
