@@ -2601,7 +2601,8 @@ void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 		return;
 	}
 
-	// clear boot args
+	// clear boot args (not needed)
+	/*
 	if (PI_sendCommandToDevice(dev, CFSTR("setenv boot-args"))) {
 		
 		if (m_finishingJailbreak) {
@@ -2613,6 +2614,7 @@ void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 		
 		return;
 	}
+	 */
 
 	// save the environment
 	if (PI_sendCommandToDevice(dev, CFSTR("saveenv"))) {
