@@ -1,0 +1,20 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {copyCoreFilesystem = id; copyFullFilesystem = id; }; 
+            CLASS = MainWindow; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                copyCoreButton = NSButton; 
+                copyFullButton = NSButton; 
+                statusBar = NSTextField; 
+                waitDialog = NSWindow; 
+                waitDialogMessage = NSTextField; 
+                waitDialogSpinner = NSProgressIndicator; 
+            }; 
+            SUPERCLASS = NSWindow; 
+        }
+    ); 
+    IBVersion = 1; 
+}
