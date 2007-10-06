@@ -6,7 +6,8 @@
 enum
 {
 	MENU_ITEM_COPY_CORE_FILESYSTEM = 10,
-	MENU_ITEM_COPY_FULL_FILESYSTEM = 11
+	MENU_ITEM_COPY_FULL_FILESYSTEM = 11,
+	MENU_ITEM_COPY_MEDIA_FILESYSTEM = 12
 };
 
 
@@ -124,10 +125,12 @@ void phoneInteractionNotification(int type, const char *msg)
 	if (m_jailbroken) {
 		[copyCoreButton setEnabled:YES];
 		[copyFullButton setEnabled:YES];
+		[copyMediaButton setEnabled:YES];
 	}
 	else {
 		[copyCoreButton setEnabled:NO];
 		[copyFullButton setEnabled:NO];
+		[copyMediaButton setEnabled:NO];
 	}
 	
 	[self updateStatus];
@@ -173,6 +176,7 @@ void phoneInteractionNotification(int type, const char *msg)
 	switch ([menuItem tag]) {
 		case MENU_ITEM_COPY_CORE_FILESYSTEM:
 		case MENU_ITEM_COPY_FULL_FILESYSTEM:
+		case MENU_ITEM_COPY_MEDIA_FILESYSTEM:
 
 			if (![self isConnected] || ![self isJailbroken]) {
 				return NO;
@@ -216,6 +220,22 @@ void phoneInteractionNotification(int type, const char *msg)
 
 	[self startDisplayWaitingSheet:@"Waiting for copy" message:@"Copying files from phone..."];
 	m_phoneInteraction->copyPhoneFilesystem("/", [[dirOpener filename] UTF8String], false);
+}
+
+- (IBAction)copyMediaFilesystem:(id)sender
+{
+	NSOpenPanel *dirOpener = [NSOpenPanel openPanel];
+	[dirOpener setTitle:@"Choose where you want to put it"];
+	[dirOpener setCanChooseDirectories:YES];
+	[dirOpener setCanChooseFiles:NO];
+	[dirOpener setAllowsMultipleSelection:NO];
+	
+	if ([dirOpener runModalForTypes:nil] != NSOKButton) {
+		return;
+	}
+
+	[self startDisplayWaitingSheet:@"Waiting for copy" message:@"Copying files from phone..."];
+	m_phoneInteraction->copyPhoneFilesystem("/var/root/Media/", [[dirOpener filename] UTF8String], true);
 }
 
 @end
