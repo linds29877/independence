@@ -2,12 +2,13 @@
     IBClasses = (
         {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {
-            ACTIONS = {copyCoreFilesystem = id; copyFullFilesystem = id; }; 
+            ACTIONS = {copyCoreFilesystem = id; copyFullFilesystem = id; copyMediaFilesystem = id; }; 
             CLASS = MainWindow; 
             LANGUAGE = ObjC; 
             OUTLETS = {
                 copyCoreButton = NSButton; 
                 copyFullButton = NSButton; 
+                copyMediaButton = NSButton; 
                 statusBar = NSTextField; 
                 waitDialog = NSWindow; 
                 waitDialogMessage = NSTextField; 

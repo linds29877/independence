@@ -9,6 +9,7 @@ class PhoneInteraction;
 {
     IBOutlet NSButton *copyCoreButton;
     IBOutlet NSButton *copyFullButton;
+	IBOutlet NSButton *copyMediaButton;
 	IBOutlet NSTextField *statusBar;
 	IBOutlet NSWindow* waitDialog;
 	IBOutlet NSTextField* waitDialogMessage;
@@ -35,5 +36,6 @@ class PhoneInteraction;
 
 - (IBAction)copyCoreFilesystem:(id)sender;
 - (IBAction)copyFullFilesystem:(id)sender;
+- (IBAction)copyMediaFilesystem:(id)sender;
 
 @end

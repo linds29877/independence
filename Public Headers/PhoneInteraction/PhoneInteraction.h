@@ -200,7 +200,8 @@ private:
 	bool determineiTunesVersion();
 	void setupPrivateFunctions();
 	bool arePrivateFunctionsSetup();
-	bool copyFilesystemRecursive(afc_connection *conn, const char *dirpath, const char *dest,
+	bool copyFilesystemRecursive(afc_connection *conn, const char *phoneBasepath,
+								 const char *dirpath, const char *dest,
 								 const char *basepath, bool ignoreUserFiles);
 	bool removePathRecursive(const char *path);
 	bool writeDataToFile(void *buf, int size, const char *file, int failureMsg = 0, int successMsg = 0);

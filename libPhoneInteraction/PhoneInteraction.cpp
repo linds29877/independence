@@ -63,64 +63,64 @@ typedef unsigned int (*t_sendCommandToDevice)(struct am_recovery_device *rdev,
 static PhoneInteraction *g_phoneInteraction = NULL;
 static char *g_symlinks[] =
 {
-	"/etc",
-	"/mach",
-	"/private/etc/resolv.conf",
-	"/private/var/db/localtime",
-	"/private/var/logs/CrashReporter/LatestCrash.plist",
-	"/Library/Logs",
-	"/Library/Preferences",
-	"/System/Library/Frameworks/IOKit.framework/IOKit",
-	"/System/Library/Frameworks/IOKit.framework/Resources",
-	"/System/Library/Frameworks/IOKit.framework/Versions/Current",
-	"/System/Library/Frameworks/MultitouchSupport.framework/MultitouchSupport",
-	"/System/Library/Frameworks/MultitouchSupport.framework/Resources",
-	"/System/Library/Frameworks/MultitouchSupport.framework/Versions/Current",
-	"/System/Library/Frameworks/OfficeImport.framework/OfficeImport",
-	"/System/Library/Frameworks/OfficeImport.framework/Resources",
-	"/System/Library/Frameworks/OfficeImport.framework/Versions/Current",
-	"/System/Library/Frameworks/System.framework/System",
-	"/System/Library/Frameworks/System.framework/Resources",
-	"/System/Library/Frameworks/System.framework/Versions/Current",
-	"/System/Library/Frameworks/System.framework/Versions/B/System",
-	"/tmp",
-	"/usr/lib/libbz2.1.0.dylib",
-	"/usr/lib/libbz2.dylib",
-	"/usr/lib/libc.dylib",
-	"/usr/lib/libcharset.1.0.0.dylib",
-	"/usr/lib/libcharset.dylib",
-	"/usr/lib/libcrypto.dylib",
-	"/usr/lib/libcurses.dylib",
-	"/usr/lib/libdbm.dylib",
-	"/usr/lib/libdl.dylib",
-	"/usr/lib/libdns_sd.dylib",
-	"/usr/lib/libedit.dylib", 
-	"/usr/lib/libform.dylib",
-	"/usr/lib/libiconv.2.2.0.dylib",
-	"/usr/lib/libiconv.dylib",
-	"/usr/lib/libicucore.dylib",
-	"/usr/lib/libinfo.dylib",
-	"/usr/lib/libIOKit.A.dylib",
-	"/usr/lib/libIOKit.dylib",
-	"/usr/lib/libipsec.dylib",
-	"/usr/lib/libkvm.dylib",
-	"/usr/lib/libm.dylib",
-	"/usr/lib/libncurses.dylib",
-	"/usr/lib/libobjc.dylib",
-	"/usr/lib/libpoll.dylib",
-	"/usr/lib/libpthread.dylib",
-	"/usr/lib/librpcsvc.dylib",
-	"/usr/lib/libsqlite3.0.8.6.dylib",
-	"/usr/lib/libsqlite3.dylib",
-	"/usr/lib/libssl.dylib",
-	"/usr/lib/libstdc++.6.dylib",
-	"/usr/lib/libSystem.dylib",
-	"/usr/lib/libtidy.dylib",
-	"/usr/lib/libxml2.dylib",
-	"/usr/lib/libz.1.1.3.dylib",
-	"/usr/lib/libz.1.dylib",
-	"/usr/lib/libz.dylib",
-	"/var"
+	"etc",
+	"mach",
+	"private/etc/resolv.conf",
+	"private/var/db/localtime",
+	"private/var/logs/CrashReporter/LatestCrash.plist",
+	"Library/Logs",
+	"Library/Preferences",
+	"System/Library/Frameworks/IOKit.framework/IOKit",
+	"System/Library/Frameworks/IOKit.framework/Resources",
+	"System/Library/Frameworks/IOKit.framework/Versions/Current",
+	"System/Library/Frameworks/MultitouchSupport.framework/MultitouchSupport",
+	"System/Library/Frameworks/MultitouchSupport.framework/Resources",
+	"System/Library/Frameworks/MultitouchSupport.framework/Versions/Current",
+	"System/Library/Frameworks/OfficeImport.framework/OfficeImport",
+	"System/Library/Frameworks/OfficeImport.framework/Resources",
+	"System/Library/Frameworks/OfficeImport.framework/Versions/Current",
+	"System/Library/Frameworks/System.framework/System",
+	"System/Library/Frameworks/System.framework/Resources",
+	"System/Library/Frameworks/System.framework/Versions/Current",
+	"System/Library/Frameworks/System.framework/Versions/B/System",
+	"tmp",
+	"usr/lib/libbz2.1.0.dylib",
+	"usr/lib/libbz2.dylib",
+	"usr/lib/libc.dylib",
+	"usr/lib/libcharset.1.0.0.dylib",
+	"usr/lib/libcharset.dylib",
+	"usr/lib/libcrypto.dylib",
+	"usr/lib/libcurses.dylib",
+	"usr/lib/libdbm.dylib",
+	"usr/lib/libdl.dylib",
+	"usr/lib/libdns_sd.dylib",
+	"usr/lib/libedit.dylib", 
+	"usr/lib/libform.dylib",
+	"usr/lib/libiconv.2.2.0.dylib",
+	"usr/lib/libiconv.dylib",
+	"usr/lib/libicucore.dylib",
+	"usr/lib/libinfo.dylib",
+	"usr/lib/libIOKit.A.dylib",
+	"usr/lib/libIOKit.dylib",
+	"usr/lib/libipsec.dylib",
+	"usr/lib/libkvm.dylib",
+	"usr/lib/libm.dylib",
+	"usr/lib/libncurses.dylib",
+	"usr/lib/libobjc.dylib",
+	"usr/lib/libpoll.dylib",
+	"usr/lib/libpthread.dylib",
+	"usr/lib/librpcsvc.dylib",
+	"usr/lib/libsqlite3.0.8.6.dylib",
+	"usr/lib/libsqlite3.dylib",
+	"usr/lib/libssl.dylib",
+	"usr/lib/libstdc++.6.dylib",
+	"usr/lib/libSystem.dylib",
+	"usr/lib/libtidy.dylib",
+	"usr/lib/libxml2.dylib",
+	"usr/lib/libz.1.1.3.dylib",
+	"usr/lib/libz.1.dylib",
+	"usr/lib/libz.dylib",
+	"var"
 };
 static char *g_symlinkOriginals[] =
 {
@@ -1888,7 +1888,7 @@ bool PhoneInteraction::copyPhoneFilesystem(const char *dirpath, const char *dest
 		(*m_statusFunc)("Copying phone filesystem...", true);
 	}
 
-	bool retval = copyFilesystemRecursive(m_hAFC, dirpath, dest, dest, ignoreUserFiles);
+	bool retval = copyFilesystemRecursive(m_hAFC, dirpath, dirpath, dest, dest, ignoreUserFiles);
 
 	if (retval) {
 		(*m_notifyFunc)(NOTIFY_FSCOPY_SUCCESS, "Filesystem copy succeeded.");
@@ -1897,9 +1897,9 @@ bool PhoneInteraction::copyPhoneFilesystem(const char *dirpath, const char *dest
 	return retval;
 }
 
-bool PhoneInteraction::copyFilesystemRecursive(afc_connection *conn, const char *dirpath,
-											   const char *dest, const char *basepath,
-											   bool ignoreUserFiles)
+bool PhoneInteraction::copyFilesystemRecursive(afc_connection *conn, const char *phoneBasepath,
+											   const char *dirpath, const char *dest,
+											   const char *basepath, bool ignoreUserFiles)
 {
 	afc_directory *dir;
 
@@ -1911,6 +1911,8 @@ bool PhoneInteraction::copyFilesystemRecursive(afc_connection *conn, const char 
 	char phoneWorkingDir[PATH_MAX+1];
 	char computerWorkingDir[PATH_MAX+1];
 	char *fileName = NULL;
+	int phoneBaselen = strlen(phoneBasepath);
+	int baselen = strlen(basepath);
 
 	strcpy(phoneWorkingDir, dirpath);
 	strcpy(computerWorkingDir, dest);
@@ -1945,13 +1947,26 @@ bool PhoneInteraction::copyFilesystemRecursive(afc_connection *conn, const char 
 			// this is an ugly hack because I can't tell if a file/dir is
 			// a symlink or not.  so we compare it against a known list
 			for (int i = 0; i < g_numSymlinks; i++) {
+				char fullPath[PATH_MAX+1];
+				strcpy(fullPath, phoneBasepath);
 
-				if (!strcmp(g_symlinks[i], filePath)) {
+				if (fullPath[phoneBaselen-1] != '/') {
+					strcat(fullPath, "/");
+				}
+
+				strcat(fullPath, g_symlinks[i]);
+
+				if (!strcmp(fullPath, filePath)) {
 					char origPath[PATH_MAX+1];
 					strcpy(origPath, g_symlinkOriginals[i]);
 
 					char linkPath[PATH_MAX+1];
 					strcpy(linkPath, basepath);
+
+					if (linkPath[baselen-1] != '/') {
+						strcat(linkPath, "/");
+					}
+
 					strcat(linkPath, g_symlinks[i]);
 
 #ifdef DEBUG
@@ -1994,10 +2009,13 @@ bool PhoneInteraction::copyFilesystemRecursive(afc_connection *conn, const char 
 
 					if (ignoreUserFiles) {
 						
-						if (!strncmp(filePath, "/private/var/root/Media", 23)) {
+						if (!strncmp(filePath, "/private/var/root/Media", 23) ||
+							!strncmp(filePath, "/var/root/Media/private/var/root/Media", 46) ||
+							!strncmp(filePath, "/var/root/Media/private/var/root/backup", 47) ) {
 							ignore = true;
 						}
-						else if (!strncmp(filePath, "/private/var/root/Library", 25)) {
+						else if (!strncmp(filePath, "/private/var/root/Library", 25) ||
+								 !strncmp(filePath, "/var/root/Library/private/var/root/Library", 50) ) {
 							ignore = true;
 							char newPath[PATH_MAX+1];
 							len = strlen(computerWorkingDir);
@@ -2047,7 +2065,7 @@ bool PhoneInteraction::copyFilesystemRecursive(afc_connection *conn, const char 
 						mkdir(newPath, S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
 #endif
 						
-						if (!copyFilesystemRecursive(conn, filePath, newPath, basepath,
+						if (!copyFilesystemRecursive(conn, phoneBasepath, filePath, newPath, basepath,
 													 ignoreUserFiles)) {
 							AFCDirectoryClose(conn, dir);
 							return false;
