@@ -7,9 +7,9 @@
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleGetInfoString</key>
-	<string>1.0.3, © The Operator 2007</string>
+	<string>1.0.4, © The Operator 2007</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.3</string>
+	<string>1.0.4</string>
 	<key>CFBundleIconFile</key>
 	<string>ToolchainHelper.icns</string>
 	<key>CFBundleIdentifier</key>
