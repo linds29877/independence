@@ -36,6 +36,8 @@ enum
 	NOTIFY_INITIALIZATION_FAILED,
 	NOTIFY_CONNECTION_SUCCESS,
 	NOTIFY_CONNECTION_FAILED,
+	NOTIFY_AFC_CONNECTION_SUCCESS,
+	NOTIFY_AFC_CONNECTION_FAILED,
 	NOTIFY_ACTIVATION_SUCCESS,
 	NOTIFY_ACTIVATION_FAILED,
 	NOTIFY_DEACTIVATION_SUCCESS,
@@ -56,14 +58,25 @@ enum
 	NOTIFY_REMOVE_PATH_FAILED,
 	NOTIFY_CONNECTED,
 	NOTIFY_DISCONNECTED,
+	NOTIFY_AFC_CONNECTED,
+	NOTIFY_AFC_DISCONNECTED,
 	NOTIFY_JAILBREAK_FAILED,
 	NOTIFY_JAILBREAK_SUCCESS,
 	NOTIFY_JAILBREAK_CANCEL,
 	NOTIFY_JAILBREAK_RECOVERY_WAIT,
-	NOTIFY_JAILBREAK_RECOVERY_CONNECTED,
-	NOTIFY_JAILBREAK_RECOVERY_DISCONNECTED,
-	NOTIFY_JAILBREAK_RESTORE_CONNECTED,
-	NOTIFY_JAILBREAK_RESTORE_DISCONNECTED,
+	NOTIFY_NEW_JAILBREAK_STAGE_ONE_WAIT,
+	NOTIFY_NEW_JAILBREAK_STAGE_TWO_WAIT,
+	NOTIFY_RECOVERY_CONNECTED,
+	NOTIFY_RECOVERY_DISCONNECTED,
+	NOTIFY_RESTORE_CONNECTED,
+	NOTIFY_RESTORE_DISCONNECTED,
+	NOTIFY_DFU_CONNECTED,
+	NOTIFY_DFU_DISCONNECTED,
+	NOTIFY_DFU_RECOVERY_WAIT,
+	NOTIFY_DFU_FAILED,
+	NOTIFY_DFU_SUCCESS,
+	NOTIFY_RECOVERY_FAILED,
+	NOTIFY_RECOVERY_SUCCESS,
 	NOTIFY_JAILRETURN_FAILED,
 	NOTIFY_JAILRETURN_SUCCESS,
 	NOTIFY_JAILRETURN_CANCEL,
@@ -113,6 +126,17 @@ public:
 	void setConnected(bool connected);
 	bool isConnected();
 
+	// AFC connection related functions
+	void connectToAFC();
+	void setConnectedToAFC(bool connected);
+	bool isConnectedToAFC();
+
+	// information functions
+	bool readValue(const char *key, char **value);
+	char *getPhoneFirmwareVersion();
+	char *getPhoneProductVersion();
+	char *getPhoneBuildVersion();
+
 	// activation related functions
 	bool activate(const char* filename, const char* pemfile = NULL);
 	bool deactivate();
@@ -121,6 +145,8 @@ public:
 	// jailbreak related functions
 	void performJailbreak(const char *firmwarePath, const char *modifiedFstabPath,
 						  const char *modifiedServicesPath);
+	void performNewJailbreak(const char *modifiedServicesPath);
+	void newJailbreakStageTwo();
 	void returnToJail(const char *servicesFile, const char *fstabFile);
 	void jailbreakFinished();
 	void returnToJailFinished();
@@ -133,6 +159,13 @@ public:
 
 	void restoreModeStarted();
 	void restoreModeFinished();
+
+	void dfuModeStarted(am_recovery_device *dev);
+	void dfuModeFinished(am_recovery_device *dev);
+
+	// used to switch phone modes
+	void enterDFUMode(const char *firmwarePath);
+	void enterRecoveryMode();
 
 	// lower level file I/O
 	bool putData(void *data, int len, char *dest, int failureMsg = NOTIFY_PUTFILE_FAILED,
@@ -182,12 +215,14 @@ public:
 	// public data members
 	bool m_switchingToRestoreMode;
 	bool m_inRestoreMode;
-	bool m_finishingJailbreak;
-	bool m_waitingForRecovery;
+	bool m_inDFUMode;
 	bool m_returningToJail;
+	bool m_finishingJailbreak;
+	bool m_performingNewJailbreak;
 	bool m_recoveryOccurred;
 	am_recovery_device *m_recoveryDevice;
 	struct am_restore_device *m_restoreDevice;
+	am_recovery_device *m_dfuDevice;
 	am_device *m_iPhone;
 
 private:
@@ -205,16 +240,25 @@ private:
 								 const char *basepath, bool ignoreUserFiles);
 	bool removePathRecursive(const char *path);
 	bool writeDataToFile(void *buf, int size, const char *file, int failureMsg = 0, int successMsg = 0);
+	void recoveryModeStarted_dfu(struct am_recovery_device *rdev);
 
 	// private data members
 	bool m_connected;
+	bool m_afcConnected;
 	bool m_inRecoveryMode;
 	bool m_jailbroken;
+	bool m_enteringRecoveryMode;
+	bool m_enteringDFUMode;
+	bool m_waitingForRecovery;
 	afc_connection *m_hAFC;
 	void (*m_statusFunc)(const char*, bool);
 	void (*m_notifyFunc)(int, const char*);
 	char *m_firmwarePath;
 	bool m_privateFunctionsSetup;
 	PIVersion m_iTunesVersion;
+	char *m_firmwareVersion;
+	char *m_productVersion;
+	char *m_buildVersion;
+	char *m_servicesPath;
 
 };

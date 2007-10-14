@@ -194,18 +194,32 @@ MainWindow *g_mainWindow;
 	else if ([appController isInRecoveryMode]) {
 		statusStr = [statusStr stringByAppendingString:@"Connected to iPhone in recovery mode"];
 	}
+	else if ([appController isInDFUMode]) {
+		statusStr = [statusStr stringByAppendingString:@"Connected to iPhone in DFU mode"];
+	}
 	else if ([appController isConnected]) {
-		statusStr = [statusStr stringByAppendingString:@"Connected to iPhone"];
+		statusStr = [statusStr stringByAppendingFormat:@"Connected to iPhone %C Firmware ", 0x2022];
+		statusStr = [statusStr stringByAppendingString:[appController phoneFirmwareVersion]];
 
 		if ([appController isActivated]) {
-			statusStr = [statusStr stringByAppendingString:@" -- activated"];
+			statusStr = [statusStr stringByAppendingFormat:@" %C activated", 0x2022];
 		}
 		else {
-			statusStr = [statusStr stringByAppendingString:@" -- not activated"];
+			statusStr = [statusStr stringByAppendingFormat:@" %C not activated", 0x2022];
+		}
+
+		if ([appController isAFCConnected]) {
+			statusStr = [statusStr stringByAppendingFormat:@" %C AFC connection", 0x2022];
+		}
+		else {
+			statusStr = [statusStr stringByAppendingFormat:@" %C no AFC connection", 0x2022];
 		}
 
 		if ([appController isJailbroken]) {
-			statusStr = [statusStr stringByAppendingString:@" -- jailbroken"];
+			statusStr = [statusStr stringByAppendingFormat:@" %C jailbroken", 0x2022];
+		}
+		else {
+			statusStr = [statusStr stringByAppendingFormat:@" %C jailed", 0x2022];
 		}
 
 	}

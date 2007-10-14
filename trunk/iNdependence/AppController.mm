@@ -38,7 +38,10 @@ enum
 	MENU_ITEM_INSTALL_SSH = 17,
 	MENU_ITEM_CHANGE_PASSWORD = 18,
 	MENU_ITEM_REMOVE_SIM_UNLOCK = 19,
+	MENU_ITEM_ENTER_DFU_MODE = 20,
 	MENU_ITEM_REMOVE_SSH = 21,
+	MENU_ITEM_PRE_111 = 22,
+	MENU_ITEM_POST_111 = 23
 };
 
 extern MainWindow *g_mainWindow;
@@ -65,6 +68,12 @@ static void phoneInteractionNotification(int type, const char *msg)
 			case NOTIFY_DISCONNECTED:
 				[g_appController setConnected:false];
 				break;
+			case NOTIFY_AFC_CONNECTED:
+				[g_appController setAFCConnected:true];
+				break;
+			case NOTIFY_AFC_DISCONNECTED:
+				[g_appController setAFCConnected:false];
+				break;
 			case NOTIFY_INITIALIZATION_FAILED:
 				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				[NSApp terminate:g_appController];
@@ -72,18 +81,21 @@ static void phoneInteractionNotification(int type, const char *msg)
 			case NOTIFY_CONNECTION_FAILED:
 				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
+			case NOTIFY_AFC_CONNECTION_FAILED:
+				[g_mainWindow updateStatus];
+				break;
 			case NOTIFY_ACTIVATION_SUCCESS:
-				[g_appController setActivated:true];
+				[g_mainWindow updateStatus];
 				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
 			case NOTIFY_DEACTIVATION_SUCCESS:
-				[g_appController setActivated:false];
+				[g_mainWindow updateStatus];
 				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
 			case NOTIFY_JAILBREAK_SUCCESS:
 				[g_mainWindow endDisplayWaitingSheet];
 				[g_appController setPerformingJailbreak:false];
-				[g_appController setJailbroken:true];
+				[g_mainWindow updateStatus];
 
 				if ([g_appController isWaitingForActivation]) {
 					[g_appController activateStageTwo];
@@ -99,7 +111,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			case NOTIFY_JAILRETURN_SUCCESS:
 				[g_mainWindow endDisplayWaitingSheet];
 				[g_appController setReturningToJail:false];
-				[g_appController setJailbroken:false];
+				[g_mainWindow updateStatus];
 
 				if ([g_appController isWaitingForActivation]) {
 					[g_appController activateStageThree];
@@ -111,6 +123,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 					[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				}
 
+				break;
+			case NOTIFY_DFU_SUCCESS:
+				[g_mainWindow endDisplayWaitingSheet];
+				[g_mainWindow updateStatus];
+				[g_mainWindow displayAlert:@"Success" message:@"Your phone is now in DFU mode and is ready for you to downgrade."];
 				break;
 			case NOTIFY_JAILBREAK_FAILED:
 				[g_mainWindow endDisplayWaitingSheet];
@@ -144,6 +161,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 				}
 
 				break;
+			case NOTIFY_DFU_FAILED:
+				[g_mainWindow endDisplayWaitingSheet];
+				[g_mainWindow updateStatus];
+				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
+				break;
 			case NOTIFY_ACTIVATION_FAILED:
 			case NOTIFY_PUTSERVICES_FAILED:
 			case NOTIFY_PUTFSTAB_FAILED:
@@ -158,29 +180,57 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_mainWindow updateStatus];
 				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
+			case NOTIFY_NEW_JAILBREAK_STAGE_ONE_WAIT:
+				[g_mainWindow endDisplayWaitingSheet];
+				[g_mainWindow startDisplayWaitingSheet:nil
+											   message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
+												 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
+				break;
+			case NOTIFY_NEW_JAILBREAK_STAGE_TWO_WAIT:
+				[g_mainWindow endDisplayWaitingSheet];
+				[g_mainWindow startDisplayWaitingSheet:nil
+											   message:@"Please reboot your phone again using the same steps..."
+												 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
+				break;
 			case NOTIFY_JAILBREAK_RECOVERY_WAIT:
 				[g_mainWindow startDisplayWaitingSheet:nil message:@"Waiting for jail break..." image:[NSImage imageNamed:@"jailbreak"] cancelButton:false runModal:false];
 				break;
 			case NOTIFY_JAILRETURN_RECOVERY_WAIT:
 				[g_mainWindow startDisplayWaitingSheet:nil message:@"Waiting for return to jail..." image:[NSImage imageNamed:@"jailbreak"] cancelButton:false runModal:false];
 				break;
-			case NOTIFY_JAILBREAK_RECOVERY_CONNECTED:
+			case NOTIFY_DFU_RECOVERY_WAIT:
+				[g_mainWindow startDisplayWaitingSheet:nil message:@"Waiting to enter DFU mode..." image:nil cancelButton:false runModal:false];
+				break;
+			case NOTIFY_RECOVERY_CONNECTED:
 				[g_appController setRecoveryMode:true];
+				[g_mainWindow updateStatus];
 				break;
-			case NOTIFY_JAILBREAK_RECOVERY_DISCONNECTED:
+			case NOTIFY_RECOVERY_DISCONNECTED:
 				[g_appController setRecoveryMode:false];
+				[g_mainWindow updateStatus];
 				break;
-			case NOTIFY_JAILBREAK_RESTORE_CONNECTED:
+			case NOTIFY_RESTORE_CONNECTED:
 				[g_appController setRestoreMode:true];
+				[g_mainWindow updateStatus];
 				break;
-			case NOTIFY_JAILBREAK_RESTORE_DISCONNECTED:
+			case NOTIFY_RESTORE_DISCONNECTED:
 				[g_appController setRestoreMode:false];
+				[g_mainWindow updateStatus];
+				break;
+			case NOTIFY_DFU_CONNECTED:
+				[g_appController setDFUMode:true];
+				[g_mainWindow updateStatus];
+				break;
+			case NOTIFY_DFU_DISCONNECTED:
+				[g_appController setDFUMode:false];
+				[g_mainWindow updateStatus];
 				break;
 			case NOTIFY_JAILBREAK_CANCEL:
 				[g_mainWindow endDisplayWaitingSheet];
 				[g_mainWindow updateStatus];
 				break;
 			case NOTIFY_CONNECTION_SUCCESS:
+			case NOTIFY_AFC_CONNECTION_SUCCESS:
 			case NOTIFY_INITIALIZATION_SUCCESS:
 			case NOTIFY_PUTFSTAB_SUCCESS:
 			case NOTIFY_PUTSERVICES_SUCCESS:
@@ -218,8 +268,10 @@ static void phoneInteractionNotification(int type, const char *msg)
 	}
 
 	m_connected = false;
+	m_afcConnected = false;
 	m_recoveryMode = false;
 	m_restoreMode = false;
+	m_dfuMode = false;
 	m_jailbroken = false;
 	m_activated = false;
 	m_performingJailbreak = false;
@@ -238,18 +290,29 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_connected = connected;
 	
 	if (m_connected) {
+		[self setAFCConnected:m_phoneInteraction->isConnectedToAFC()];
 		[self setActivated:m_phoneInteraction->isPhoneActivated()];
 		[self setJailbroken:m_phoneInteraction->isPhoneJailbroken()];
-		
-		if ([self isActivated]) {
-			[activateButton setEnabled:NO];
-			[deactivateButton setEnabled:YES];
+
+		if ([self isAFCConnected]) {
+
+			if ([self isActivated]) {
+				[activateButton setEnabled:NO];
+				[deactivateButton setEnabled:YES];
+			}
+			else {
+				[activateButton setEnabled:YES];
+				[deactivateButton setEnabled:NO];
+			}
+
 		}
 		else {
-			[activateButton setEnabled:YES];
+			[activateButton setEnabled:NO];
 			[deactivateButton setEnabled:NO];
 		}
-		
+
+		[enterDFUModeButton setEnabled:YES];
+
 		if (m_installingSSH) {
 			m_bootCount++;
 			[mainWindow endDisplayWaitingSheet];
@@ -267,11 +330,13 @@ static void phoneInteractionNotification(int type, const char *msg)
 		
 	}
 	else {
+		[self setAFCConnected:false];
 		[self setActivated:false];
 		[self setJailbroken:false];
 
 		[activateButton setEnabled:NO];
 		[deactivateButton setEnabled:NO];
+		[enterDFUModeButton setEnabled:NO];
 	}
 	
 	[mainWindow updateStatus];
@@ -280,6 +345,53 @@ static void phoneInteractionNotification(int type, const char *msg)
 - (bool)isConnected
 {
 	return m_connected;
+}
+
+- (void)setAFCConnected:(bool)connected
+{
+	m_afcConnected = connected;
+
+	if (m_afcConnected) {
+
+		if ([self isActivated]) {
+			[activateButton setEnabled:NO];
+			[deactivateButton setEnabled:YES];
+		}
+		else {
+			[activateButton setEnabled:YES];
+			[deactivateButton setEnabled:NO];
+		}
+
+		if ([self isJailbroken]) {
+			[jailbreakButton setEnabled:NO];
+
+			if ([self isUsing10xFirmware]) {
+				[returnToJailButton setEnabled:YES];
+			}
+			else {
+				[returnToJailButton setEnabled:NO];
+			}
+
+		}
+		else {
+			[jailbreakButton setEnabled:YES];
+			[returnToJailButton setEnabled:NO];
+		}
+		
+	}
+	else {
+		[activateButton setEnabled:NO];
+		[deactivateButton setEnabled:NO];
+		[jailbreakButton setEnabled:NO];
+		[returnToJailButton setEnabled:NO];
+	}
+
+	[mainWindow updateStatus];
+}
+
+- (bool)isAFCConnected
+{
+	return m_afcConnected;
 }
 
 - (void)setRecoveryMode:(bool)inRecovery
@@ -304,12 +416,30 @@ static void phoneInteractionNotification(int type, const char *msg)
 	return m_restoreMode;
 }
 
+- (void)setDFUMode:(bool)inDFU
+{
+	m_dfuMode = inDFU;
+	[mainWindow updateStatus];
+}
+
+- (bool)isInDFUMode
+{
+	return m_dfuMode;
+}
+
 - (void)setJailbroken:(bool)jailbroken
 {
 	m_jailbroken = jailbroken;
 	
 	if (m_jailbroken) {
-		[returnToJailButton setEnabled:YES];
+
+		if ([self isUsing10xFirmware]) {
+			[returnToJailButton setEnabled:YES];
+		}
+		else {
+			[returnToJailButton setEnabled:NO];
+		}
+
 		[changePasswordButton setEnabled:YES];
 		[customizeBrowser setEnabled:YES];
 		[jailbreakButton setEnabled:NO];
@@ -317,6 +447,29 @@ static void phoneInteractionNotification(int type, const char *msg)
 		if ([self isSSHInstalled]) {
 			[installSSHButton setEnabled:NO];
 			[removeSSHButton setEnabled:YES];
+
+			if ([self isUsing10xFirmware]) {
+
+				if (!m_phoneInteraction->fileExists("/var/root/Media.backup")) {
+					[pre111UpgradeButton setEnabled:YES];
+				}
+				else {
+					[pre111UpgradeButton setEnabled:NO];
+				}
+
+				[post111UpgradeButton setEnabled:NO];
+			}
+			else {
+				[pre111UpgradeButton setEnabled:NO];
+
+				if (m_phoneInteraction->fileExists("/var/root/Media.backup")) {
+					[post111UpgradeButton setEnabled:YES];
+				}
+				else {
+					[post111UpgradeButton setEnabled:NO];
+				}
+
+			}
 
 			if ([self isanySIMInstalled]) {
 				[installSimUnlockButton setEnabled:NO];
@@ -344,8 +497,10 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[removeSimUnlockButton setEnabled:NO];
 		[changePasswordButton setEnabled:NO];
 		[customizeBrowser setEnabled:NO];
-		
-		if ([self isConnected]) {
+		[pre111UpgradeButton setEnabled:NO];
+		[post111UpgradeButton setEnabled:NO];
+
+		if ([self isConnected] && [self isAFCConnected]) {
 			[jailbreakButton setEnabled:YES];
 		}
 		else {
@@ -401,6 +556,22 @@ static void phoneInteractionNotification(int type, const char *msg)
 	return m_phoneInteraction->applicationExists("anySIM.app");
 }
 
+- (NSString*)phoneFirmwareVersion
+{
+	return [NSString stringWithCString:m_phoneInteraction->getPhoneProductVersion() encoding:NSUTF8StringEncoding];
+}
+
+- (bool)isUsing10xFirmware
+{
+	char *value = m_phoneInteraction->getPhoneProductVersion();
+
+	if (!strncmp(value, "1.0", 3)) {
+		return true;
+	}
+
+	return false;
+}
+
 - (void)setPerformingJailbreak:(bool)bJailbreaking
 {
 	m_performingJailbreak = bJailbreaking;
@@ -422,6 +593,98 @@ static void phoneInteractionNotification(int type, const char *msg)
 }
 
 - (IBAction)performJailbreak:(id)sender
+{
+
+	if ([self isUsing10xFirmware]) {
+		NSString *firmwarePath = nil;
+
+		// first things first -- get the path to the unzipped firmware files
+		NSOpenPanel *firmwareOpener = [NSOpenPanel openPanel];
+		[firmwareOpener setTitle:@"Select where you unzipped the firmware files"];
+		[firmwareOpener setCanChooseDirectories:YES];
+		[firmwareOpener setCanChooseFiles:NO];
+		[firmwareOpener setAllowsMultipleSelection:NO];
+
+		while (1) {
+
+			if ([firmwareOpener runModalForTypes:nil] != NSOKButton) {
+				return;
+			}
+
+			firmwarePath = [firmwareOpener filename];
+
+			if ([[NSFileManager defaultManager] fileExistsAtPath:[firmwarePath stringByAppendingString:@"/Restore.plist"]]) {
+				break;
+			}
+
+			[mainWindow displayAlert:@"Error" message:@"Specified path does not contain firmware files.  Try again."];
+			return;
+		}
+
+		NSString *servicesFile = [[NSBundle mainBundle] pathForResource:@"Services_mod" ofType:@"plist"];
+	
+		if (servicesFile == nil) {
+			[mainWindow displayAlert:@"Error" message:@"Error finding modified Services.plist file."];
+			return;
+		}
+
+		NSString *fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab_mod" ofType:@""];
+		
+		if (fstabFile == nil) {
+			[mainWindow displayAlert:@"Error" message:@"Error finding modified fstab file."];
+			return;
+		}
+
+		m_performingJailbreak = true;
+		m_phoneInteraction->performJailbreak([firmwarePath UTF8String], [fstabFile UTF8String],
+											 [servicesFile UTF8String]);
+	}
+	else {
+		NSString *servicesFile = [[NSBundle mainBundle] pathForResource:@"Services111_mod" ofType:@"plist"];
+		
+		if (servicesFile == nil) {
+			[mainWindow displayAlert:@"Error" message:@"Error finding modified Services.plist file."];
+			return;
+		}
+		
+		m_performingJailbreak = true;
+		m_phoneInteraction->performNewJailbreak([servicesFile UTF8String]);
+	}
+
+}
+
+- (IBAction)returnToJail:(id)sender
+{
+	[mainWindow setStatus:@"Returning to jail..." spinning:true];
+
+	NSString *servicesFile = nil;
+
+	if ([self isUsing10xFirmware]) {
+		servicesFile = [[NSBundle mainBundle] pathForResource:@"Services" ofType:@"plist"];
+	}
+	else {
+		servicesFile = [[NSBundle mainBundle] pathForResource:@"Services111" ofType:@"plist"];
+	}
+
+	if (servicesFile == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding Services.plist file."];
+		[mainWindow updateStatus];
+		return;
+	}
+
+	NSString *fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab" ofType:@""];
+
+	if (fstabFile == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding fstab file."];
+		[mainWindow updateStatus];
+		return;
+	}
+
+	m_returningToJail = true;
+	m_phoneInteraction->returnToJail([servicesFile UTF8String], [fstabFile UTF8String]);
+}
+
+- (IBAction)enterDFUMode:(id)sender
 {
 	NSString *firmwarePath;
 	
@@ -448,47 +711,155 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 	
-	NSString *servicesFile = [[NSBundle mainBundle] pathForResource:@"Services_mod" ofType:@"plist"];
-	
-	if (servicesFile == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding modified Services.plist file."];
-		return;
-	}
-	
-	NSString *fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab_mod" ofType:@""];
-	
-	if (fstabFile == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding modified fstab file."];
-		return;
-	}
-	
-	m_performingJailbreak = true;
-	m_phoneInteraction->performJailbreak([firmwarePath UTF8String], [fstabFile UTF8String],
-										 [servicesFile UTF8String]);
+	m_phoneInteraction->enterDFUMode([firmwarePath UTF8String]);
 }
 
-- (IBAction)returnToJail:(id)sender
+- (IBAction)pre111Upgrade:(id)sender
 {
-	[mainWindow setStatus:@"Returning to jail..." spinning:true];
 
-	NSString *servicesFile = [[NSBundle mainBundle] pathForResource:@"Services" ofType:@"plist"];
-
-	if (servicesFile == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding Services.plist file."];
-		[mainWindow updateStatus];
+	if (m_phoneInteraction->fileExists("/var/root/Media.backup")) {
+		[mainWindow displayAlert:@"Already done" message:@"It appears that you have already performed the pre-1.1.1 operation.  If this is not the case, then remove the /var/root/Media.backup directory from your phone using SSH/SFTP and try again."];
 		return;
 	}
 
-	NSString *fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab" ofType:@""];
-
-	if (fstabFile == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding fstab file."];
-		[mainWindow updateStatus];
+	bool bCancelled = false;
+	NSString *ipAddress, *password;
+	
+	if ([sshHandler getSSHInfo:&ipAddress password:&password wasCancelled:&bCancelled] == false) {
+		return;
+	}
+	
+	if (bCancelled) {
 		return;
 	}
 
-	m_returningToJail = true;
-	m_phoneInteraction->returnToJail([servicesFile UTF8String], [fstabFile UTF8String]);
+	[mainWindow displayAlert:@"Open iTunes" message:@"Please open iTunes now and ensure that it is connected to your phone.\n\nIf you see the \"Set Up Your iPhone\" screen, then set it up accordingly before you proceed.\n\nOnce you are done and the iPhone is connected to iTunes again, press the OK button to proceed."];
+
+	bool done = false;
+	int retval;
+	
+	while (!done) {
+		[mainWindow startDisplayWaitingSheet:@"Performing Pre-1.1.1 Upgrade" message:@"Performing pre-1.1.1 operations..." image:nil
+								cancelButton:false runModal:false];
+		retval = SSHHelper::symlinkMediaToRoot([ipAddress UTF8String], [password UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
+
+		if (retval != SSH_HELPER_SUCCESS) {
+
+			switch (retval)
+			{
+				case SSH_HELPER_ERROR_NO_RESPONSE:
+					[mainWindow displayAlert:@"Failed" message:@"Couldn't connect to SSH server.  Ensure IP address is correct, phone is connected to a network, and SSH is installed correctly."];
+					done = true;
+					break;
+				case SSH_HELPER_ERROR_BAD_PASSWORD:
+					[mainWindow displayAlert:@"Failed" message:@"root password is incorrect."];
+					done = true;
+					break;
+				case SSH_HELPER_VERIFICATION_FAILED:
+					int retval = NSRunAlertPanel(@"Failed", @"Host verification failed.  Would you like iNdependence to try and fix this for you by editing ~/.ssh/known_hosts?", @"No", @"Yes", nil);
+
+					if (retval == NSAlertAlternateReturn) {
+						
+						if (![sshHandler removeKnownHostsEntry:ipAddress]) {
+							[mainWindow displayAlert:@"Failed" message:@"Couldn't remove entry from ~/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address."];
+							done = true;
+						}
+						
+					}
+					else {
+						done = true;
+					}
+
+					break;
+				default:
+					[mainWindow displayAlert:@"Failed" message:@"Error performing pre-1.1.1 operations."];
+					done = true;
+					break;
+			}
+
+		}
+		else {
+			done = true;
+		}
+
+	}
+
+	[pre111UpgradeButton setEnabled:false];
+	[mainWindow displayAlert:@"Success" message:@"Your phone is now ready to be upgraded to 1.1.1.\n\nPlease quit iNdependence, then use iTunes to do this now.\n\nEnsure that you choose 'Update' and not 'Restore' in iTunes."];
+}
+
+- (IBAction)post111Upgrade:(id)sender
+{
+	
+	if (!m_phoneInteraction->fileExists("/var/root/Media.backup")) {
+		[mainWindow displayAlert:@"Error" message:@"/var/root/Media.backup does not exist on your phone so you cannot perform this operation."];
+		return;
+	}
+	
+	bool bCancelled = false;
+	NSString *ipAddress, *password;
+	
+	if ([sshHandler getSSHInfo:&ipAddress password:&password wasCancelled:&bCancelled] == false) {
+		return;
+	}
+	
+	if (bCancelled) {
+		return;
+	}
+
+	bool done = false;
+	int retval;
+	
+	while (!done) {
+		[mainWindow startDisplayWaitingSheet:@"Performing Post-1.1.1 Upgrade" message:@"Performing post-1.1.1 operations..." image:nil
+								cancelButton:false runModal:false];
+		retval = SSHHelper::removeMediaSymlink([ipAddress UTF8String], [password UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
+		
+		if (retval != SSH_HELPER_SUCCESS) {
+			
+			switch (retval)
+			{
+				case SSH_HELPER_ERROR_NO_RESPONSE:
+					[mainWindow displayAlert:@"Failed" message:@"Couldn't connect to SSH server.  Ensure IP address is correct, phone is connected to a network, and SSH is installed correctly."];
+					done = true;
+					break;
+				case SSH_HELPER_ERROR_BAD_PASSWORD:
+					[mainWindow displayAlert:@"Failed" message:@"root password is incorrect."];
+					done = true;
+					break;
+				case SSH_HELPER_VERIFICATION_FAILED:
+					int retval = NSRunAlertPanel(@"Failed", @"Host verification failed.  Would you like iNdependence to try and fix this for you by editing ~/.ssh/known_hosts?", @"No", @"Yes", nil);
+					
+					if (retval == NSAlertAlternateReturn) {
+						
+						if (![sshHandler removeKnownHostsEntry:ipAddress]) {
+							[mainWindow displayAlert:@"Failed" message:@"Couldn't remove entry from ~/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address."];
+							done = true;
+						}
+						
+					}
+						else {
+							done = true;
+						}
+						
+						break;
+				default:
+					[mainWindow displayAlert:@"Failed" message:@"Error performing post-1.1.1 operations."];
+					done = true;
+					break;
+			}
+			
+		}
+		else {
+			done = true;
+		}
+		
+	}
+
+	[post111UpgradeButton setEnabled:false];
+	[mainWindow displayAlert:@"Success" message:@"You've successfully performed the post-1.1.1 operations."];
 }
 
 - (IBAction)installSimUnlock:(id)sender
@@ -695,7 +1066,13 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 
-	[self returnToJail:self];
+	if ([self isUsing10xFirmware]) {
+		[self returnToJail:self];
+	}
+	else {
+		[self activateStageThree];
+	}
+
 }
 
 - (void)activateStageThree
@@ -1333,6 +1710,13 @@ static void phoneInteractionNotification(int type, const char *msg)
 			}
 			
 			break;
+		case MENU_ITEM_ENTER_DFU_MODE:
+
+			if (![self isConnected]) {
+				return NO;
+			}
+
+			break;
 		case MENU_ITEM_JAILBREAK:
 			
 			if (![self isConnected] || [self isJailbroken]) {
@@ -1355,6 +1739,12 @@ static void phoneInteractionNotification(int type, const char *msg)
 			
 			break;
 		case MENU_ITEM_RETURN_TO_JAIL:
+			
+			if (![self isConnected] || ![self isJailbroken] || [self isUsing10xFirmware]) {
+				return NO;
+			}
+			
+			break;
 		case MENU_ITEM_CHANGE_PASSWORD:
 			
 			if (![self isConnected] || ![self isJailbroken]) {
@@ -1374,6 +1764,22 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 			if (![self isConnected] || ![self isJailbroken] || ![self isSSHInstalled] ||
 				![self isanySIMInstalled]) {
+				return NO;
+			}
+			
+			break;
+		case MENU_ITEM_PRE_111:
+
+			if (![self isConnected] || ![self isJailbroken] || ![self isSSHInstalled] ||
+				![self isUsing10xFirmware] || m_phoneInteraction->fileExists("/var/root/Media.backup")) {
+				return NO;
+			}
+
+			break;
+		case MENU_ITEM_POST_111:
+			
+			if (![self isConnected] || ![self isJailbroken] || ![self isSSHInstalled] ||
+				[self isUsing10xFirmware] || !m_phoneInteraction->fileExists("/var/root/Media.backup")) {
 				return NO;
 			}
 			

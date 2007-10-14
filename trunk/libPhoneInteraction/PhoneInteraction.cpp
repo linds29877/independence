@@ -309,6 +309,9 @@ void deviceNotificationCallback(am_device_notification_callback_info *info)
 				}
 
 			}
+			else if (g_phoneInteraction->m_performingNewJailbreak) {
+				g_phoneInteraction->newJailbreakStageTwo();
+			}
 
 		}
 
@@ -320,6 +323,7 @@ void deviceNotificationCallback(am_device_notification_callback_info *info)
 		}
 		else {
 			g_phoneInteraction->setConnected(false);
+			g_phoneInteraction->setConnectedToAFC(false);
 		}
 
 	}
@@ -344,6 +348,7 @@ void dfuConnectNotificationCallback(am_recovery_device *dev)
 #ifdef DEBUG
 	CFShow(CFSTR("dfuConnectNotificationCallback"));
 #endif
+	g_phoneInteraction->dfuModeStarted(dev);
 }
 
 void dfuDisconnectNotificationCallback(am_recovery_device *dev)
@@ -351,6 +356,7 @@ void dfuDisconnectNotificationCallback(am_recovery_device *dev)
 #ifdef DEBUG
 	CFShow(CFSTR("dfuDisconnectNotificationCallback"));
 #endif
+	g_phoneInteraction->dfuModeFinished(dev);
 }
 
 void recoveryProgressCallback(unsigned int progress_number, unsigned int opcode)
@@ -386,23 +392,7 @@ void recoveryConnectNotificationCallback(am_recovery_device *dev)
 #ifdef DEBUG
 	CFShow(CFSTR("recoveryConnectNotificationCallback"));
 #endif
-
-	if (g_phoneInteraction->m_waitingForRecovery) {
-		g_phoneInteraction->recoveryModeStarted(dev);
-	}
-	else if ( g_phoneInteraction->m_finishingJailbreak || g_phoneInteraction->m_returningToJail ) {
-
-		if (!g_phoneInteraction->m_recoveryOccurred) {
-			g_phoneInteraction->m_recoveryOccurred = true;
-			g_phoneInteraction->exitRecoveryMode(dev);
-		}
-
-	}
-	else if (g_recoveryAttempts++ == 0) {
-		// try once to save them from recovery mode
-		g_phoneInteraction->exitRecoveryMode(dev);
-	}
-
+	g_phoneInteraction->recoveryModeStarted(dev);
 }
 
 void recoveryDisconnectNotificationCallback(am_recovery_device *dev)
@@ -425,6 +415,7 @@ PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 	m_iPhone = NULL;
 	m_recoveryDevice = NULL;
 	m_connected = false;
+	m_afcConnected = false;
 	m_inRecoveryMode = false;
 	m_switchingToRestoreMode = false;
 	m_inRestoreMode = false;
@@ -434,11 +425,20 @@ PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 	m_hAFC = NULL;
 	m_firmwarePath = NULL;
 	m_waitingForRecovery = false;
+	m_enteringDFUMode = false;
+	m_enteringRecoveryMode = false;
+	m_inDFUMode = false;
+	m_dfuDevice = NULL;
 	m_privateFunctionsSetup = false;
 	m_recoveryOccurred = false;
+	m_performingNewJailbreak = false;
 	m_iTunesVersion.major = 0;
 	m_iTunesVersion.minor = 0;
 	m_iTunesVersion.point = 0;
+	m_firmwareVersion = NULL;
+	m_productVersion = NULL;
+	m_buildVersion = NULL;
+	m_servicesPath = NULL;
 
 	if (determineiTunesVersion()) {
 		setupPrivateFunctions();
@@ -864,73 +864,140 @@ void PhoneInteraction::connectToPhone()
 	}
 
 	if ( AMDeviceConnect(m_iPhone) ) { 
-		setConnected(false);
 		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Can't connect to phone.");
 		return;
 	}
 
 	if ( !AMDeviceIsPaired(m_iPhone) ) {
-		setConnected(false);
-		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Phone is not paired.  Make sure you run iTunes with your phone connected at least once.");
-		return;
+		AMDevicePair(m_iPhone);
+
+		if ( !AMDeviceIsPaired(m_iPhone) ) {
+			(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Phone is not paired.  Make sure you run iTunes with your phone connected at least once.");
+			return;
+		}
+
 	}
 
 	if ( AMDeviceValidatePairing(m_iPhone) ) {
-		setConnected(false);
-		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Pairing is not valid.  Make sure your run iTunes with your phone connected at least once.");
-		return;
+		AMDevicePair(m_iPhone);
+
+		if ( AMDeviceValidatePairing(m_iPhone) ) {
+			(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Pairing is not valid.  Make sure your run iTunes with your phone connected at least once.");
+			return;
+		}
+
 	}
 
 	if ( AMDeviceStartSession(m_iPhone) ) {
-		setConnected(false);
 		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Error starting session.");
 		return;
+	}
+
+	if (!readValue("FirmwareVersion", &m_firmwareVersion)) {
+		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get firmware version.");
+		return;
+	}
+	
+	if (!readValue("ProductVersion", &m_productVersion)) {
+		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get product version.");
+		return;
+	}
+	
+	if (!readValue("BuildVersion", &m_firmwareVersion)) {
+		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get build version.");
+		return;
+	}
+
+	connectToAFC();
+	setConnected(true);
+	(*m_notifyFunc)(NOTIFY_CONNECTION_SUCCESS, "Connection success!");
+}
+
+void PhoneInteraction::connectToAFC()
+{
+
+	if (isConnectedToAFC()) return;
+
+	if (m_statusFunc) {
+		(*m_statusFunc)("Connecting to AFC...", true);
 	}
 
 	m_jailbroken = false;
 	afc_connection *hAFC;
 
 	if ( AMDeviceStartService(m_iPhone, AMSVC_AFC2, &hAFC, NULL) ) {
-
+		
 		if ( AMDeviceStartService(m_iPhone, AMSVC_AFC, &hAFC, NULL) ) {
-			setConnected(false);
-			(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Error connecting to AFC service.");
+			(*m_notifyFunc)(NOTIFY_AFC_CONNECTION_FAILED, "Connection failed: Error connecting to AFC service.");
 			return;
 		}
 
 	}
 	else {
+
 		// AFC2 is running.  We're jailbroken.
 		m_jailbroken = true;
 	}
 
 	if (AFCConnectionOpen(hAFC, 0, &m_hAFC)) {
-		setConnected(false);
-		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Error opening connection to AFC service");
+		(*m_notifyFunc)(NOTIFY_AFC_CONNECTION_FAILED, "Connection failed: Error opening connection to AFC service");
 		return;
 	}
 
+#if defined(__APPLE__)
+	AFCPlatformInit();
+#endif
+
 	if (!m_jailbroken) {
+		
 		// For older jailbreak compatibility: test to see if we can open a system
 		// file.  If so, then we're jailbroken.
-		afc_file_ref rAFC;
-
+		//
+		// This doesn't hold anymore since the hack 1.1.1 upgrade will allow you to read
+		// system files, but you still don't have write access.  So check to see if we
+		// can actually write to a file as well.
+		afc_file_ref rAFC, rAFC2;
+		
+		// first check if we can open a system file to verify we're using the
+		// correct filesystem (ie. not Media)
 		if (!AFCFileRefOpen(m_hAFC, "/private/etc/master.passwd", 1, &rAFC)) {
-			m_jailbroken = true;
-			AFCFileRefClose(m_hAFC, rAFC);
-		}
 
+			if (AFCFileRefClose(m_hAFC, rAFC)) {
+				printf("couldn't close /private/etc/master.passwd\n");
+			}
+			
+			// now check if we can write a file
+			if (!AFCFileRefOpen(m_hAFC, "/jailbreak_check", 3, &rAFC2)) {
+				m_jailbroken = true;
+
+				if (AFCFileRefClose(m_hAFC, rAFC2)) {
+					printf("couldn't close /jailbreak_check\n");
+				}
+
+				if (AFCRemovePath(m_hAFC, "/jailbreak_check")) {
+					printf("couldn't remove /jailbreak_check\n");
+				}
+
+			}
+			
+		}
+		
 	}
 
-	setConnected(true);
-	(*m_notifyFunc)(NOTIFY_CONNECTION_SUCCESS, "Connection success!");
+	setConnectedToAFC(true);
+	(*m_notifyFunc)(NOTIFY_AFC_CONNECTION_SUCCESS, "AFC Connection success!");
 }
 
 void PhoneInteraction::disconnectFromPhone()
 {
 	
 	if (isConnected()) {
-		AFCConnectionClose(m_hAFC);
+
+		if (isConnectedToAFC()) {
+			AFCConnectionClose(m_hAFC);
+			setConnectedToAFC(false);
+		}
+
 		AMDeviceDisconnect(m_iPhone);
 		AMDeviceStopSession(m_iPhone);
 		m_jailbroken = false;
@@ -958,6 +1025,24 @@ bool PhoneInteraction::isConnected()
 	return m_connected;
 }
 
+void PhoneInteraction::setConnectedToAFC(bool connected)
+{
+	m_afcConnected = connected;
+
+	if (m_afcConnected) {
+		(*m_notifyFunc)(NOTIFY_AFC_CONNECTED, "AFC Connected");
+	}
+	else {
+		(*m_notifyFunc)(NOTIFY_AFC_DISCONNECTED, "AFC Disconnected");
+	}
+	
+}
+
+bool PhoneInteraction::isConnectedToAFC()
+{
+	return m_afcConnected;
+}
+
 bool PhoneInteraction::activate(const char* filename, const char *pemfile)
 {
 
@@ -966,10 +1051,12 @@ bool PhoneInteraction::activate(const char* filename, const char *pemfile)
 		return false;
 	}
 
+	/*
 	if (isPhoneJailbroken()) {
 		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Can't activate when phone is jailbroken.");
 		return false;
 	}
+	 */
 
 	if ( (filename == NULL) && (pemfile == NULL) ) {
 		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Invalid parameters.");
@@ -1212,6 +1299,47 @@ bool PhoneInteraction::isPhoneActivated()
 	}
 
 	return false;
+}
+
+bool PhoneInteraction::readValue(const char *key, char **value)
+{
+	CFStringRef cfkey = CFStringCreateWithCString(kCFAllocatorDefault, key, kCFStringEncodingUTF8);
+
+	if (cfkey == NULL) return false;
+
+	CFStringRef cfvalue = AMDeviceCopyValue(m_iPhone, 0, cfkey);
+	CFRelease(cfkey);
+
+	if (cfvalue == NULL) {
+		*value = NULL;
+		return false;
+	}
+
+	CFIndex cflen = CFStringGetLength(cfvalue);
+	*value = (char*)malloc(cflen+1);
+
+	if (CFStringGetCString(cfvalue, *value, cflen+1, kCFStringEncodingUTF8) == false) {
+		free(value);
+		*value = NULL;
+		return false;
+	}
+
+	return true;
+}
+
+char *PhoneInteraction::getPhoneFirmwareVersion()
+{
+	return m_firmwareVersion;
+}
+
+char *PhoneInteraction::getPhoneProductVersion()
+{
+	return m_productVersion;
+}
+
+char *PhoneInteraction::getPhoneBuildVersion()
+{
+	return m_buildVersion;
 }
 
 bool PhoneInteraction::putData(void *data, int len, char *dest, int failureMsg, int successMsg)
@@ -2333,12 +2461,171 @@ bool PhoneInteraction::removePathRecursive(const char *path)
 	return true;
 }
 
+void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
+{
+
+	if (!isConnected()) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Can't perform a jailbreak when no phone is connected.");
+		return;
+	}
+
+	// check to ensure they've already performed the hack upgrade to 1.1.1
+	if (!fileExists("/dev/rdisk0s1")) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error, couldn't perform jailbreak.  You need to downgrade to version 1.0.2, then perform the hack upgrade to 1.1.1 (see README file).");
+		return;
+	}
+	
+	if (m_statusFunc) {
+		(*m_statusFunc)("Performing new jailbreak...", false);
+	}
+
+	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_WAIT, "Waiting for jail break...");
+
+	afc_file_ref rAFC;
+
+	unsigned long long fstabOffset = 0, offset2 = 0;
+
+	if (AFCFileRefOpen(m_hAFC, "/dev/rdisk0s1", 1, &rAFC)) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't open /dev/rdisk0s1 on phone.");
+		return;
+	}
+
+	// TODO: A bit of a hack.  Is there any way to determine the disk size?
+	unsigned int disksize = 1024 * 1024 * 300;
+
+	// use an 8 MB memory buffer to read the disk
+	unsigned int bufsize = 8388608;
+	unsigned char *buf = (unsigned char*)malloc(bufsize);
+	bool bFound = false;
+	unsigned long long mainoffset = 0;
+	char *searchstr = "/dev/disk0s1 / hfs ro 0 1\n/dev/disk0s2 /private/var hfs rw,noexec 0 2";
+	unsigned int searchstrlen = strlen(searchstr);
+	int searchoffset = 0;
+
+	while ( !bFound && (mainoffset < disksize) ) {
+
+		if (AFCFileRefRead(m_hAFC, rAFC, buf, &bufsize)) {
+			AFCFileRefClose(m_hAFC, rAFC);
+			free(buf);
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't read from /dev/rdisk0s1.");
+			return;
+		}
+
+		void *ptr = memchr(buf, searchstr[searchoffset], bufsize);
+
+		while (ptr != NULL) {
+			unsigned long long bufoffset = (unsigned long long)ptr - (unsigned long long)buf;
+			unsigned int bufleft = bufsize - bufoffset;
+			unsigned int searchleft = searchstrlen - searchoffset;
+
+			if (bufleft < searchleft) {
+
+				if (!memcmp(ptr, searchstr+searchoffset, bufleft)) {
+					searchoffset += bufleft;
+					break;
+				}
+
+			}
+			else if (!memcmp(ptr, searchstr+searchoffset, searchleft)) {
+				bFound = true;
+				fstabOffset = mainoffset + bufoffset - searchoffset;
+				break;
+			}
+
+			ptr = memchr(((char*)ptr)+1, searchstr[searchoffset], bufsize - (bufoffset+1));
+		}
+
+		mainoffset += bufsize;
+	}
+
+	free(buf);
+
+	if (!bFound) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't find fstab file on /dev/rdisk0s1.");
+		return;
+	}
+	
+	// read in a 2048 byte chunk of disk starting at the fstab offset, modify it, then write it back again
+	// (2048 seems to be the magic number when it comes to being able to write back to disk again)
+	bufsize = 2048;
+	buf = (unsigned char*)malloc(bufsize);
+	
+	if (AFCFileRefSeek(m_hAFC, rAFC, fstabOffset, offset2)) {
+		AFCFileRefClose(m_hAFC, rAFC);
+		free(buf);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /dev/rdisk0s1.");
+		return;
+	}
+	
+	if (AFCFileRefRead(m_hAFC, rAFC, buf, &bufsize)) {
+		AFCFileRefClose(m_hAFC, rAFC);
+		free(buf);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't read from /dev/rdisk0s1.");
+		return;
+	}
+	
+	if (AFCFileRefClose(m_hAFC, rAFC)) {
+		free(buf);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error closing /dev/rdisk0s1.");
+		return;
+	}
+	
+	// change mount type from ro to rw
+	buf[20] = 'w';
+	
+	if (AFCFileRefOpen(m_hAFC, "/dev/rdisk0s1", 3, &rAFC)) {
+		free(buf);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't open /dev/rdisk0s1 on phone.");
+		return;
+	}
+	
+	if (AFCFileRefSeek(m_hAFC, rAFC, fstabOffset, offset2)) {
+		AFCFileRefClose(m_hAFC, rAFC);
+		free(buf);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /dev/rdisk0s1 for writing.");
+		return;
+	}
+	
+	if (AFCFileRefWrite(m_hAFC, rAFC, buf, bufsize)) {
+		AFCFileRefClose(m_hAFC, rAFC);
+		free(buf);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error writing modified fstab file to /dev/rdisk0s1.");
+		return;
+	}
+	
+	free(buf);
+
+	if (AFCFileRefClose(m_hAFC, rAFC)) {
+		free(buf);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error closing /dev/rdisk0s1.");
+		return;
+	}
+
+	(*m_notifyFunc)(NOTIFY_NEW_JAILBREAK_STAGE_ONE_WAIT, "Waiting for reboot...");
+
+	if (m_servicesPath != NULL) {
+		free(m_servicesPath);
+	}
+
+	m_servicesPath = (char*)malloc(strlen(modifiedServicesPath)+1);
+	strcpy(m_servicesPath, modifiedServicesPath);
+
+	m_performingNewJailbreak = true;
+}
+
 void PhoneInteraction::performJailbreak(const char *firmwarePath, const char *modifiedFstabPath,
 										const char *modifiedServicesPath)
 {
 
 	if (!isConnected()) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Can't perform a jailbreak when no phone is connected.");
+		return;
+	}
+
+	char *phoneProdVer = getPhoneProductVersion();
+
+	if (!strncmp(phoneProdVer, "1.1", 3)) {
+		performNewJailbreak(modifiedServicesPath);
 		return;
 	}
 
@@ -2401,7 +2688,7 @@ void PhoneInteraction::returnToJail(const char *servicesFile, const char *fstabF
 		(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error writing fstab file to phone.");
 		return;
 	}
-
+	
 	if (AMDeviceEnterRecovery(m_iPhone)) {
 		(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error entering recovery mode.");
 		return;
@@ -2412,16 +2699,50 @@ void PhoneInteraction::returnToJail(const char *servicesFile, const char *fstabF
 	(*m_notifyFunc)(NOTIFY_JAILRETURN_RECOVERY_WAIT, "Waiting for return to jail...");
 }
 
+void PhoneInteraction::newJailbreakStageTwo()
+{
+	m_performingNewJailbreak = false;
+
+	if (!putFile(m_servicesPath, "/System/Library/Lockdown/Services.plist", 0, 0)) {
+		free(m_servicesPath);
+		m_servicesPath = NULL;
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error writing modified Services.plist to phone.");
+		return;
+	}
+	
+	free(m_servicesPath);
+	m_servicesPath = NULL;
+	
+	(*m_notifyFunc)(NOTIFY_NEW_JAILBREAK_STAGE_TWO_WAIT, "Waiting for reboot...");
+	
+	m_recoveryOccurred = true;
+	m_finishingJailbreak = true;
+}
+
 void PhoneInteraction::returnToJailFinished()
 {
 	m_returningToJail = false;
-	(*m_notifyFunc)(NOTIFY_JAILRETURN_SUCCESS, "Return to jail succeeded!");
+
+	if (isPhoneJailbroken()) {
+		(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Return to jail failed.");
+	}
+	else {
+		(*m_notifyFunc)(NOTIFY_JAILRETURN_SUCCESS, "Return to jail succeeded!");
+	}
+
 }
 
 void PhoneInteraction::jailbreakFinished()
 {
 	m_finishingJailbreak = false;
-	(*m_notifyFunc)(NOTIFY_JAILBREAK_SUCCESS, "Jailbreak succeeded!");
+	
+	if (isPhoneJailbroken()) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_SUCCESS, "Jailbreak succeeded!");
+	}
+	else {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Jailbreak failed.");
+	}
+
 }
 
 bool PhoneInteraction::isPhoneJailbroken()
@@ -2429,12 +2750,85 @@ bool PhoneInteraction::isPhoneJailbroken()
 	return m_jailbroken;
 }
 
+void PhoneInteraction::recoveryModeStarted_dfu(struct am_recovery_device *rdev)
+{
+	char dfuFile[PATH_MAX+1];
+	unsigned int len = strlen(m_firmwarePath);
+
+	memset(dfuFile, 0, PATH_MAX+1);
+	strcpy(dfuFile, m_firmwarePath);
+	
+	if (dfuFile[len-1] != '/') {
+		strcat(dfuFile, "/");
+	}
+	
+	strcat(dfuFile, "Firmware/dfu/WTF.s5l8900xall.RELEASE.dfu");
+
+	// check the dfu version
+	struct stat st;
+	
+	if (stat(dfuFile, &st) == -1) {
+		(*m_notifyFunc)(NOTIFY_DFU_FAILED, "Unknown firmware version.");
+		return;
+	}
+	
+	CFStringRef cfDFU = CFStringCreateWithCString(kCFAllocatorDefault, dfuFile,
+												  kCFStringEncodingUTF8);
+	
+	if (cfDFU == NULL) {
+		(*m_notifyFunc)(NOTIFY_DFU_FAILED, "Error creating path CFString.");
+		return;
+	}
+	
+	// send DFU file
+	if (PI_sendFileToDevice(rdev, cfDFU)) {
+		(*m_notifyFunc)(NOTIFY_DFU_FAILED, "Error sending DFU file to device.");
+		return;
+	}
+	
+	// load ramdisk
+	if (PI_sendCommandToDevice(rdev, CFSTR("go"))) {
+		(*m_notifyFunc)(NOTIFY_DFU_FAILED, "Error sending go command to device.");
+		return;
+	}
+
+}
+
 void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 {
-	m_waitingForRecovery = false;
 	m_inRecoveryMode = true;
 	m_recoveryDevice = rdev;
-	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_CONNECTED, "Recovery mode started");
+	(*m_notifyFunc)(NOTIFY_RECOVERY_CONNECTED, "Recovery mode started");
+
+	if ( m_enteringRecoveryMode ) {
+		m_enteringRecoveryMode = false;
+		(*m_notifyFunc)(NOTIFY_RECOVERY_SUCCESS, "Successfully entered recovery mode");
+		return;
+	}
+	else if ( m_enteringDFUMode ) {
+		recoveryModeStarted_dfu(rdev);
+		return;
+	}
+	else if ( m_finishingJailbreak || m_returningToJail ) {
+		
+		if (!m_recoveryOccurred) {
+			m_recoveryOccurred = true;
+			exitRecoveryMode(rdev);
+		}
+
+		return;
+	}
+	else if ( !m_waitingForRecovery ) {
+
+		// try once to save them from recovery mode
+		if (g_recoveryAttempts++ == 0) {
+			exitRecoveryMode(rdev);
+		}
+
+		return;
+	}
+
+	m_waitingForRecovery = false;
 
 #if 1
 
@@ -2571,8 +2965,8 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	// set boot args
 	//
 	// alternative boot args for restore mode boot spew
-	//if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -v"))) {
-	if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -progress"))) {
+	if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -v"))) {
+	//if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -progress"))) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error setting boot args.");
 		return;
 	}
@@ -2600,7 +2994,24 @@ void PhoneInteraction::recoveryModeFinished(am_recovery_device *dev)
 	m_inRecoveryMode = false;
 	m_recoveryDevice = NULL;
 	setConnected(false);
-	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_DISCONNECTED, "Recovery mode ended");
+	(*m_notifyFunc)(NOTIFY_RECOVERY_DISCONNECTED, "Recovery mode ended");
+}
+
+void PhoneInteraction::enterRecoveryMode()
+{
+	
+	if (!isConnected()) {
+		(*m_notifyFunc)(NOTIFY_RECOVERY_FAILED, "Can't enter DFU mode when no phone is connected.");
+		return;
+	}
+	
+	m_enteringRecoveryMode = true;
+	
+	if (AMDeviceEnterRecovery(m_iPhone)) {
+		(*m_notifyFunc)(NOTIFY_RECOVERY_FAILED, "Error entering recovery mode.");
+		return;
+	}
+	
 }
 
 void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
@@ -2664,7 +3075,7 @@ void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 void PhoneInteraction::restoreModeStarted()
 {
 	m_inRestoreMode = true;
-	(*m_notifyFunc)(NOTIFY_JAILBREAK_RESTORE_CONNECTED, "Restore mode started");
+	(*m_notifyFunc)(NOTIFY_RESTORE_CONNECTED, "Restore mode started");
 
     m_restoreDevice = AMRestoreModeDeviceCreate(0, AMDeviceGetConnectionID(m_iPhone), 0);
     m_restoreDevice->port = PI_socketForPort(m_restoreDevice, 0xf27e);
@@ -2811,5 +3222,65 @@ void PhoneInteraction::restoreModeFinished()
 {
 	m_inRestoreMode = false;
 	m_restoreDevice = NULL;
-	(*m_notifyFunc)(NOTIFY_JAILBREAK_RESTORE_DISCONNECTED, "Restore mode ended");
+
+	(*m_notifyFunc)(NOTIFY_RESTORE_DISCONNECTED, "Restore mode ended");
+}
+
+void PhoneInteraction::enterDFUMode(const char *firmwarePath)
+{
+	
+	if (!isConnected()) {
+		(*m_notifyFunc)(NOTIFY_DFU_FAILED, "Can't enter DFU mode when no phone is connected.");
+		return;
+	}
+	
+	if (m_firmwarePath != NULL) {
+		free(m_firmwarePath);
+	}
+
+	size_t len = strlen(firmwarePath);
+
+	if (firmwarePath[len-1] != '/') {
+		m_firmwarePath = (char*)malloc(len + 2);
+		strncpy(m_firmwarePath, firmwarePath, len);
+		m_firmwarePath[len] = '/';
+		m_firmwarePath[len+1] = 0;
+	}
+	else {
+		m_firmwarePath = (char*)malloc(len + 1);
+		strncpy(m_firmwarePath, firmwarePath, len);
+		m_firmwarePath[len] = 0;
+	}
+
+	if (AMDeviceEnterRecovery(m_iPhone)) {
+		(*m_notifyFunc)(NOTIFY_DFU_FAILED, "Error entering recovery mode.");
+		return;
+	}
+	
+	m_recoveryOccurred = false;
+	m_waitingForRecovery = true;
+	m_enteringDFUMode = true;
+	(*m_notifyFunc)(NOTIFY_DFU_RECOVERY_WAIT, "Entering DFU mode...");
+}
+
+void PhoneInteraction::dfuModeStarted(am_recovery_device *dev)
+{
+	m_inDFUMode = true;
+	m_dfuDevice = dev;
+
+	(*m_notifyFunc)(NOTIFY_DFU_CONNECTED, "DFU mode started");
+
+	if (m_enteringDFUMode) {
+		m_enteringDFUMode = false;
+		(*m_notifyFunc)(NOTIFY_DFU_SUCCESS, "Successfully entered DFU mode");
+	}
+
+}
+
+void PhoneInteraction::dfuModeFinished(am_recovery_device *dev)
+{
+	m_inDFUMode = false;
+	m_dfuDevice = NULL;
+
+	(*m_notifyFunc)(NOTIFY_DFU_DISCONNECTED, "DFU mode ended");
 }
