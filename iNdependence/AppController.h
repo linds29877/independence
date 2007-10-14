@@ -39,6 +39,9 @@ class PhoneInteraction;
 	IBOutlet NSButton* changePasswordButton;
 	IBOutlet NSButton* installSimUnlockButton;
 	IBOutlet NSButton* removeSimUnlockButton;
+	IBOutlet NSButton* enterDFUModeButton;
+	IBOutlet NSButton* pre111UpgradeButton;
+	IBOutlet NSButton* post111UpgradeButton;
 	IBOutlet CustomizeBrowser* customizeBrowser;
 	IBOutlet NSWindow* keyGenerationOutput;
 	IBOutlet NSTextView* logOutput;
@@ -46,8 +49,10 @@ class PhoneInteraction;
 
 	PhoneInteraction *m_phoneInteraction;
 	bool m_connected;
+	bool m_afcConnected;
 	bool m_recoveryMode;
 	bool m_restoreMode;
+	bool m_dfuMode;
 	bool m_jailbroken;
 	bool m_activated;
 	bool m_performingJailbreak;
@@ -62,11 +67,17 @@ class PhoneInteraction;
 - (void)setConnected:(bool)connected;
 - (bool)isConnected;
 
+- (void)setAFCConnected:(bool)connected;
+- (bool)isAFCConnected;
+
 - (void)setRecoveryMode:(bool)inRecovery;
 - (bool)isInRecoveryMode;
 
 - (void)setRestoreMode:(bool)inRestore;
 - (bool)isInRestoreMode;
+
+- (void)setDFUMode:(bool)inDFU;
+- (bool)isInDFUMode;
 
 - (void)setJailbroken:(bool)jailbroken;
 - (bool)isJailbroken;
@@ -83,6 +94,9 @@ class PhoneInteraction;
 - (bool)isWaitingForActivation;
 - (bool)isWaitingForDeactivation;
 
+- (bool)isUsing10xFirmware;
+- (NSString*)phoneFirmwareVersion;
+
 - (bool)doPutPEM:(const char*)pemfile;
 - (void)activateStageTwo;
 - (void)activateStageThree;
@@ -93,6 +107,9 @@ class PhoneInteraction;
 
 - (IBAction)activate:(id)sender;
 - (IBAction)deactivate:(id)sender;
+- (IBAction)enterDFUMode:(id)sender;
+- (IBAction)pre111Upgrade:(id)sender;
+- (IBAction)post111Upgrade:(id)sender;
 - (IBAction)performJailbreak:(id)sender;
 - (IBAction)returnToJail:(id)sender;
 - (IBAction)installSimUnlock:(id)sender;

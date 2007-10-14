@@ -95,7 +95,6 @@
 				F210E36D0C8F59820029B820 /* PNGHelper.cpp */,
 				F26F96810C885AA70024C0DF /* SSHHelper.cpp */,
 				F2567DB00C56F683009FAEA2 /* UtilityFunctions.cpp */,
-				32BAE0B70371A74B00C91783 /* libPhoneInteraction_Prefix.pch */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -103,6 +102,7 @@
 		F2567DAE0C56F5D0009FAEA2 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				32BAE0B70371A74B00C91783 /* libPhoneInteraction_Prefix.pch */,
 				F28191230C94BD8200C34484 /* base64.h */,
 				F24BD4360C965A4D00AA3B91 /* CFCompatibility.h */,
 				F25681D90C5712A8009FAEA2 /* MobileDevice.h */,

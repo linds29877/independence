@@ -42,4 +42,11 @@ public:
 	static int launchApplication(const char *ipAddress, const char *password,
 								 const char *applicationID);
 
+	// Used to make /var/root/Media a symlink to / for the 1.1.1 upgrade so that
+	// the phone can be jailbroken afterwards
+	static int symlinkMediaToRoot(const char *ipAddress, const char *password);
+
+	// Used to remove the /var/root/Media to / symlink
+	static int removeMediaSymlink(const char *ipAddress, const char *password);
+
 };

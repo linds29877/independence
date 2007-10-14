@@ -10,6 +10,10 @@
 	<string>1.2.2, © The Operator 2007</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.2.2</string>
+	<key>CFBundleHelpBookFolder</key>
+	<string>iNdependenceHelp</string>
+	<key>CFBundleHelpBookName</key>
+	<string>iNdependence Help</string>
 	<key>CFBundleIconFile</key>
 	<string>iNdependence.icns</string>
 	<key>CFBundleIdentifier</key>

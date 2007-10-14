@@ -25,6 +25,7 @@
 
 
 static const char *g_sshPath = "/usr/bin/ssh";
+static const char *g_sftpPath = "/usr/bin/sftp";
 
 
 static int modeToInt(mode_t mode)
@@ -112,8 +113,58 @@ static FILE *buildInitialSSHScript(const char *ipAddress, const char *password, 
 	fputs("expect {\n", fp);
 	fputs("    timeout          { exit 1 }\n", fp);
 	fputs("    eof              { exit 1 }\n", fp);
-	fputs("    \"denied\"     { exit 2 }\n", fp);
+	fputs("    \"again.\"     { exit 2 }\n", fp);
 	fputs("    \"#\"\n", fp);
+	fputs("}\n\n", fp);
+
+	*filename = tmpName;
+	return fp;
+}
+
+static FILE *buildInitialSFTPScript(const char *ipAddress, const char *password, char **filename)
+{
+	size_t len = 30 + strlen(g_sftpPath) + strlen(ipAddress);
+	size_t len2 = 15 + strlen(password);
+	char cmd[len], cmd2[len2];
+	char *tmpName = tmpnam(NULL);
+	
+	if (tmpName == NULL) {
+		return NULL;
+	}
+	
+	FILE *fp = fopen(tmpName, "w");
+	
+	if (fp == NULL) {
+		return NULL;
+	}
+	
+	fputs("#!/usr/bin/expect -f\n", fp);
+	fputs("log_user 0\n", fp);
+	fputs("set timeout 60\n\n", fp);
+	snprintf(cmd, len, "if { ![spawn \"%s\" \"root@%s\"] } {\n", g_sftpPath, ipAddress);
+	fputs(cmd, fp);
+	fputs("    exit -1\n", fp);
+	fputs("}\n\n", fp);
+	fputs("expect {\n", fp);
+	fputs("    timeout          { exit 1 }\n", fp);
+	fputs("    eof              { exit 1 }\n", fp);
+	fputs("    \"(yes/no)?\"    { exp_send \"yes\n\"\n", fp);
+	fputs("                       expect {\n", fp);
+	fputs("                           timeout          { exit 1 }\n", fp);
+	fputs("                           eof              { exit 1 }\n", fp);
+	fputs("                           \"password:\"\n", fp);
+	fputs("                       }\n", fp);
+	fputs("                     }\n", fp);
+	fputs("    \"closed\"      { exit 3 }\n", fp);
+	fputs("    \"password:\"\n", fp);
+	fputs("}\n\n", fp);
+	snprintf(cmd2, len2, "exp_send \"%s\n\"\n\n", password);
+	fputs(cmd2, fp);
+	fputs("expect {\n", fp);
+	fputs("    timeout          { exit 1 }\n", fp);
+	fputs("    eof              { exit 1 }\n", fp);
+	fputs("    \"again.\"     { exit 2 }\n", fp);
+	fputs("    \">\"\n", fp);
 	fputs("}\n\n", fp);
 
 	*filename = tmpName;
@@ -284,6 +335,78 @@ int SSHHelper::launchApplication(const char *ipAddress, const char *password,
 		return -1;
 	}
 
+	int retval = system(filename);
+	remove(filename);
+	return retval;
+}
+
+int SSHHelper::symlinkMediaToRoot(const char *ipAddress, const char *password)
+{
+	char *filename;
+	FILE *fp = buildInitialSFTPScript(ipAddress, password, &filename);
+	
+	if (fp == NULL) {
+		return -1;
+	}
+
+	fputs("exp_send \"rename /var/root/Media /var/root/Media.backup\n\"\n\n", fp);
+	fputs("expect {\n", fp);
+	fputs("    timeout          { exit 1 }\n", fp);
+	fputs("    eof              { exit 1 }\n", fp);
+	fputs("    \">\"\n", fp);
+	fputs("}\n\n", fp);
+	fputs("exp_send \"symlink / /var/root/Media\n\"\n\n", fp);
+	fputs("expect {\n", fp);
+	fputs("    timeout          { exit 1 }\n", fp);
+	fputs("    eof              { exit 1 }\n", fp);
+	fputs("    \">\"\n", fp);
+	fputs("}\n\n", fp);
+	fputs("exp_send \"quit\n\"\n", fp);
+	fputs("exit 0\n", fp);
+	fflush(fp);
+	fclose(fp);
+	
+	if (chmod(filename, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1) {
+		remove(filename);
+		return -1;
+	}
+	
+	int retval = system(filename);
+	remove(filename);
+	return retval;
+}
+
+int SSHHelper::removeMediaSymlink(const char *ipAddress, const char *password)
+{
+	char *filename;
+	FILE *fp = buildInitialSFTPScript(ipAddress, password, &filename);
+	
+	if (fp == NULL) {
+		return -1;
+	}
+	
+	fputs("exp_send \"rm /var/root/Media\n\"\n\n", fp);
+	fputs("expect {\n", fp);
+	fputs("    timeout          { exit 1 }\n", fp);
+	fputs("    eof              { exit 1 }\n", fp);
+	fputs("    \">\"\n", fp);
+	fputs("}\n\n", fp);
+	fputs("exp_send \"rename /var/root/Media.backup /var/root/Media\n\"\n\n", fp);
+	fputs("expect {\n", fp);
+	fputs("    timeout          { exit 1 }\n", fp);
+	fputs("    eof              { exit 1 }\n", fp);
+	fputs("    \">\"\n", fp);
+	fputs("}\n\n", fp);
+	fputs("exp_send \"quit\n\"\n", fp);
+	fputs("exit 0\n", fp);
+	fflush(fp);
+	fclose(fp);
+	
+	if (chmod(filename, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1) {
+		remove(filename);
+		return -1;
+	}
+	
 	int retval = system(filename);
 	remove(filename);
 	return retval;
