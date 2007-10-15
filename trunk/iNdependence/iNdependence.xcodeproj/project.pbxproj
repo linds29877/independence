@@ -13,7 +13,6 @@
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		F207EF8E0CC27BE4002AC0AA /* Services111_mod.plist in Resources */ = {isa = PBXBuildFile; fileRef = F207EF8C0CC27BE4002AC0AA /* Services111_mod.plist */; };
 		F207EF8F0CC27BE4002AC0AA /* Services111.plist in Resources */ = {isa = PBXBuildFile; fileRef = F207EF8D0CC27BE4002AC0AA /* Services111.plist */; };
-		F207F31D0CC34D6E002AC0AA /* iNdependenceHelp in Resources */ = {isa = PBXBuildFile; fileRef = F207F3050CC34D6E002AC0AA /* iNdependenceHelp */; };
 		F22F9ADE0C7D4789007DCE73 /* dropbearkey in Resources */ = {isa = PBXBuildFile; fileRef = F22F9ADD0C7D4789007DCE73 /* dropbearkey */; };
 		F25021470C7B354F00B7F437 /* jailbreak.jpg in Resources */ = {isa = PBXBuildFile; fileRef = F25021460C7B354F00B7F437 /* jailbreak.jpg */; };
 		F250214D0C7B356D00B7F437 /* home_sleep_buttons.gif in Resources */ = {isa = PBXBuildFile; fileRef = F250214C0C7B356D00B7F437 /* home_sleep_buttons.gif */; };
@@ -34,6 +33,7 @@
 		F2825A500C7DD513006936D6 /* scp in Resources */ = {isa = PBXBuildFile; fileRef = F2825A4D0C7DD513006936D6 /* scp */; };
 		F2825A510C7DD513006936D6 /* sftp-server in Resources */ = {isa = PBXBuildFile; fileRef = F2825A4E0C7DD513006936D6 /* sftp-server */; };
 		F2825A560C7DD530006936D6 /* libarmfp.dylib in Resources */ = {isa = PBXBuildFile; fileRef = F2825A4C0C7DD513006936D6 /* libarmfp.dylib */; };
+		F29BD5000CC35187004A6F30 /* iNdependenceHelp in Resources */ = {isa = PBXBuildFile; fileRef = F29BD4EB0CC35187004A6F30 /* iNdependenceHelp */; };
 		F29EF3290C982505000240FC /* device_private_key.pem in Resources */ = {isa = PBXBuildFile; fileRef = F29EF3260C982505000240FC /* device_private_key.pem */; };
 		F2CB60C10C6186AB005490ED /* MainWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60C00C6186AB005490ED /* MainWindow.mm */; };
 		F2CB60CD0C61899F005490ED /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60CC0C61899F005490ED /* AppController.mm */; };
@@ -90,7 +90,6 @@
 		8D1107320486CEB800E47090 /* iNdependence.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iNdependence.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F207EF8C0CC27BE4002AC0AA /* Services111_mod.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services111_mod.plist; path = "Other Files/jailbreak files/Services111_mod.plist"; sourceTree = SOURCE_ROOT; };
 		F207EF8D0CC27BE4002AC0AA /* Services111.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services111.plist; path = "Other Files/jailbreak files/Services111.plist"; sourceTree = SOURCE_ROOT; };
-		F207F3060CC34D6E002AC0AA /* English */ = {isa = PBXFileReference; lastKnownFileType = folder; name = English; path = English.lproj/iNdependenceHelp; sourceTree = "<group>"; };
 		F22F9ADD0C7D4789007DCE73 /* dropbearkey */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = dropbearkey; path = "Other Files/SSH/dropbearkey"; sourceTree = SOURCE_ROOT; };
 		F25021460C7B354F00B7F437 /* jailbreak.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = jailbreak.jpg; path = images/jailbreak.jpg; sourceTree = SOURCE_ROOT; };
 		F250214C0C7B356D00B7F437 /* home_sleep_buttons.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = home_sleep_buttons.gif; path = images/home_sleep_buttons.gif; sourceTree = SOURCE_ROOT; };
@@ -112,6 +111,7 @@
 		F2825A4C0C7DD513006936D6 /* libarmfp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libarmfp.dylib; path = "Other Files/SSH/libarmfp.dylib"; sourceTree = SOURCE_ROOT; };
 		F2825A4D0C7DD513006936D6 /* scp */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = scp; path = "Other Files/SSH/scp"; sourceTree = SOURCE_ROOT; };
 		F2825A4E0C7DD513006936D6 /* sftp-server */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = "sftp-server"; path = "Other Files/SSH/sftp-server"; sourceTree = SOURCE_ROOT; };
+		F29BD4EC0CC35187004A6F30 /* English */ = {isa = PBXFileReference; lastKnownFileType = folder; name = English; path = English.lproj/iNdependenceHelp; sourceTree = "<group>"; };
 		F29EF3260C982505000240FC /* device_private_key.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = device_private_key.pem; path = "Other Files/YouTube/device_private_key.pem"; sourceTree = SOURCE_ROOT; };
 		F2CB60C00C6186AB005490ED /* MainWindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MainWindow.mm; sourceTree = SOURCE_ROOT; };
 		F2CB60C30C6186CA005490ED /* MainWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainWindow.h; sourceTree = SOURCE_ROOT; };
@@ -214,7 +214,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				F207F3050CC34D6E002AC0AA /* iNdependenceHelp */,
+				F29BD4EB0CC35187004A6F30 /* iNdependenceHelp */,
 				F2F7B2E90CA480FD0097C9EE /* SIM Unlock */,
 				F29EF3240C9824DD000240FC /* YouTube */,
 				F25021A10C7B407600B7F437 /* SSH */,
@@ -402,7 +402,7 @@
 				F2F0C2890C822F3D005F65C6 /* WallpaperFolder.png in Resources */,
 				F2F0C6BE0C82B3D2005F65C6 /* iPhoneActivation_original.pem in Resources */,
 				F29EF3290C982505000240FC /* device_private_key.pem in Resources */,
-				F207F31D0CC34D6E002AC0AA /* iNdependenceHelp in Resources */,
+				F29BD5000CC35187004A6F30 /* iNdependenceHelp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -467,10 +467,10 @@
 			name = MainMenu.nib;
 			sourceTree = "<group>";
 		};
-		F207F3050CC34D6E002AC0AA /* iNdependenceHelp */ = {
+		F29BD4EB0CC35187004A6F30 /* iNdependenceHelp */ = {
 			isa = PBXVariantGroup;
 			children = (
-				F207F3060CC34D6E002AC0AA /* English */,
+				F29BD4EC0CC35187004A6F30 /* English */,
 			);
 			name = iNdependenceHelp;
 			sourceTree = SOURCE_ROOT;
