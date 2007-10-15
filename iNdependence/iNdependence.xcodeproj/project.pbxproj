@@ -11,9 +11,9 @@
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.mm */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
-		F200C3BB0CC09826004630CA /* iNdependenceHelp in Resources */ = {isa = PBXBuildFile; fileRef = F200C3A70CC09826004630CA /* iNdependenceHelp */; };
 		F207EF8E0CC27BE4002AC0AA /* Services111_mod.plist in Resources */ = {isa = PBXBuildFile; fileRef = F207EF8C0CC27BE4002AC0AA /* Services111_mod.plist */; };
 		F207EF8F0CC27BE4002AC0AA /* Services111.plist in Resources */ = {isa = PBXBuildFile; fileRef = F207EF8D0CC27BE4002AC0AA /* Services111.plist */; };
+		F207F31D0CC34D6E002AC0AA /* iNdependenceHelp in Resources */ = {isa = PBXBuildFile; fileRef = F207F3050CC34D6E002AC0AA /* iNdependenceHelp */; };
 		F22F9ADE0C7D4789007DCE73 /* dropbearkey in Resources */ = {isa = PBXBuildFile; fileRef = F22F9ADD0C7D4789007DCE73 /* dropbearkey */; };
 		F25021470C7B354F00B7F437 /* jailbreak.jpg in Resources */ = {isa = PBXBuildFile; fileRef = F25021460C7B354F00B7F437 /* jailbreak.jpg */; };
 		F250214D0C7B356D00B7F437 /* home_sleep_buttons.gif in Resources */ = {isa = PBXBuildFile; fileRef = F250214C0C7B356D00B7F437 /* home_sleep_buttons.gif */; };
@@ -88,9 +88,9 @@
 		32CA4F630368D1EE00C91783 /* iNdependence_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iNdependence_Prefix.pch; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* iNdependence.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iNdependence.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F200C3A80CC09826004630CA /* English */ = {isa = PBXFileReference; lastKnownFileType = folder; name = English; path = English.lproj/iNdependenceHelp; sourceTree = "<group>"; };
 		F207EF8C0CC27BE4002AC0AA /* Services111_mod.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services111_mod.plist; path = "Other Files/jailbreak files/Services111_mod.plist"; sourceTree = SOURCE_ROOT; };
 		F207EF8D0CC27BE4002AC0AA /* Services111.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services111.plist; path = "Other Files/jailbreak files/Services111.plist"; sourceTree = SOURCE_ROOT; };
+		F207F3060CC34D6E002AC0AA /* English */ = {isa = PBXFileReference; lastKnownFileType = folder; name = English; path = English.lproj/iNdependenceHelp; sourceTree = "<group>"; };
 		F22F9ADD0C7D4789007DCE73 /* dropbearkey */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = dropbearkey; path = "Other Files/SSH/dropbearkey"; sourceTree = SOURCE_ROOT; };
 		F25021460C7B354F00B7F437 /* jailbreak.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = jailbreak.jpg; path = images/jailbreak.jpg; sourceTree = SOURCE_ROOT; };
 		F250214C0C7B356D00B7F437 /* home_sleep_buttons.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = home_sleep_buttons.gif; path = images/home_sleep_buttons.gif; sourceTree = SOURCE_ROOT; };
@@ -214,7 +214,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				F200C3A70CC09826004630CA /* iNdependenceHelp */,
+				F207F3050CC34D6E002AC0AA /* iNdependenceHelp */,
 				F2F7B2E90CA480FD0097C9EE /* SIM Unlock */,
 				F29EF3240C9824DD000240FC /* YouTube */,
 				F25021A10C7B407600B7F437 /* SSH */,
@@ -402,7 +402,7 @@
 				F2F0C2890C822F3D005F65C6 /* WallpaperFolder.png in Resources */,
 				F2F0C6BE0C82B3D2005F65C6 /* iPhoneActivation_original.pem in Resources */,
 				F29EF3290C982505000240FC /* device_private_key.pem in Resources */,
-				F200C3BB0CC09826004630CA /* iNdependenceHelp in Resources */,
+				F207F31D0CC34D6E002AC0AA /* iNdependenceHelp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -467,10 +467,10 @@
 			name = MainMenu.nib;
 			sourceTree = "<group>";
 		};
-		F200C3A70CC09826004630CA /* iNdependenceHelp */ = {
+		F207F3050CC34D6E002AC0AA /* iNdependenceHelp */ = {
 			isa = PBXVariantGroup;
 			children = (
-				F200C3A80CC09826004630CA /* English */,
+				F207F3060CC34D6E002AC0AA /* English */,
 			);
 			name = iNdependenceHelp;
 			sourceTree = SOURCE_ROOT;
