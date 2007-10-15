@@ -30,7 +30,7 @@
 				<p>
 					The interface is pretty straightforward.  The tabs are arranged as follows:
 					<ul>
-						<li><b>Activation/SIM</b> - For tasks related to activating and SIM unlocking your phone.</li>
+						<li><b>Activation</b> - For tasks related to activating your phone.</li>
 						<li><b>Jailbreak</b> - For tasks related to jailbreaking your phone (ie. making it so that you can read/write files from/to the entire filesystem on your phone).</li>
 						<li><b>SSH</b> - For tasks related to installing and maintaining SSH on your phone.</li>
 						<li><b>Customize</b> - For tasks related to customization of your phone.</li>
@@ -44,7 +44,7 @@
 					<strong>Notes</strong>
 				</p>
 				<p>
-					Before using iNdependence, you need to kill off the "iTunes Helper" application so that it doesn't interfere with iNdependence.
+					Before using iNdependence, you need to kill off the <i>iTunes Helper</i> application so that it doesn't interfere with iNdependence.
 				</p>
 
 				<p>
@@ -63,17 +63,19 @@
 						<li>Launch iNdependence.</li>
 						<li>Select the <i>Firmware</i> tab and press the <i>Enter DFU Mode</i> button.</li>
 						<li>You'll be prompted to choose the directory where you unzipped the firmware files.</li>
+						<li>If you get an error message saying <i>Error entering recovery mode</i> then quit iNdependence, restart it, and try again.</li>
 						<li>After you see the success message, click <i>OK</i> and then quit iNdependence.</li>
 						<li>Launch iTunes.  You should see a message saying that <i>iTunes has detected an iPhone in recovery mode ...</i>.  Press the <i>OK</i> button.</li>
-						<li>Now, hold down the <b>Option</b> key while you click the <i>Restore</i> button.</li>
+						<li>Now, hold down the <b>Option</b> key while you click the <i>Restore</i> button in iTunes.</li>
 						<li>You should then be presented with a file chooser dialog.  Select the <b>.ipsw</b> file from the previous step.</li>
 						<li>iTunes should then begin to restore the firmware on your phone.  This will take a while.</li>
 						<li>You will get a message from iTunes at the end saying that <i>the iPhone could not be restored</i>.  This is normal (and expected).  The restore actually worked fine, but the error is shown because the modem firmware could not be downgraded (which is ok).</li>
 						<li>You should now see a yellow triangle on the screen of your iPhone, and iTunes telling you that you need to restore again.  <b>Don't do this!</b></li>
 						<li>Quit iTunes and then launch iNdependence again.</li>
-						<li>iNdependence will kick the phone out of recovery mode and after a few seconds you should see the main screen with <i>Activate iPhone</i> on it.</li>
-						<li>Congratulations!  You've successfully downgraded your phone to firmware 1.0.2.</li>
+						<li>iNdependence will kick the phone out of recovery mode and after a few seconds you should see the main screen with <i>Activate iPhone</i> message on it.</li>
+					</ol>
 				</p>
+				<p>Congratulations!  You've successfully downgraded your phone to firmware 1.0.2.</p>
 			</div>
 
 			<div summary="How to upgrade to 1.1.1 so that you can jailbreak and activate" id="upgrade">
@@ -93,6 +95,7 @@
 						<li>Wait for iTunes to finish.</li>
 						<li>Quit iTunes and relaunch iNdependence.  In the status bar at the bottom of the iNdependence window you should see <i>Firmware 1.1.1</i>.</li>
 						<li>Congratulations!  You are now ready to activate/jailbreak your phone.</li>
+					</ol>
 				</p>
 			</div>
 
@@ -113,7 +116,7 @@
 						<li>Launch iNdependence.</li>
 						<li>Select the Activation tab and press the <i>Activate Phone</i> button.</li>
 						<li>You'll be prompted to choose the directory where you unzipped the firmware files.</li>
-						<li>If the screen on the phone hasn't changed to show the Apple logo after 30 seconds, then it means that iNdependence has failed to put the phone into recovery mode (and is frozen).  Force quit iNdependence, relaunch it, and start at step 5 again.</li>
+						<li>If you get an error message saying <i>Error entering recovery mode</i> then quit iNdependence, restart it, and try again.</li>
 						<li>Wait for the success message.  Note that the activation process will also enable YouTube for you.</li>
 					</ol>
 				</p>

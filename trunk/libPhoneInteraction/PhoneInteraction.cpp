@@ -588,151 +588,11 @@ bool PhoneInteraction::determineiTunesVersion()
 		return false;
 	}
 
-	CFIndex len = CFStringGetLength(versionStr);
-
-	if (len < 1) {
+	if (!ConvertCFStringToPIVersion(versionStr, &m_iTunesVersion)) {
 		CFRelease(iTunesVersionDict);
 		return false;
 	}
 
-	// get the major version
-	CFRange dot = CFStringFind(versionStr, CFSTR("."), 0);
-	CFRange sub;
-
-	if (dot.location == kCFNotFound) {
-		SInt32 major = CFStringGetIntValue(versionStr);
-
-		if ( (major == INT_MAX) || (major == INT_MIN) ) {
-			CFRelease(iTunesVersionDict);
-			return false;
-		}
-
-		m_iTunesVersion.major = (int)major;
-		CFRelease(iTunesVersionDict);
-		return true;
-	}
-	else if (dot.location > 0) {
-		sub.location = 0;
-		sub.length = dot.location;
-		CFStringRef majorStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
-														   sub);
-
-		if (majorStr == NULL) {
-			CFRelease(iTunesVersionDict);
-			return false;
-		}
-
-		SInt32 major = CFStringGetIntValue(majorStr);
-		CFRelease(majorStr);
-
-		if ( (major == INT_MAX) || (major == INT_MIN) ) {
-			CFRelease(iTunesVersionDict);
-			return false;
-		}
-		
-		m_iTunesVersion.major = (int)major;
-	}
-
-	sub.location = dot.location + dot.length;
-	sub.length = len - (dot.location + dot.length);
-
-	if (sub.length < 1) {
-		CFRelease(iTunesVersionDict);
-		return true;
-	}
-
-	// get the minor version
-	if (!CFStringFindWithOptions(versionStr, CFSTR("."), sub, 0, &dot)) {
-		CFStringRef minorStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
-														   sub);
-
-		if (minorStr == NULL) {
-			CFRelease(iTunesVersionDict);
-			return false;
-		}
-
-		SInt32 minor = CFStringGetIntValue(minorStr);
-		CFRelease(minorStr);
-		
-		if ( (minor == INT_MAX) || (minor == INT_MIN) ) {
-			CFRelease(iTunesVersionDict);
-			return false;
-		}
-		
-		m_iTunesVersion.minor = (int)minor;
-		CFRelease(iTunesVersionDict);
-		return true;
-	}
-	else if (dot.location > sub.location) {
-		sub.length = dot.location - sub.location;
-		CFStringRef minorStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
-														   sub);
-		
-		if (minorStr == NULL) {
-			CFRelease(iTunesVersionDict);
-			return false;
-		}
-		
-		SInt32 minor = CFStringGetIntValue(minorStr);
-		CFRelease(minorStr);
-		
-		if ( (minor == INT_MAX) || (minor == INT_MIN) ) {
-			CFRelease(iTunesVersionDict);
-			return false;
-		}
-		
-		m_iTunesVersion.minor = (int)minor;
-	}
-	
-	sub.location = dot.location + dot.length;
-	sub.length = len - (dot.location + dot.length);
-	
-	if (sub.length < 1) {
-		CFRelease(iTunesVersionDict);
-		return true;
-	}
-
-	// get the point release
-	if (!CFStringFindWithOptions(versionStr, CFSTR("."), sub, 0, &dot)) {
-		CFStringRef pointStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
-														   sub);
-
-		if (pointStr == NULL) {
-			CFRelease(iTunesVersionDict);
-			return false;
-		}
-		
-		SInt32 point = CFStringGetIntValue(pointStr);
-		CFRelease(pointStr);
-		
-		if ( (point == INT_MAX) || (point == INT_MIN) ) {
-			CFRelease(iTunesVersionDict);
-			return false;
-		}
-		
-		m_iTunesVersion.point = (int)point;
-	}
-	else if (dot.location > sub.location) {
-		sub.length = dot.location - sub.location;
-		CFStringRef pointStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
-														   sub);
-
-		if (pointStr == NULL) {
-			CFRelease(iTunesVersionDict);
-			return false;
-		}
-		
-		SInt32 point = CFStringGetIntValue(pointStr);
-		CFRelease(pointStr);
-
-		if ( (point == INT_MAX) || (point == INT_MIN) ) {
-			CFRelease(iTunesVersionDict);
-			return false;
-		}
-		
-		m_iTunesVersion.point = (int)point;
-	}
-	
 	CFRelease(iTunesVersionDict);
 	return true;
 }
@@ -893,13 +753,49 @@ void PhoneInteraction::connectToPhone()
 		return;
 	}
 
-	if (!readValue("FirmwareVersion", &m_firmwareVersion)) {
-		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get firmware version.");
-		return;
-	}
-	
 	if (!readValue("ProductVersion", &m_productVersion)) {
 		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get product version.");
+		return;
+	}
+
+	PIVersion productVersion;
+
+	if (!ConvertCStringToPIVersion(m_productVersion, &productVersion)) {
+		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Error in product version.");
+		return;
+	}
+
+	// we only support firmware versions 1.0 to 1.1.1
+	if ( (productVersion.major < 1) || (productVersion.major > 1) ) {
+		char msg[128];
+		snprintf(msg, 128, "Unsupported version of phone firmware installed.\nDetected version is %d.%d.%d\n",
+				 productVersion.major, productVersion.minor, productVersion.point);
+		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, msg);
+		return;
+	}
+
+	if (productVersion.minor > 1) {
+		char msg[128];
+		snprintf(msg, 128, "Unsupported version of phone firmware installed.\nDetected version is %d.%d.%d\n",
+				 productVersion.major, productVersion.minor, productVersion.point);
+		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, msg);
+		return;
+	}
+
+	if (productVersion.minor == 1) {
+
+		if (productVersion.point > 1) {
+			char msg[128];
+			snprintf(msg, 128, "Unsupported version of phone firmware installed.\nDetected version is %d.%d.%d\n",
+					 productVersion.major, productVersion.minor, productVersion.point);
+			(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, msg);
+			return;
+		}
+
+	}
+	
+	if (!readValue("FirmwareVersion", &m_firmwareVersion)) {
+		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get firmware version.");
 		return;
 	}
 	
@@ -2471,7 +2367,7 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 
 	// check to ensure they've already performed the hack upgrade to 1.1.1
 	if (!fileExists("/dev/rdisk0s1")) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error, couldn't perform jailbreak.  You need to downgrade to version 1.0.2, then perform the hack upgrade to 1.1.1 (see README file).");
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error, couldn't perform jailbreak.  You need to downgrade to version 1.0.2, then perform the special upgrade to 1.1.1 (see Help documentation for more details).");
 		return;
 	}
 	

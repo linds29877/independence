@@ -46,5 +46,8 @@ v1.2.1 (Aventinus) - 09/13/07
 
 v1.2.2 (Coopers) - 09/23/07
 
-- Added install/remove anySIM buttons.  This allows for easy SIM unlocking
 - Fixed up problems with the wait dialog/sheet being too small on occasion
+- Got everything working on firmware version 1.1.1
+- Added firmware version detection so that iNdependence cannot be used with unsupported firmware versions
+- Added firmware tab which contains functions related to upgrading and downgrading the phone's firmware (mainly between 1.0.2 and 1.1.1)
+- Numerous bugfixes for the status bar (and probably some new bugs too)

@@ -60,6 +60,8 @@ class PhoneInteraction;
 	bool m_installingSSH;
 	bool m_waitingForActivation;
 	bool m_waitingForDeactivation;
+	bool m_waitingForNewActivation;
+	bool m_waitingForNewDeactivation;
 	int m_bootCount;
 	char *m_sshPath;
 }
@@ -92,13 +94,17 @@ class PhoneInteraction;
 - (bool)isanySIMInstalled;
 
 - (bool)isWaitingForActivation;
+- (bool)isWaitingForNewActivation;
 - (bool)isWaitingForDeactivation;
 
 - (bool)isUsing10xFirmware;
 - (NSString*)phoneFirmwareVersion;
 
 - (bool)doPutPEM:(const char*)pemfile;
-- (void)activateStageTwo;
+- (bool)enableYouTube;
+- (bool)patchlockdownd:(bool)undo;
+
+- (void)activateStageTwo:(bool)displaySheet;
 - (void)activateStageThree;
 - (void)activationFailed:(const char*)msg;
 - (void)deactivateStageTwo;
