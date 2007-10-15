@@ -24,6 +24,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+#include "PIVersion.h"
+
 /* Our own version of afc when in jailbreak mode */
 #define AMSVC_AFC2					CFSTR("com.apple.afc2")
 
@@ -96,13 +98,6 @@ struct am_restore_device;
 
 typedef int (*cmdsend)(am_recovery_device *, const char *);
 
-
-typedef struct pi_version
-{
-	int major;
-	int minor;
-	int point;
-} PIVersion;
 
 /*
  * PhoneInteraction is the main class used to perform operations on the iPhone.

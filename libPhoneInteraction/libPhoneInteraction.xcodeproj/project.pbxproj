@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		D2AAC0B105546B7500DB518D /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08FB77AAFE841565C02AAC07 /* Carbon.framework */; };
+		F207F1340CC31DAA002AC0AA /* PIVersion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F207F1330CC31DAA002AC0AA /* PIVersion.cpp */; };
 		F210E16A0C8EF5D90029B820 /* CFCompatibility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F210E1690C8EF5D90029B820 /* CFCompatibility.cpp */; };
 		F210E36E0C8F59820029B820 /* PNGHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F210E36D0C8F59820029B820 /* PNGHelper.cpp */; };
 		F210E3C40C8F6CE70029B820 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F210E3C30C8F6CE70029B820 /* libz.dylib */; };
@@ -23,6 +24,8 @@
 		08FB77AAFE841565C02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		32BAE0B70371A74B00C91783 /* libPhoneInteraction_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libPhoneInteraction_Prefix.pch; sourceTree = "<group>"; };
 		D2AAC09D05546B4700DB518D /* libPhoneInteraction.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libPhoneInteraction.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		F207F1330CC31DAA002AC0AA /* PIVersion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PIVersion.cpp; sourceTree = "<group>"; };
+		F207F1470CC3260E002AC0AA /* PIVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PIVersion.h; path = "../Public Headers/PhoneInteraction/PIVersion.h"; sourceTree = SOURCE_ROOT; };
 		F210E1690C8EF5D90029B820 /* CFCompatibility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CFCompatibility.cpp; sourceTree = "<group>"; };
 		F210E36C0C8F59820029B820 /* PNGHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PNGHelper.h; path = "../Public Headers/PhoneInteraction/PNGHelper.h"; sourceTree = "<group>"; };
 		F210E36D0C8F59820029B820 /* PNGHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PNGHelper.cpp; sourceTree = "<group>"; };
@@ -92,6 +95,7 @@
 				F28191220C94BD8200C34484 /* base64.cpp */,
 				F210E1690C8EF5D90029B820 /* CFCompatibility.cpp */,
 				F2567DAF0C56F683009FAEA2 /* PhoneInteraction.cpp */,
+				F207F1330CC31DAA002AC0AA /* PIVersion.cpp */,
 				F210E36D0C8F59820029B820 /* PNGHelper.cpp */,
 				F26F96810C885AA70024C0DF /* SSHHelper.cpp */,
 				F2567DB00C56F683009FAEA2 /* UtilityFunctions.cpp */,
@@ -107,6 +111,7 @@
 				F24BD4360C965A4D00AA3B91 /* CFCompatibility.h */,
 				F25681D90C5712A8009FAEA2 /* MobileDevice.h */,
 				F25681D50C57127B009FAEA2 /* PhoneInteraction.h */,
+				F207F1470CC3260E002AC0AA /* PIVersion.h */,
 				F210E36C0C8F59820029B820 /* PNGHelper.h */,
 				F26F96D70C8866C00024C0DF /* SSHHelper.h */,
 				F25681D60C57127B009FAEA2 /* UtilityFunctions.h */,
@@ -160,6 +165,7 @@
 				F210E16A0C8EF5D90029B820 /* CFCompatibility.cpp in Sources */,
 				F210E36E0C8F59820029B820 /* PNGHelper.cpp in Sources */,
 				F28191240C94BD8200C34484 /* base64.cpp in Sources */,
+				F207F1340CC31DAA002AC0AA /* PIVersion.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

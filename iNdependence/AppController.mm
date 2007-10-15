@@ -46,6 +46,8 @@ enum
 
 extern MainWindow *g_mainWindow;
 static AppController *g_appController;
+static PhoneInteraction *g_phoneInteraction;
+static bool g_ignoreJailbreakSuccess;
 
 static void updateStatus(const char *msg, bool waiting)
 {
@@ -64,9 +66,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 		switch (type) {
 			case NOTIFY_CONNECTED:
 				[g_appController setConnected:true];
+				[g_mainWindow updateStatus];
 				break;
 			case NOTIFY_DISCONNECTED:
 				[g_appController setConnected:false];
+				[g_mainWindow updateStatus];
 				break;
 			case NOTIFY_AFC_CONNECTED:
 				[g_appController setAFCConnected:true];
@@ -85,23 +89,33 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_mainWindow updateStatus];
 				break;
 			case NOTIFY_ACTIVATION_SUCCESS:
+				[g_appController setActivated:g_phoneInteraction->isPhoneActivated()];
 				[g_mainWindow updateStatus];
 				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
 			case NOTIFY_DEACTIVATION_SUCCESS:
+				[g_appController setActivated:g_phoneInteraction->isPhoneActivated()];
 				[g_mainWindow updateStatus];
 				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
 			case NOTIFY_JAILBREAK_SUCCESS:
-				[g_mainWindow endDisplayWaitingSheet];
+
+				if (!g_ignoreJailbreakSuccess) {
+					[g_mainWindow endDisplayWaitingSheet];
+				}
+
 				[g_appController setPerformingJailbreak:false];
+				[g_appController setJailbroken:g_phoneInteraction->isPhoneJailbroken()];
 				[g_mainWindow updateStatus];
 
 				if ([g_appController isWaitingForActivation]) {
-					[g_appController activateStageTwo];
+					[g_appController activateStageTwo:true];
 				}
 				else if ([g_appController isWaitingForDeactivation]) {
 					[g_appController deactivateStageTwo];
+				}
+				else if (g_ignoreJailbreakSuccess) {
+					g_ignoreJailbreakSuccess = false;
 				}
 				else {
 					[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
@@ -111,6 +125,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			case NOTIFY_JAILRETURN_SUCCESS:
 				[g_mainWindow endDisplayWaitingSheet];
 				[g_appController setReturningToJail:false];
+				[g_appController setJailbroken:g_phoneInteraction->isPhoneJailbroken()];
 				[g_mainWindow updateStatus];
 
 				if ([g_appController isWaitingForActivation]) {
@@ -132,6 +147,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			case NOTIFY_JAILBREAK_FAILED:
 				[g_mainWindow endDisplayWaitingSheet];
 				[g_appController setPerformingJailbreak:false];
+				[g_appController setJailbroken:g_phoneInteraction->isPhoneJailbroken()];
 				[g_mainWindow updateStatus];
 
 				if ([g_appController isWaitingForActivation]) {
@@ -148,6 +164,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			case NOTIFY_JAILRETURN_FAILED:
 				[g_mainWindow endDisplayWaitingSheet];
 				[g_appController setReturningToJail:false];
+				[g_appController setJailbroken:g_phoneInteraction->isPhoneJailbroken()];
 				[g_mainWindow updateStatus];
 
 				if ([g_appController isWaitingForActivation]) {
@@ -167,9 +184,10 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
 			case NOTIFY_ACTIVATION_FAILED:
+			case NOTIFY_DEACTIVATION_FAILED:
+				[g_appController setActivated:g_phoneInteraction->isPhoneActivated()];
 			case NOTIFY_PUTSERVICES_FAILED:
 			case NOTIFY_PUTFSTAB_FAILED:
-			case NOTIFY_DEACTIVATION_FAILED:
 			case NOTIFY_PUTPEM_FAILED:
 			case NOTIFY_GET_ACTIVATION_FAILED:
 			case NOTIFY_PUTFILE_FAILED:
@@ -188,6 +206,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 				break;
 			case NOTIFY_NEW_JAILBREAK_STAGE_TWO_WAIT:
 				[g_mainWindow endDisplayWaitingSheet];
+
+				if ([g_appController isWaitingForActivation]) {
+					[g_appController activateStageTwo:false];
+				}
+
 				[g_mainWindow startDisplayWaitingSheet:nil
 											   message:@"Please reboot your phone again using the same steps..."
 												 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
@@ -267,6 +290,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		g_mainWindow = mainWindow;
 	}
 
+	g_ignoreJailbreakSuccess = false;
 	m_connected = false;
 	m_afcConnected = false;
 	m_recoveryMode = false;
@@ -279,10 +303,13 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_installingSSH = false;
 	m_waitingForActivation = false;
 	m_waitingForDeactivation = false;
+	m_waitingForNewActivation = false;
+	m_waitingForNewDeactivation = false;
 	m_bootCount = 0;
 	m_sshPath = NULL;
 	[customizeBrowser setEnabled:NO];
 	m_phoneInteraction = PhoneInteraction::getInstance(updateStatus, phoneInteractionNotification);
+	g_phoneInteraction = m_phoneInteraction;
 }
 
 - (void)setConnected:(bool)connected
@@ -327,7 +354,17 @@ static void phoneInteractionNotification(int type, const char *msg)
 			}
 
 		}
-		
+		else if (m_waitingForNewActivation) {
+			m_waitingForNewActivation = false;
+			[mainWindow endDisplayWaitingSheet];
+			[mainWindow displayAlert:@"Success" message:@"Successfully activated phone."];
+		}
+		else if (m_waitingForNewDeactivation) {
+			m_waitingForNewDeactivation = false;
+			[mainWindow endDisplayWaitingSheet];
+			[mainWindow displayAlert:@"Success" message:@"Successfully deactivated phone."];
+		}
+
 	}
 	else {
 		[self setAFCConnected:false];
@@ -506,7 +543,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		else {
 			[jailbreakButton setEnabled:NO];
 		}
-		
+
 	}
 	
 	[mainWindow updateStatus];
@@ -585,6 +622,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 - (bool)isWaitingForActivation
 {
 	return m_waitingForActivation;
+}
+
+- (bool)isWaitingForNewActivation
+{
+	return m_waitingForNewActivation;
 }
 
 - (bool)isWaitingForDeactivation
@@ -864,6 +906,13 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (IBAction)installSimUnlock:(id)sender
 {
+	NSString *simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM" ofType:@"app"];
+	
+	if (simUnlockApp == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding SIM unlock application in bundle."];
+		return;
+	}
+
 	bool bCancelled = false;
 	NSString *ipAddress, *password;
 
@@ -872,13 +921,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 	}
 
 	if (bCancelled) {
-		return;
-	}
-
-	NSString *simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM" ofType:@"app"];
-
-	if (simUnlockApp == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding SIM unlock application in bundle."];
 		return;
 	}
 
@@ -1041,36 +1083,50 @@ static void phoneInteractionNotification(int type, const char *msg)
 	return m_phoneInteraction->putPEMOnPhone(pemfile);
 }
 
-- (void)activateStageTwo
+- (void)activateStageTwo:(bool)displaySheet
 {
-	NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation" ofType:@"pem"];
-	NSString *device_private_key_file = [[NSBundle mainBundle] pathForResource:@"device_private_key" ofType:@"pem"];
-
-	if ( (pemfile == nil) || (device_private_key_file == nil) ) {
-		m_waitingForActivation = false;
-		[mainWindow displayAlert:@"Error" message:@"Error finding necessary files in application bundle."];
-		[mainWindow updateStatus];
-		return;
-	}
-
-	if (![self doPutPEM:[pemfile UTF8String]]) {
-		m_waitingForActivation = false;
-		return;
-	}
-
-	if (!m_phoneInteraction->putFile([device_private_key_file UTF8String], "/private/var/root/Library/Lockdown/device_private_key.pem",
-									 0, 0)) {
-		m_waitingForActivation = false;
-		[mainWindow displayAlert:@"Error" message:@"Error writing device_private_key.pem to phone."];
-		[mainWindow updateStatus];
-		return;
-	}
 
 	if ([self isUsing10xFirmware]) {
+		NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation" ofType:@"pem"];
+		
+		if (pemfile == nil) {
+			m_waitingForActivation = false;
+			[mainWindow displayAlert:@"Error" message:@"Error finding necessary files in application bundle."];
+			[mainWindow updateStatus];
+			return;
+		}
+		
+		if (![self doPutPEM:[pemfile UTF8String]]) {
+			m_waitingForActivation = false;
+			[mainWindow displayAlert:@"Error" message:@"Error writing PEM file to phone."];
+			[mainWindow updateStatus];
+			return;
+		}
+		
+		if (![self enableYouTube]) {
+			m_waitingForActivation = false;
+			[mainWindow updateStatus];
+			return;
+		}
+		
 		[self returnToJail:self];
 	}
 	else {
-		[self activateStageThree];
+		m_waitingForActivation = false;
+		
+		if (![self patchlockdownd:false]) return;
+		
+		if (![self enableYouTube]) return;
+		
+		m_waitingForNewActivation = true;
+		g_ignoreJailbreakSuccess = true;
+
+		if (displaySheet) {
+			[g_mainWindow startDisplayWaitingSheet:nil
+										   message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
+											 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
+		}
+
 	}
 
 }
@@ -1100,23 +1156,37 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (void)deactivateStageTwo
 {
-	[mainWindow setStatus:@"Restoring original PEM file on phone..." spinning:true];
-	
-	NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation_original" ofType:@"pem"];
-	
-	if (pemfile == nil) {
+
+	if ([self isUsing10xFirmware]) {
+		[mainWindow setStatus:@"Restoring original PEM file on phone..." spinning:true];
+		
+		NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation_original" ofType:@"pem"];
+		
+		if (pemfile == nil) {
+			m_waitingForDeactivation = false;
+			[mainWindow displayAlert:@"Error" message:@"Error finding PEM file in application bundle."];
+			[mainWindow updateStatus];
+			return;
+		}
+		
+		if (![self doPutPEM:[pemfile UTF8String]]) {
+			m_waitingForDeactivation = false;
+			return;
+		}
+		
+		[self returnToJail:self];
+	}
+	else {
 		m_waitingForDeactivation = false;
-		[mainWindow displayAlert:@"Error" message:@"Error finding PEM file in application bundle."];
-		[mainWindow updateStatus];
-		return;
+		
+		if (![self patchlockdownd:true]) return;
+		
+		m_waitingForNewDeactivation = true;
+		[g_mainWindow startDisplayWaitingSheet:nil
+									   message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
+										 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
 	}
 	
-	if (![self doPutPEM:[pemfile UTF8String]]) {
-		m_waitingForDeactivation = false;
-		return;
-	}
-	
-	[self returnToJail:self];
 }
 
 - (void)deactivateStageThree
@@ -1132,22 +1202,86 @@ static void phoneInteractionNotification(int type, const char *msg)
 	[mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 }
 
+- (bool)patchlockdownd:(bool)undo
+{
+	NSString *version = [self phoneFirmwareVersion];
+	unsigned char *buf;
+	int size;
+	bool bModified = false;
+	
+	if (!m_phoneInteraction->getFileData((void**)&buf, &size, "/usr/libexec/lockdownd", 0, 0)) {
+		[mainWindow displayAlert:@"Error" message:@"Couldn't get lockdownd from phone."];
+		return false;
+	}
+	
+	if ([version isEqualToString:@"1.1.1"]) {
+
+		if (undo) {
+			buf[0xB810] = 0x04;
+			buf[0xB812] = 0x00;
+			buf[0xB813] = 0x1A;
+			buf[0xB814] = 0x24;
+			buf[0xB818] = 0x01;
+		}
+		else {
+			buf[0xB810] = 0x00;
+			buf[0xB812] = 0xA0;
+			buf[0xB813] = 0xE1;
+			buf[0xB814] = 0x54;
+			buf[0xB818] = 0x00;
+		}
+
+		bModified = true;
+	}
+
+	if (bModified) {
+
+		if (!m_phoneInteraction->putData(buf, size, "/usr/libexec/lockdownd", 0, 0)) {
+			free(buf);
+			[mainWindow displayAlert:@"Error" message:@"Couldn't write patched lockdownd to phone."];
+			return false;
+		}
+
+	}
+
+	free(buf);
+	return true;
+}
+
+- (bool)enableYouTube
+{
+	NSString *device_private_key_file = [[NSBundle mainBundle] pathForResource:@"device_private_key" ofType:@"pem"];
+	
+	if (device_private_key_file == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding necessary files in application bundle."];
+		return false;
+	}
+	
+	if (!m_phoneInteraction->putFile([device_private_key_file UTF8String], "/private/var/root/Library/Lockdown/device_private_key.pem",
+									 0, 0)) {
+		[mainWindow displayAlert:@"Error" message:@"Error writing device_private_key.pem to phone."];
+		return false;
+	}
+
+	return true;
+}
+
 - (IBAction)activate:(id)sender
 {
 	m_waitingForActivation = true;
-
+	
 	if (!m_phoneInteraction->isPhoneJailbroken()) {
 		[self performJailbreak:sender];
 		return;
 	}
-
-	[self activateStageTwo];
+	
+	[self activateStageTwo:true];
 }
 
 - (IBAction)deactivate:(id)sender
 {
 	m_waitingForDeactivation = true;
-
+	
 	if (!m_phoneInteraction->isPhoneJailbroken()) {
 		[self performJailbreak:sender];
 		return;
@@ -1697,18 +1831,18 @@ static void phoneInteractionNotification(int type, const char *msg)
 	
 	switch ([menuItem tag]) {
 		case MENU_ITEM_ACTIVATE:
-			
+
 			if (![self isConnected] || [self isActivated]) {
 				return NO;
 			}
-			
+
 			break;
 		case MENU_ITEM_DEACTIVATE:
 			
 			if (![self isConnected] || ![self isActivated]) {
 				return NO;
 			}
-			
+
 			break;
 		case MENU_ITEM_ENTER_DFU_MODE:
 

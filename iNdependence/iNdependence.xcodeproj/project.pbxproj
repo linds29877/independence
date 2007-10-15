@@ -45,7 +45,6 @@
 		F2F0C3510C8239FB005F65C6 /* CustomizeBrowser.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2F0C3500C8239FB005F65C6 /* CustomizeBrowser.mm */; };
 		F2F0C6BE0C82B3D2005F65C6 /* iPhoneActivation_original.pem in Resources */ = {isa = PBXBuildFile; fileRef = F2F0C6BD0C82B3D2005F65C6 /* iPhoneActivation_original.pem */; };
 		F2F7B2F90CA485250097C9EE /* SSHHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2F7B2F80CA485250097C9EE /* SSHHandler.mm */; };
-		F2F7B3FC0CA490CE0097C9EE /* anySIM.app in Copy anySIM */ = {isa = PBXBuildFile; fileRef = F2F7B3CE0CA48F4E0097C9EE /* anySIM.app */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,7 +71,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				F2F7B3FC0CA490CE0097C9EE /* anySIM.app in Copy anySIM */,
 			);
 			name = "Copy anySIM";
 			runOnlyForDeploymentPostprocessing = 0;
