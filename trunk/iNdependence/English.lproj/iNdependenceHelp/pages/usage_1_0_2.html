@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/sgml/loosedtd.html">
+<html>
+<head>
+	<title>Usage for Phone Firmware 1.0.2 and Earlier</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="keywords" content="using, jailbreak, activation, ringtone, wallpaper">
+	<meta name="description" content="Using iNdependence with 1.0.2">
+	<link media="all" rel="stylesheet" href="../css/topicPage.css" />
+</head>
+<body>
+	<div id="banner">
+		<div id="machelp">
+			<a name="Using"></a>
+				<a class="bread" href="help:anchor='access' bookID=iNdependence Help">iNdependence Help</a>
+			</div>
+		</div>
+		<div id="mainbox">
+			<div id="caticon">
+				<img class="icon" src="../images/iNdependence_icon_large.png" alt="iNdependence Icon" />
+			</div>
+
+			<div id="pagetitle">
+				<h1>Using iNdependence with Firmware 1.0.2 and Earlier</h1>
+			</div>
+
+			<div summary="How to activate your phone" id="activation">
+				<h1>To activate your phone:</h1>
+				<p>
+					<ol>
+						<li>Ensure that there is a SIM card in your phone (otherwise activation will fail).</li>
+						<li>Download any of the following iPhone firmware files from Apple:
+							<ul>
+								<li><a href="http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPhone/061-3538.20070629.B7vXa/iPhone1,1_1.0_1A543a_Restore.ipsw">Firmware version 1.0</a></li>
+								<li><a href="http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPhone/061-3614.20070731.Nt6Y7/iPhone1,1_1.0.1_1C25_Restore.ipsw">Firmware version 1.0.1</a></li>
+								<li><a href="http://content.info.apple.com/iPhone/061-3823.20070821.vormd/iPhone1,1_1.0.2_1C28_Restore.ipsw">Firmware version 1.0.2</a></li>
+							</ul>
+							It doesn't matter which one, they all work equally well. :)
+						</li>
+						<li>If your web browser didn't automatically decompress it to a folder, then change the file extension from <b>.ipsw</b> to <b>.zip</b> and unzip it yourself.</li>
+						<li>Launch iNdependence.</li>
+						<li>Select the Activation tab and press the <i>Activate Phone</i> button.</li>
+						<li>You'll be prompted to choose the directory where you unzipped the firmware files.</li>
+						<li>If you get an error message saying <i>Error entering recovery mode</i> then quit iNdependence, restart it, and try again.</li>
+						<li>Wait for the success message.  Note that the activation process will also enable YouTube for you.</li>
+					</ol>
+				</p>
+				<p>Note that if your phone was previously jailbroken, activating it this way will return it to jail again.</p>
+			</div>
+
+			<div summary="How to jailbreak your phone" id="jailbreak">
+				<h1>To jailbreak your phone:</h1>
+				<p>
+					<ol>
+						<li>Download any of the following iPhone firmware files from Apple:
+							<ul>
+								<li><a href="http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPhone/061-3538.20070629.B7vXa/iPhone1,1_1.0_1A543a_Restore.ipsw">Firmware version 1.0</a></li>
+								<li><a href="http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPhone/061-3614.20070731.Nt6Y7/iPhone1,1_1.0.1_1C25_Restore.ipsw">Firmware version 1.0.1</a></li>
+								<li><a href="http://content.info.apple.com/iPhone/061-3823.20070821.vormd/iPhone1,1_1.0.2_1C28_Restore.ipsw">Firmware version 1.0.2</a></li>
+							</ul>
+							It doesn't matter which one, they all work equally well. :)
+						</li>
+						<li>If your web browser didn't automatically decompress it to a folder, then change the file extension from <b>.ipsw</b> to <b>.zip</b> and unzip it yourself.</li>
+						<li>Launch iNdependence.</li>
+						<li>Select the Jailbreak tab and press the <i>Perform Jailbreak</i> button.</li>
+						<li>You'll be prompted to choose the directory where you unzipped the firmware files.</li>
+						<li>If the screen on the phone hasn't changed to show the Apple logo after 30 seconds, then it means that iNdependence has failed to put the phone into recovery mode (and is frozen).  Force quit iNdependence, relaunch it, and start at step 5 again.</li>
+						<li>Wait for the success message.</li>
+					</ol>
+				</p>
+			</div>
+
+			<div summary="Installing and configuring SSH" id="ssh">
+				<h1>SSH and beyond</h1>
+				<p>
+					Installing SSH is a breeze once your phone is jailbroken.  Just choose the <i>SSH</i> tab and press the <i>Install SSH/SCP/SFTP</i> button.  Then follow the instructions.
+				</p>
+				<p>
+					The default accounts on the phone are:<br><br>
+
+					username: root<br>
+					password: dottie<br><br>
+
+					username: mobile<br>
+					password: alpine
+				</p>
+				<p>
+					Remember to change the default passwords after installing SSH using the <i>Change Password</i> button.  I'm not responsible if someone hacks your phone.
+				</p>
+			</div>
+
+			<div summary="Installing ringtones, wallpapers, and applications" id="customization">
+				<h1>Customization</h1>
+				<p>
+					The <i>Customize</i> tab uses a Finder-style interface and allows for drag and drop installation of ringtones, wallpapers, and applications.  It also has preview images for wallpapers and application icons.  You can also use the <i>Add</i> and <i>Delete</i> buttons.
+				</p>
+				<p>
+					Please note that in order to install/remove applications, you'll need to have SSH installed on the phone as you'll be asked for the phone's IP address and root password.
+				</p>
+				<p>
+					To find the phone's IP address, launch the Settings application, navigate to "Wi-Fi" and press the blue arrow beside the name of the Wi-Fi network that your phone is connected to.
+				</p>
+				<p>
+					Also note that ringtones must be MPEG-4 audio (.m4a) files as the file chooser will only allow you to choose .m4a files. Wallpapers must be 2 PNG (.png) files (the main image and the thumbnail image).  The wallpaper image sizes I use are 320x480 for the main image and 75x75 for the thumbnail image.  These seem to work well for me.
+				</p>
+			</div>
+
+			<p>
+				<strong>Have fun!</strong>
+			</p>
+
+		</div>
+	</body>
+</html>
