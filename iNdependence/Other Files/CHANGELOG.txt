@@ -62,3 +62,8 @@ v1.2.3 (De Koninck) - 10/16/07
 - Made the search for fstab on /dev/rdisk0s1 more robust
 - Fixed bug where, after jailbreak, the status bar would continue to report phone as being in recovery mode
 - Fixed the Customize tab
+
+
+v1.2.4
+
+- Made it so that iTunes version detection can find iTunes even if it's not in the default location (/Applications/iTunes.app)
