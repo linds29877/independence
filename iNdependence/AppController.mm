@@ -477,8 +477,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 			[returnToJailButton setEnabled:NO];
 		}
 
-		[changePasswordButton setEnabled:YES];
 		[customizeBrowser setEnabled:YES];
+		[changePasswordButton setEnabled:YES];
 		[jailbreakButton setEnabled:NO];
 		
 		if ([self isSSHInstalled]) {
@@ -831,79 +831,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 	[mainWindow displayAlert:@"Success" message:@"Your phone is now ready to be upgraded to 1.1.1.\n\nPlease quit iNdependence, then use iTunes to do this now.\n\nEnsure that you choose 'Update' and not 'Restore' in iTunes."];
 }
 
-- (IBAction)post111Upgrade:(id)sender
-{
-	
-	if (!m_phoneInteraction->fileExists("/var/root/Media.backup")) {
-		[mainWindow displayAlert:@"Error" message:@"/var/root/Media.backup does not exist on your phone so you cannot perform this operation."];
-		return;
-	}
-	
-	bool bCancelled = false;
-	NSString *ipAddress, *password;
-	
-	if ([sshHandler getSSHInfo:&ipAddress password:&password wasCancelled:&bCancelled] == false) {
-		return;
-	}
-	
-	if (bCancelled) {
-		return;
-	}
-
-	bool done = false;
-	int retval;
-	
-	while (!done) {
-		[mainWindow startDisplayWaitingSheet:@"Performing Post-1.1.1 Upgrade" message:@"Performing post-1.1.1 operations..." image:nil
-								cancelButton:false runModal:false];
-		retval = SSHHelper::removeMediaSymlink([ipAddress UTF8String], [password UTF8String]);
-		[mainWindow endDisplayWaitingSheet];
-		
-		if (retval != SSH_HELPER_SUCCESS) {
-			
-			switch (retval)
-			{
-				case SSH_HELPER_ERROR_NO_RESPONSE:
-					[mainWindow displayAlert:@"Failed" message:@"Couldn't connect to SSH server.  Ensure IP address is correct, phone is connected to a network, and SSH is installed correctly."];
-					done = true;
-					break;
-				case SSH_HELPER_ERROR_BAD_PASSWORD:
-					[mainWindow displayAlert:@"Failed" message:@"root password is incorrect."];
-					done = true;
-					break;
-				case SSH_HELPER_VERIFICATION_FAILED:
-					int retval = NSRunAlertPanel(@"Failed", @"Host verification failed.  Would you like iNdependence to try and fix this for you by editing ~/.ssh/known_hosts?", @"No", @"Yes", nil);
-					
-					if (retval == NSAlertAlternateReturn) {
-						
-						if (![sshHandler removeKnownHostsEntry:ipAddress]) {
-							[mainWindow displayAlert:@"Failed" message:@"Couldn't remove entry from ~/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address."];
-							done = true;
-						}
-						
-					}
-						else {
-							done = true;
-						}
-						
-						break;
-				default:
-					[mainWindow displayAlert:@"Failed" message:@"Error performing post-1.1.1 operations."];
-					done = true;
-					break;
-			}
-			
-		}
-		else {
-			done = true;
-		}
-		
-	}
-
-	[post111UpgradeButton setEnabled:false];
-	[mainWindow displayAlert:@"Success" message:@"You've successfully performed the post-1.1.1 operations."];
-}
-
 - (IBAction)installSimUnlock:(id)sender
 {
 	NSString *simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM" ofType:@"app"];
@@ -1114,8 +1041,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 	else {
 		m_waitingForActivation = false;
 		
-		if (![self patchlockdownd:false]) return;
-		
+		if (!m_phoneInteraction->factoryActivate()) return;
+
 		if (![self enableYouTube]) return;
 		
 		m_waitingForNewActivation = true;
@@ -1179,8 +1106,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 	else {
 		m_waitingForDeactivation = false;
 		
-		if (![self patchlockdownd:true]) return;
-		
+		if (!m_phoneInteraction->factoryActivate(true)) return;
+
 		m_waitingForNewDeactivation = true;
 		[g_mainWindow startDisplayWaitingSheet:nil
 									   message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
@@ -1202,52 +1129,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 	[mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 }
 
-- (bool)patchlockdownd:(bool)undo
-{
-	NSString *version = [self phoneFirmwareVersion];
-	unsigned char *buf;
-	int size;
-	bool bModified = false;
-	
-	if (!m_phoneInteraction->getFileData((void**)&buf, &size, "/usr/libexec/lockdownd", 0, 0)) {
-		[mainWindow displayAlert:@"Error" message:@"Couldn't get lockdownd from phone."];
-		return false;
-	}
-	
-	if ([version isEqualToString:@"1.1.1"]) {
-
-		if (undo) {
-			buf[0xB810] = 0x04;
-			buf[0xB812] = 0x00;
-			buf[0xB813] = 0x1A;
-			buf[0xB814] = 0x24;
-			buf[0xB818] = 0x01;
-		}
-		else {
-			buf[0xB810] = 0x00;
-			buf[0xB812] = 0xA0;
-			buf[0xB813] = 0xE1;
-			buf[0xB814] = 0x54;
-			buf[0xB818] = 0x00;
-		}
-
-		bModified = true;
-	}
-
-	if (bModified) {
-
-		if (!m_phoneInteraction->putData(buf, size, "/usr/libexec/lockdownd", 0, 0)) {
-			free(buf);
-			[mainWindow displayAlert:@"Error" message:@"Couldn't write patched lockdownd to phone."];
-			return false;
-		}
-
-	}
-
-	free(buf);
-	return true;
-}
-
 - (bool)enableYouTube
 {
 	NSString *device_private_key_file = [[NSBundle mainBundle] pathForResource:@"device_private_key" ofType:@"pem"];
@@ -1256,9 +1137,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[mainWindow displayAlert:@"Error" message:@"Error finding necessary files in application bundle."];
 		return false;
 	}
-	
-	if (!m_phoneInteraction->putFile([device_private_key_file UTF8String], "/private/var/root/Library/Lockdown/device_private_key.pem",
-									 0, 0)) {
+
+	if (!m_phoneInteraction->enableYouTube([device_private_key_file UTF8String])) {
 		[mainWindow displayAlert:@"Error" message:@"Error writing device_private_key.pem to phone."];
 		return false;
 	}

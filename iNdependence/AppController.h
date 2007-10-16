@@ -102,7 +102,6 @@ class PhoneInteraction;
 
 - (bool)doPutPEM:(const char*)pemfile;
 - (bool)enableYouTube;
-- (bool)patchlockdownd:(bool)undo;
 
 - (void)activateStageTwo:(bool)displaySheet;
 - (void)activateStageThree;
@@ -115,7 +114,6 @@ class PhoneInteraction;
 - (IBAction)deactivate:(id)sender;
 - (IBAction)enterDFUMode:(id)sender;
 - (IBAction)pre111Upgrade:(id)sender;
-- (IBAction)post111Upgrade:(id)sender;
 - (IBAction)performJailbreak:(id)sender;
 - (IBAction)returnToJail:(id)sender;
 - (IBAction)installSimUnlock:(id)sender;

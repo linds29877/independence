@@ -155,7 +155,7 @@ static FILE *buildInitialSFTPScript(const char *ipAddress, const char *password,
 	fputs("                           \"password:\"\n", fp);
 	fputs("                       }\n", fp);
 	fputs("                     }\n", fp);
-	fputs("    \"closed\"      { exit 3 }\n", fp);
+	fputs("    \"failed.\"      { exit 3 }\n", fp);
 	fputs("    \"password:\"\n", fp);
 	fputs("}\n\n", fp);
 	snprintf(cmd2, len2, "exp_send \"%s\n\"\n\n", password);
@@ -379,13 +379,13 @@ int SSHHelper::symlinkMediaToRoot(const char *ipAddress, const char *password)
 		return -1;
 	}
 
-	fputs("exp_send \"rename /var/root/Media /var/root/Media.backup\n\"\n\n", fp);
+	fputs("exp_send \"rename /private/var/root/Media /private/var/root/Media.iNdependence\n\"\n\n", fp);
 	fputs("expect {\n", fp);
 	fputs("    timeout          { exit 1 }\n", fp);
 	fputs("    eof              { exit 1 }\n", fp);
 	fputs("    \">\"\n", fp);
 	fputs("}\n\n", fp);
-	fputs("exp_send \"symlink / /var/root/Media\n\"\n\n", fp);
+	fputs("exp_send \"symlink / /private/var/root/Media\n\"\n\n", fp);
 	fputs("expect {\n", fp);
 	fputs("    timeout          { exit 1 }\n", fp);
 	fputs("    eof              { exit 1 }\n", fp);
@@ -415,13 +415,13 @@ int SSHHelper::removeMediaSymlink(const char *ipAddress, const char *password)
 		return -1;
 	}
 	
-	fputs("exp_send \"rm /var/root/Media\n\"\n\n", fp);
+	fputs("exp_send \"rm /private/var/root/Media\n\"\n\n", fp);
 	fputs("expect {\n", fp);
 	fputs("    timeout          { exit 1 }\n", fp);
 	fputs("    eof              { exit 1 }\n", fp);
 	fputs("    \">\"\n", fp);
 	fputs("}\n\n", fp);
-	fputs("exp_send \"rename /var/root/Media.backup /var/root/Media\n\"\n\n", fp);
+	fputs("exp_send \"rename /private/var/root/Media.iNdependence /private/var/root/Media\n\"\n\n", fp);
 	fputs("expect {\n", fp);
 	fputs("    timeout          { exit 1 }\n", fp);
 	fputs("    eof              { exit 1 }\n", fp);
