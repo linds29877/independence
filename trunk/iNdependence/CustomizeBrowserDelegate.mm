@@ -22,12 +22,13 @@
 #include "PhoneInteraction/PNGHelper.h"
 
 
-static char* g_systemApps[17] = { "Calculator.app", "DemoApp.app", "FieldTest.app", "Maps.app",
-								  "MobileCal.app", "MobileMail.app", "MobileMusicPlayer.app",
-								  "MobileNotes.app", "MobilePhone.app", "MobileSafari.app",
-								  "MobileSlideShow.app", "MobileSMS.app", "MobileTimer.app",
-								  "Preferences.app", "Stocks.app", "Weather.app", "YouTube.app" };
-static int g_numSystemApps = 17;
+static char* g_systemApps[19] = { "Calculator.app", "DemoApp.app", "FieldTest.app", "Maps.app",
+								  "MobileAddressBook.app",  "MobileCal.app", "MobileMail.app",
+								  "MobileMusicPlayer.app", "MobileNotes.app", "MobilePhone.app",
+								  "MobileSafari.app", "MobileSlideShow.app", "MobileSMS.app",
+								  "MobileStore.app", "MobileTimer.app", "Preferences.app",
+								  "Stocks.app", "Weather.app", "YouTube.app" };
+static int g_numSystemApps = 19;
 
 
 @implementation CustomizeBrowserDelegate
@@ -106,6 +107,17 @@ static int g_numSystemApps = 17;
 	return NULL;
 }
 
+- (char*)getRingtoneFileExtension
+{
+	char *version = PhoneInteraction::getInstance()->getPhoneProductVersion();
+	
+	if (!strncmp(version, "1.0", 3)) {
+		return ".m4a";
+	}
+
+	return ".m4r";
+}
+
 - (NSArray*)getValidFileList:(NSString*)col1sel col2sel:(NSString*)col2sel
 {
 	const char *dir = [self getPhoneDirectory:col1sel col2sel:col2sel];
@@ -120,10 +132,11 @@ static int g_numSystemApps = 17;
 		
 		if (PhoneInteraction::getInstance()->directoryFileList(dir, &filenames, &numFiles)) {
 			outputArray = [[[NSMutableArray alloc] initWithCapacity:numFiles] autorelease];
-			
+			char *extension = [self getRingtoneFileExtension];
+
 			for (int i = 0; i < numFiles; i++) {
-				char *index = strstr(filenames[i], ".m4a");
-				
+				char *index = strstr(filenames[i], extension);
+
 				if (index != NULL) {
 					[outputArray addObject:[NSString stringWithUTF8String:filenames[i]]];
 				}
@@ -474,11 +487,12 @@ static int g_numSystemApps = 17;
 
 	if ([col1sel isEqualToString:@"Ringtones"]) {
 		NSString *file;
+		NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension] encoding:NSUTF8StringEncoding];
 
 		for (int i = 0; i < [files count]; i++) {
 			file = (NSString*)[files objectAtIndex:i];
 
-			if ( [[file pathExtension] caseInsensitiveCompare:@"m4a"] != NSOrderedSame ) {
+			if ( [[file pathExtension] caseInsensitiveCompare:extension] != NSOrderedSame ) {
 				return false;
 			}
 
@@ -527,9 +541,10 @@ static int g_numSystemApps = 17;
 	[fileOpener setTitle:@"Choose the ringtone file"];
 	[fileOpener setCanChooseDirectories:NO];
 	[fileOpener setAllowsMultipleSelection:NO];
-	
-	NSArray *fileTypes = [NSArray arrayWithObject:@"m4a"];
-	
+
+	NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension] encoding:NSUTF8StringEncoding];
+	NSArray *fileTypes = [NSArray arrayWithObject:extension];
+
 	if ([fileOpener runModalForTypes:fileTypes] != NSOKButton) {
 
 		if (cancelled != NULL) {
@@ -634,11 +649,12 @@ static int g_numSystemApps = 17;
 		}
 
 		NSString *filename;
+		NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension] encoding:NSUTF8StringEncoding];
 
 		for (int i = 0; i < [files count]; i++) {
 			filename = [files objectAtIndex:i];
 
-			if ( [[filename pathExtension] caseInsensitiveCompare:@"m4a"] == NSOrderedSame ) {
+			if ( [[filename pathExtension] caseInsensitiveCompare:extension] == NSOrderedSame ) {
 
 				if (PhoneInteraction::getInstance()->ringtoneExists([[filename lastPathComponent] UTF8String], bInSystemDir)) {
 					int retval = NSRunAlertPanel(@"Ringtone Exists",

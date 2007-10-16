@@ -58,6 +58,8 @@ enum
 	NOTIFY_CREATE_DIR_FAILED,
 	NOTIFY_REMOVE_PATH_SUCCESS,
 	NOTIFY_REMOVE_PATH_FAILED,
+	NOTIFY_RENAME_PATH_SUCCESS,
+	NOTIFY_RENAME_PATH_FAILED,
 	NOTIFY_CONNECTED,
 	NOTIFY_DISCONNECTED,
 	NOTIFY_AFC_CONNECTED,
@@ -134,6 +136,7 @@ public:
 
 	// activation related functions
 	bool activate(const char* filename, const char* pemfile = NULL);
+	bool factoryActivate(bool undo = false);
 	bool deactivate();
 	bool isPhoneActivated();
 
@@ -146,6 +149,12 @@ public:
 	void jailbreakFinished();
 	void returnToJailFinished();
 	bool isPhoneJailbroken();
+
+	// use to enable SpringBoard to recognize 3rd party applications on firmware 1.1.1
+	bool enableThirdPartyApplications(bool undo = false);
+
+	// use to enable/disable YouTube
+	bool enableYouTube(const char *privateKeyFile);
 
 	// used for notifications from MobileDevice library
 	void recoveryModeStarted(struct am_recovery_device *dev);
@@ -178,6 +187,7 @@ public:
 
 	bool createDirectory(const char *dir);
 	bool removePath(const char *path);
+	bool renamePath(const char *oldpath, const char *newpath);
 
 	int numFilesInDirectory(const char *path);
 	bool directoryFileList(const char *path, char ***list, int *length);

@@ -48,11 +48,46 @@ MainWindow *g_mainWindow;
 												styleMask:NSTitledWindowMask
 												  backing:NSBackingStoreBuffered
 													defer:NO];
-		waitDialogImage = [[NSImageView alloc] initWithFrame:NSMakeRect(20, 69, 456, 150)];
+
+		NSSize size = [img size];
+		float widthScale = 1.0f, heightScale = 1.0f;
+
+		if (size.width > 456.0f) {
+			widthScale = 456.0f / size.width;
+		}
+
+		if (size.height > 150.0f) {
+			heightScale = 150.0f / size.height;
+		}
+
+		if ( (widthScale != 1.0f) || (heightScale != 1.0f) ) {
+
+			if (widthScale <= heightScale) {
+				size.width = widthScale * size.width;
+				size.height = widthScale * size.height;
+			}
+			else {
+				size.width = heightScale * size.width;
+				size.height = heightScale * size.height;
+			}
+
+		}
+
+		NSPoint loc = NSMakePoint(20, 69);
+
+		if (size.width < 456.0f) {
+			loc.x += (456.0f - size.width) / 2.0f;
+		}
+
+		if (size.height < 150.0f) {
+			loc.y += (150.0f - size.height) / 2.0f;
+		}
+
+		waitDialogImage = [[NSImageView alloc] initWithFrame:NSMakeRect(loc.x, loc.y, size.width, size.height)];
 		[waitDialogImage setImage:img];
 		[waitDialogImage setImageAlignment:NSImageAlignCenter];
 		[waitDialogImage setImageScaling:NSScaleProportionally];
-		[waitDialogImage setImageFrameStyle:NSImageFrameNone];
+		[waitDialogImage setImageFrameStyle:NSImageFramePhoto];
 		[[waitDialog contentView] addSubview:waitDialogImage];
 	}
 	else {

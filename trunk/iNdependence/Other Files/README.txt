@@ -1,5 +1,5 @@
  *
- * iNdependence v1.2.2
+ * iNdependence v1.2.3
  * Copyright 2007 The Operator
  *
  * This software is free software; you can redistribute it and/or
@@ -33,5 +33,6 @@ Credit to:
   - anonymous for the fast jailbreak method
   - dinopio for the 1.1.1 jailbreak exploit
   - roxfan, nervegas, dinopio, and the iTouch dev team for the 1.1.1 lockdownd patch
+  - pumpkin for the 1.1.1 SpringBoard patch to enable 3rd party applications
 
 Cheers to the iPhoneDev team!

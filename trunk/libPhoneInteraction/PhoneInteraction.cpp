@@ -400,11 +400,7 @@ void recoveryDisconnectNotificationCallback(am_recovery_device *dev)
 #ifdef DEBUG
 	CFShow(CFSTR("recoveryDisconnectNotificationCallback"));
 #endif
-
-	if (!g_phoneInteraction->m_finishingJailbreak) {
-		g_phoneInteraction->recoveryModeFinished(dev);
-	}
-
+	g_phoneInteraction->recoveryModeFinished(dev);
 }
 
 PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
@@ -939,6 +935,97 @@ bool PhoneInteraction::isConnectedToAFC()
 	return m_afcConnected;
 }
 
+bool PhoneInteraction::enableThirdPartyApplications(bool undo)
+{
+	char *phoneProdVer = getPhoneProductVersion();
+
+	if (!strcmp(phoneProdVer, "1.1.1")) {
+		unsigned char *buf;
+		int size;
+	
+		if (!getFileData((void**)&buf, &size, "/System/Library/CoreServices/SpringBoard.app/SpringBoard", 0, 0)) {
+			return false;
+		}
+		
+		if (undo) {
+			buf[0x7C564] = 0x09;
+			buf[0x7C565] = 0x01;
+			buf[0x7C567] = 0x0A;
+		}
+		else {
+			buf[0x7C564] = 0x00;
+			buf[0x7C565] = 0x00;
+			buf[0x7C567] = 0x00;
+		}
+		
+		if (!putData(buf, size, "/System/Library/CoreServices/SpringBoard.app/SpringBoard", 0, 0)) {
+			free(buf);
+			return false;
+		}
+
+		free(buf);
+	}
+
+	return true;
+}
+
+bool PhoneInteraction::enableYouTube(const char *privateKeyFile)
+{
+
+	if (!putFile(privateKeyFile, "/private/var/root/Library/Lockdown/device_private_key.pem",
+				0, 0)) {
+		return false;
+	}
+
+	return true;
+}
+
+bool PhoneInteraction::factoryActivate(bool undo)
+{
+	unsigned char *buf;
+	int size;
+	bool bModified = false;
+	
+	if (!getFileData((void**)&buf, &size, "/usr/libexec/lockdownd", 0, 0)) {
+		return false;
+	}
+
+	char *phoneProdVer = getPhoneProductVersion();
+
+	// TODO: Figure out how to patch older versions of lockdownd
+	if (!strcmp(phoneProdVer, "1.1.1")) {
+
+		if (undo) {
+			buf[0xB810] = 0x04;
+			buf[0xB812] = 0x00;
+			buf[0xB813] = 0x1A;
+			buf[0xB814] = 0x24;
+			buf[0xB818] = 0x01;
+		}
+		else {
+			buf[0xB810] = 0x00;
+			buf[0xB812] = 0xA0;
+			buf[0xB813] = 0xE1;
+			buf[0xB814] = 0x54;
+			buf[0xB818] = 0x00;
+		}
+		
+		bModified = true;
+	}
+
+	if (bModified) {
+		
+		if (!putData(buf, size, "/usr/libexec/lockdownd", 0, 0)) {
+			free(buf);
+			return false;
+		}
+		
+	}
+	
+	free(buf);
+	return true;
+}
+
 bool PhoneInteraction::activate(const char* filename, const char *pemfile)
 {
 
@@ -947,12 +1034,16 @@ bool PhoneInteraction::activate(const char* filename, const char *pemfile)
 		return false;
 	}
 
-	/*
+	char *phoneProdVer = getPhoneProductVersion();
+	
+	if (!strncmp(phoneProdVer, "1.1", 3)) {
+		return factoryActivate();
+	}
+
 	if (isPhoneJailbroken()) {
 		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Can't activate when phone is jailbroken.");
 		return false;
 	}
-	 */
 
 	if ( (filename == NULL) && (pemfile == NULL) ) {
 		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Invalid parameters.");
@@ -2300,6 +2391,23 @@ bool PhoneInteraction::removePath(const char *path)
 	return true;
 }
 
+bool PhoneInteraction::renamePath(const char *oldpath, const char *newpath)
+{
+	
+	if (!isConnected()) {
+		(*m_notifyFunc)(NOTIFY_RENAME_PATH_FAILED, "Can't rename a file/directory when no phone is connected.");
+		return false;
+	}
+	
+	if (AFCRenamePath(m_hAFC, (char*)oldpath, (char*)newpath)) {
+		(*m_notifyFunc)(NOTIFY_RENAME_PATH_FAILED, "Error renaming file/directory.");
+		return false;
+	}
+
+	(*m_notifyFunc)(NOTIFY_RENAME_PATH_SUCCESS, "Successfully renamed file/directory.");
+	return true;
+}
+
 bool PhoneInteraction::removePathRecursive(const char *path)
 {
 
@@ -2394,7 +2502,7 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 	unsigned char *buf = (unsigned char*)malloc(bufsize);
 	bool bFound = false;
 	unsigned long long mainoffset = 0;
-	char *searchstr = "/dev/disk0s1 / hfs ro 0 1\n/dev/disk0s2 /private/var hfs rw,noexec 0 2";
+	char *searchstr = "/dev/disk0s1 / hfs";
 	unsigned int searchstrlen = strlen(searchstr);
 	int searchoffset = 0;
 
@@ -2584,6 +2692,11 @@ void PhoneInteraction::returnToJail(const char *servicesFile, const char *fstabF
 		(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error writing fstab file to phone.");
 		return;
 	}
+
+	if (!enableThirdPartyApplications(true)) {
+		(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error disabling 3rd party application support.");
+		return;
+	}
 	
 	if (AMDeviceEnterRecovery(m_iPhone)) {
 		(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error entering recovery mode.");
@@ -2605,10 +2718,30 @@ void PhoneInteraction::newJailbreakStageTwo()
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error writing modified Services.plist to phone.");
 		return;
 	}
-	
+
 	free(m_servicesPath);
 	m_servicesPath = NULL;
-	
+
+	if (!enableThirdPartyApplications()) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error enabling 3rd party application support.");
+		return;
+	}
+
+	// if we created a symlink from /private/var/root/Media to / during the 1.1.1 upgrade, clean it up 
+	if (fileExists("/private/var/root/Media.iNdependence") && fileExists("/private/var/root/Media")) {
+
+		if (!renamePath("/private/var/root/Media", "/private/var/root/.symlink")) {
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error renaming /private/var/root/Media.");
+			return;
+		}
+
+		if (!renamePath("/private/var/root/Media.iNdependence", "/private/var/root/Media")) {
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error renaming /private/var/root/Media.iNdependence.");
+			return;
+		}
+
+	}
+
 	(*m_notifyFunc)(NOTIFY_NEW_JAILBREAK_STAGE_TWO_WAIT, "Waiting for reboot...");
 	
 	m_recoveryOccurred = true;
