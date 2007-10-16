@@ -19,7 +19,7 @@
 		<key>AllowUnactivatedService</key>
 		<true/>
 		<key>Label</key>
-		<string>com.apple.af2c</string>
+		<string>com.apple.afc2</string>
 		<key>ProgramArguments</key>
 		<array>
 			<string>/usr/libexec/afcd</string>
