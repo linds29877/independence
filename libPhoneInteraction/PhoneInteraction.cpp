@@ -545,17 +545,48 @@ bool PhoneInteraction::determineiTunesVersion()
 #else
 bool PhoneInteraction::determineiTunesVersion()
 {
+	CFURLRef appUrl, versionPlistUrl;
+
+	// try searching for iTunes.app using LaunchServices
+	if (LSFindApplicationForInfo(kLSUnknownCreator, NULL, CFSTR("iTunes.app"), NULL, &appUrl) != noErr) {
+
+		// try searching for bundleID com.apple.iTunes using LaunchServices
+		if (LSFindApplicationForInfo(kLSUnknownCreator, CFSTR("com.apple.iTunes"), NULL, NULL, &appUrl) != noErr) {
+			struct stat st;
+
+			// as a last resort, try the default location
+			if (stat("/Applications/iTunes.app", &st)) {
+				return false;
+			}
+
+			appUrl = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+												   CFSTR("/Applications/iTunes.app"),
+												   kCFURLPOSIXPathStyle, true);
+		}
+
+	}
+
+	versionPlistUrl = CFURLCreateCopyAppendingPathComponent(kCFAllocatorDefault,
+															appUrl, CFSTR("Contents/version.plist"), false);
+	CFRelease(appUrl);
+
+	if (versionPlistUrl == NULL) {
+		return false;
+	}
+
 	CFDictionaryRef iTunesVersionDict = NULL;
-	CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-												 CFSTR("/Applications/iTunes.app/Contents/version.plist"),
-												 kCFURLPOSIXPathStyle, false);
 	CFStringRef errString;
-	CFReadStreamRef stream= CFReadStreamCreateWithFile(kCFAllocatorDefault, url);
-	
+	CFReadStreamRef stream= CFReadStreamCreateWithFile(kCFAllocatorDefault, versionPlistUrl);
+
+	if (stream == NULL) {
+		CFRelease(versionPlistUrl);
+		return false;
+	}
+
 	Boolean opened = CFReadStreamOpen(stream);
 	
 	if (opened == FALSE) {
-		CFRelease(url);
+		CFRelease(versionPlistUrl);
 		CFRelease(stream);
 		return false;
 	}
@@ -567,12 +598,12 @@ bool PhoneInteraction::determineiTunesVersion()
 																		&format, &errString);
 	CFReadStreamClose(stream);
 	CFRelease(stream);
-	CFRelease(url);
-	
+	CFRelease(versionPlistUrl);
+
 	if (errString != NULL) {
 		return false;
 	}
-	
+
 	if (iTunesVersionDict == NULL) {
 		return false;
 	}
