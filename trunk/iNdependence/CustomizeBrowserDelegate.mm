@@ -107,15 +107,24 @@ static int g_numSystemApps = 19;
 	return NULL;
 }
 
-- (char*)getRingtoneFileExtension
+- (char*)getRingtoneFileExtension:(bool)bWithDot
 {
 	char *version = PhoneInteraction::getInstance()->getPhoneProductVersion();
 	
 	if (!strncmp(version, "1.0", 3)) {
-		return ".m4a";
+
+		if (bWithDot) {
+			return ".m4a";
+		}
+
+		return "m4a";
 	}
 
-	return ".m4r";
+	if (bWithDot) {
+		return ".m4r";
+	}
+
+	return "m4r";
 }
 
 - (NSArray*)getValidFileList:(NSString*)col1sel col2sel:(NSString*)col2sel
@@ -132,7 +141,7 @@ static int g_numSystemApps = 19;
 		
 		if (PhoneInteraction::getInstance()->directoryFileList(dir, &filenames, &numFiles)) {
 			outputArray = [[[NSMutableArray alloc] initWithCapacity:numFiles] autorelease];
-			char *extension = [self getRingtoneFileExtension];
+			char *extension = [self getRingtoneFileExtension:true];
 
 			for (int i = 0; i < numFiles; i++) {
 				char *index = strstr(filenames[i], extension);
@@ -487,7 +496,7 @@ static int g_numSystemApps = 19;
 
 	if ([col1sel isEqualToString:@"Ringtones"]) {
 		NSString *file;
-		NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension] encoding:NSUTF8StringEncoding];
+		NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension:false] encoding:NSUTF8StringEncoding];
 
 		for (int i = 0; i < [files count]; i++) {
 			file = (NSString*)[files objectAtIndex:i];
@@ -542,7 +551,7 @@ static int g_numSystemApps = 19;
 	[fileOpener setCanChooseDirectories:NO];
 	[fileOpener setAllowsMultipleSelection:NO];
 
-	NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension] encoding:NSUTF8StringEncoding];
+	NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension:false] encoding:NSUTF8StringEncoding];
 	NSArray *fileTypes = [NSArray arrayWithObject:extension];
 
 	if ([fileOpener runModalForTypes:fileTypes] != NSOKButton) {
@@ -649,7 +658,7 @@ static int g_numSystemApps = 19;
 		}
 
 		NSString *filename;
-		NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension] encoding:NSUTF8StringEncoding];
+		NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension:false] encoding:NSUTF8StringEncoding];
 
 		for (int i = 0; i < [files count]; i++) {
 			filename = [files objectAtIndex:i];

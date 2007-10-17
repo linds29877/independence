@@ -69,3 +69,5 @@ v1.2.4 (Dogfish Head)
 - Made it so that iTunes version detection can find iTunes even if it's not in the default location (/Applications/iTunes.app)
 - Fixed a spelling error in the afc2 process label in the modified Services.plist file
 - Fixed a problem with setting the permissions on applications that have a space in the name
+- Fixed ringtone file selection for customization (works now)
+- Fixed bug where, if you perform the "Pre-1.1.1 Upgrade" step and SSH fails, it will still give you a success message at the end (after the SSH failure message)
