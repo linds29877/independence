@@ -71,6 +71,40 @@ static int modeToInt(mode_t mode)
 	return retval;
 }
 
+static char *escapeSpaces(const char *path)
+{
+	char *escapedPath;
+	int numSpaces = 0;
+	int index = 0;
+	int len = strlen(path);
+
+	// count the number of spaces
+	while (index < len) {
+
+		if (path[index++] == ' ') {
+			numSpaces++;
+		}
+
+	}
+
+	escapedPath = (char*)malloc(len+1+(numSpaces*2));
+	index = 0;
+	int index2 = 0;
+
+	while (index < len) {
+
+		if (path[index] == ' ') {
+			strcpy(escapedPath+index2, "\\");
+			index2 += 2;
+		}
+		
+		escapedPath[index2++] = path[index++];	
+	}
+
+	escapedPath[index2] = 0;
+	return escapedPath;
+}
+
 static FILE *buildInitialSSHScript(const char *ipAddress, const char *password, char **filename)
 {
 	size_t len = 30 + strlen(g_sshPath) + strlen(ipAddress);
@@ -180,17 +214,20 @@ static bool buildPermissionsScriptRecursive(FILE *fp, const char *srcPath, const
 	}
 
 	if (S_ISREG(st.st_mode) || S_ISDIR(st.st_mode)) {
+		char *escapedDestPath = escapeSpaces(destPath);
 		int mode = modeToInt(st.st_mode);
-		int len = 25 + strlen(destPath);
+		int len = 25 + strlen(escapedDestPath);
 		char cmd[len];
 
-		snprintf(cmd, len, "exp_send \"chmod %d %s\n\"\n\n", mode, destPath);
+		snprintf(cmd, len, "exp_send \"chmod %d %s\n\"\n\n", mode, escapedDestPath);
 		fputs(cmd, fp);
 		fputs("expect {\n", fp);
 		fputs("    timeout          { exit 1 }\n", fp);
 		fputs("    eof              { exit 1 }\n", fp);
 		fputs("    \"#\"\n", fp);
 		fputs("}\n\n", fp);
+
+		free(escapedDestPath);
 	}
 
 	if (S_ISDIR(st.st_mode)) {
