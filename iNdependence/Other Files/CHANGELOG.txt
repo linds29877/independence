@@ -64,7 +64,8 @@ v1.2.3 (De Koninck) - 10/16/07
 - Fixed the Customize tab
 
 
-v1.2.4
+v1.2.4 (Dogfish Head)
 
 - Made it so that iTunes version detection can find iTunes even if it's not in the default location (/Applications/iTunes.app)
 - Fixed a spelling error in the afc2 process label in the modified Services.plist file
+- Fixed a problem with setting the permissions on applications that have a space in the name
