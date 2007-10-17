@@ -27,6 +27,4 @@ You should see a list of commands you can perform.
 
 ** MobileDevice.h **
 
-Can be found at http://iphone.fiveforty.net/wiki/index.php/MobileDevice.h
-
-You'll need to modify a couple of function definitions in the stock version of that file to get libPhoneInteraction to compile.
+The copy I use to compile can be found at http://iphone.fiveforty.net/wiki/index.php/Operator%27s_MobileDevice.h
