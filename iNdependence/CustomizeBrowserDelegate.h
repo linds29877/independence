@@ -35,7 +35,7 @@
 - (bool)acceptDraggedFiles:(NSArray*)files;
 - (bool)addFilesToPhone:(NSArray*)files wasCancelled:(bool*)bCancelled;
 
-- (char*)getRingtoneFileExtension;
+- (char*)getRingtoneFileExtension:(bool)bWithDot;
 
 - (IBAction)selectionChanged:(id)sender;
 - (IBAction)deleteButtonPressed:(id)sender;

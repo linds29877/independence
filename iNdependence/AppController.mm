@@ -777,7 +777,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	[mainWindow displayAlert:@"Open iTunes" message:@"Please open iTunes now and ensure that it is connected to your phone.\n\nIf you see the \"Set Up Your iPhone\" screen, then set it up accordingly before you proceed.\n\nOnce you are done and the iPhone is connected to iTunes again, press the OK button to proceed."];
 
-	bool done = false;
+	bool done = false, symlinked = false;
 	int retval;
 	
 	while (!done) {
@@ -823,12 +823,16 @@ static void phoneInteractionNotification(int type, const char *msg)
 		}
 		else {
 			done = true;
+			symlinked = true;
 		}
 
 	}
 
-	[pre111UpgradeButton setEnabled:false];
-	[mainWindow displayAlert:@"Success" message:@"Your phone is now ready to be upgraded to 1.1.1.\n\nPlease quit iNdependence, then use iTunes to do this now.\n\nEnsure that you choose 'Update' and not 'Restore' in iTunes."];
+	if (symlinked) {
+		[pre111UpgradeButton setEnabled:false];
+		[mainWindow displayAlert:@"Success" message:@"Your phone is now ready to be upgraded to 1.1.1.\n\nPlease quit iNdependence, then use iTunes to do this now.\n\nEnsure that you choose 'Update' and not 'Restore' in iTunes."];
+	}
+
 }
 
 - (IBAction)installSimUnlock:(id)sender
@@ -858,7 +862,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	NSString *appName = [NSString stringWithFormat:@"%@/%@", @"/Applications", [simUnlockApp lastPathComponent]];
 
-	bool done = false;
+	bool done = false, permsSet = false;
 	int retval;
 	
 	while (!done) {
@@ -908,6 +912,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			
 		}
 		else {
+			permsSet = true;
 			done = true;
 		}
 		
@@ -922,7 +927,10 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[removeSimUnlockButton setEnabled:NO];
 	}
 
-	[mainWindow displayAlert:@"Success" message:@"The anySIM application should now be installed on your phone.  Simply run it and it will finish the SIM unlock process.\n\nAfter you are done, you can remove it from your phone."];
+	if (permsSet) {
+		[mainWindow displayAlert:@"Success" message:@"The anySIM application should now be installed on your phone.  Simply run it and it will finish the SIM unlock process.\n\nAfter you are done, you can remove it from your phone."];
+	}
+
 }
 
 - (void)removeSimUnlock:(id)sender
@@ -951,7 +959,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[removeSimUnlockButton setEnabled:NO];
 	}
 	
-	bool done = false;
+	bool done = false, sbRestarted = false;
 	int retval;
 	
 	while (!done) {
@@ -996,12 +1004,19 @@ static void phoneInteractionNotification(int type, const char *msg)
 			
 		}
 		else {
+			sbRestarted = true;
 			done = true;
 		}
 		
 	}
-	
-	[mainWindow displayAlert:@"Success" message:@"The anySIM application was successfully removed from your phone."];
+
+	if (sbRestarted) {
+		[mainWindow displayAlert:@"Success" message:@"The anySIM application was successfully removed from your phone."];
+	}
+	else {
+		[mainWindow displayAlert:@"Success" message:@"The anySIM application was successfully removed from your phone.  However, you'll need to reboot your phone to have it disappear from the SpringBoard menu."];
+	}
+
 }
 
 - (bool)doPutPEM:(const char*)pemfile
