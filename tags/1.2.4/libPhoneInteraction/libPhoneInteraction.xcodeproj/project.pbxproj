@@ -1,0 +1,274 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D2AAC0B105546B7500DB518D /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08FB77AAFE841565C02AAC07 /* Carbon.framework */; };
+		F207F1340CC31DAA002AC0AA /* PIVersion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F207F1330CC31DAA002AC0AA /* PIVersion.cpp */; };
+		F210E16A0C8EF5D90029B820 /* CFCompatibility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F210E1690C8EF5D90029B820 /* CFCompatibility.cpp */; };
+		F210E36E0C8F59820029B820 /* PNGHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F210E36D0C8F59820029B820 /* PNGHelper.cpp */; };
+		F210E3C40C8F6CE70029B820 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F210E3C30C8F6CE70029B820 /* libz.dylib */; };
+		F2567DB10C56F683009FAEA2 /* PhoneInteraction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F2567DAF0C56F683009FAEA2 /* PhoneInteraction.cpp */; };
+		F2567DB20C56F683009FAEA2 /* UtilityFunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F2567DB00C56F683009FAEA2 /* UtilityFunctions.cpp */; };
+		F2567DC10C56F7DD009FAEA2 /* MobileDevice.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F2567DC00C56F7DD009FAEA2 /* MobileDevice.framework */; };
+		F2567DC70C56F81A009FAEA2 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F2567DC60C56F81A009FAEA2 /* libcrypto.dylib */; };
+		F26F96820C885AA70024C0DF /* SSHHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F26F96810C885AA70024C0DF /* SSHHelper.cpp */; };
+		F28191240C94BD8200C34484 /* base64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F28191220C94BD8200C34484 /* base64.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		08FB77AAFE841565C02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
+		32BAE0B70371A74B00C91783 /* libPhoneInteraction_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libPhoneInteraction_Prefix.pch; sourceTree = "<group>"; };
+		D2AAC09D05546B4700DB518D /* libPhoneInteraction.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libPhoneInteraction.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		F207F1330CC31DAA002AC0AA /* PIVersion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PIVersion.cpp; sourceTree = "<group>"; };
+		F207F1470CC3260E002AC0AA /* PIVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PIVersion.h; path = "../Public Headers/PhoneInteraction/PIVersion.h"; sourceTree = SOURCE_ROOT; };
+		F210E1690C8EF5D90029B820 /* CFCompatibility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CFCompatibility.cpp; sourceTree = "<group>"; };
+		F210E36C0C8F59820029B820 /* PNGHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PNGHelper.h; path = "../Public Headers/PhoneInteraction/PNGHelper.h"; sourceTree = "<group>"; };
+		F210E36D0C8F59820029B820 /* PNGHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PNGHelper.cpp; sourceTree = "<group>"; };
+		F210E3C30C8F6CE70029B820 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
+		F24BD4360C965A4D00AA3B91 /* CFCompatibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CFCompatibility.h; path = "../Public Headers/PhoneInteraction/CFCompatibility.h"; sourceTree = SOURCE_ROOT; };
+		F2567DAF0C56F683009FAEA2 /* PhoneInteraction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PhoneInteraction.cpp; sourceTree = SOURCE_ROOT; };
+		F2567DB00C56F683009FAEA2 /* UtilityFunctions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UtilityFunctions.cpp; sourceTree = SOURCE_ROOT; };
+		F2567DC00C56F7DD009FAEA2 /* MobileDevice.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileDevice.framework; path = /System/Library/PrivateFrameworks/MobileDevice.framework; sourceTree = "<absolute>"; };
+		F2567DC60C56F81A009FAEA2 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = /usr/lib/libcrypto.dylib; sourceTree = "<absolute>"; };
+		F25681D50C57127B009FAEA2 /* PhoneInteraction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PhoneInteraction.h; path = "../Public Headers/PhoneInteraction/PhoneInteraction.h"; sourceTree = SOURCE_ROOT; };
+		F25681D60C57127B009FAEA2 /* UtilityFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UtilityFunctions.h; path = "../Public Headers/PhoneInteraction/UtilityFunctions.h"; sourceTree = SOURCE_ROOT; };
+		F25681D90C5712A8009FAEA2 /* MobileDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MobileDevice.h; path = "../Public Headers/MobileDevice/MobileDevice.h"; sourceTree = SOURCE_ROOT; };
+		F26F96810C885AA70024C0DF /* SSHHelper.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = SSHHelper.cpp; sourceTree = "<group>"; };
+		F26F96D70C8866C00024C0DF /* SSHHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHHelper.h; path = "../Public Headers/PhoneInteraction/SSHHelper.h"; sourceTree = SOURCE_ROOT; };
+		F28191220C94BD8200C34484 /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = SOURCE_ROOT; };
+		F28191230C94BD8200C34484 /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D2AAC09B05546B4700DB518D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D2AAC0B105546B7500DB518D /* Carbon.framework in Frameworks */,
+				F2567DC10C56F7DD009FAEA2 /* MobileDevice.framework in Frameworks */,
+				F2567DC70C56F81A009FAEA2 /* libcrypto.dylib in Frameworks */,
+				F210E3C40C8F6CE70029B820 /* libz.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DDFF38A45A11DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D2AAC09D05546B4700DB518D /* libPhoneInteraction.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* libPhoneInteraction */ = {
+			isa = PBXGroup;
+			children = (
+				F2567DAE0C56F5D0009FAEA2 /* Headers */,
+				08FB77ACFE841707C02AAC07 /* Source */,
+				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
+				034768DDFF38A45A11DB9C8B /* Products */,
+			);
+			name = libPhoneInteraction;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				F210E3C30C8F6CE70029B820 /* libz.dylib */,
+				F2567DC60C56F81A009FAEA2 /* libcrypto.dylib */,
+				F2567DC00C56F7DD009FAEA2 /* MobileDevice.framework */,
+				08FB77AAFE841565C02AAC07 /* Carbon.framework */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		08FB77ACFE841707C02AAC07 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				F28191220C94BD8200C34484 /* base64.cpp */,
+				F210E1690C8EF5D90029B820 /* CFCompatibility.cpp */,
+				F2567DAF0C56F683009FAEA2 /* PhoneInteraction.cpp */,
+				F207F1330CC31DAA002AC0AA /* PIVersion.cpp */,
+				F210E36D0C8F59820029B820 /* PNGHelper.cpp */,
+				F26F96810C885AA70024C0DF /* SSHHelper.cpp */,
+				F2567DB00C56F683009FAEA2 /* UtilityFunctions.cpp */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		F2567DAE0C56F5D0009FAEA2 /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				32BAE0B70371A74B00C91783 /* libPhoneInteraction_Prefix.pch */,
+				F28191230C94BD8200C34484 /* base64.h */,
+				F24BD4360C965A4D00AA3B91 /* CFCompatibility.h */,
+				F25681D90C5712A8009FAEA2 /* MobileDevice.h */,
+				F25681D50C57127B009FAEA2 /* PhoneInteraction.h */,
+				F207F1470CC3260E002AC0AA /* PIVersion.h */,
+				F210E36C0C8F59820029B820 /* PNGHelper.h */,
+				F26F96D70C8866C00024C0DF /* SSHHelper.h */,
+				F25681D60C57127B009FAEA2 /* UtilityFunctions.h */,
+			);
+			name = Headers;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D2AAC09C05546B4700DB518D /* libPhoneInteraction */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB916008733D950010E9CD /* Build configuration list for PBXNativeTarget "libPhoneInteraction" */;
+			buildPhases = (
+				D2AAC09A05546B4700DB518D /* Sources */,
+				D2AAC09B05546B4700DB518D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = libPhoneInteraction;
+			productName = libPhoneInteraction;
+			productReference = D2AAC09D05546B4700DB518D /* libPhoneInteraction.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB916408733D950010E9CD /* Build configuration list for PBXProject "libPhoneInteraction" */;
+			hasScannedForEncodings = 1;
+			mainGroup = 0867D691FE84028FC02AAC07 /* libPhoneInteraction */;
+			productRefGroup = 034768DDFF38A45A11DB9C8B /* Products */;
+			projectDirPath = "";
+			targets = (
+				D2AAC09C05546B4700DB518D /* libPhoneInteraction */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D2AAC09A05546B4700DB518D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F2567DB10C56F683009FAEA2 /* PhoneInteraction.cpp in Sources */,
+				F2567DB20C56F683009FAEA2 /* UtilityFunctions.cpp in Sources */,
+				F26F96820C885AA70024C0DF /* SSHHelper.cpp in Sources */,
+				F210E16A0C8EF5D90029B820 /* CFCompatibility.cpp in Sources */,
+				F210E36E0C8F59820029B820 /* PNGHelper.cpp in Sources */,
+				F28191240C94BD8200C34484 /* base64.cpp in Sources */,
+				F207F1340CC31DAA002AC0AA /* PIVersion.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB916108733D950010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
+				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = libPhoneInteraction_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					DEBUG,
+				);
+				INSTALL_PATH = "@executable_path";
+				PRODUCT_NAME = libPhoneInteraction;
+				SKIP_INSTALL = NO;
+			};
+			name = Debug;
+		};
+		1DEB916208733D950010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
+				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = libPhoneInteraction_Prefix.pch;
+				INSTALL_PATH = "@executable_path";
+				PRODUCT_NAME = libPhoneInteraction;
+				SKIP_INSTALL = NO;
+			};
+			name = Release;
+		};
+		1DEB916508733D950010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../Public Headers\"";
+				OBJROOT = build;
+				SYMROOT = "../Public Libraries";
+			};
+			name = Debug;
+		};
+		1DEB916608733D950010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../Public Headers\"";
+				OBJROOT = build;
+				SYMROOT = "../Public Libraries";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB916008733D950010E9CD /* Build configuration list for PBXNativeTarget "libPhoneInteraction" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB916108733D950010E9CD /* Debug */,
+				1DEB916208733D950010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB916408733D950010E9CD /* Build configuration list for PBXProject "libPhoneInteraction" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB916508733D950010E9CD /* Debug */,
+				1DEB916608733D950010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}

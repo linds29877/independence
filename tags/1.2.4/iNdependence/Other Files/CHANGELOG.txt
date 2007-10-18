@@ -1,0 +1,77 @@
+Changelog
+---------
+
+v1.0 - 08/23/07
+
+- Initial release for Mac (universal binary)
+
+
+v1.1 - 09/06/07
+
+- Added ability to add/remove applications to/from the phone.  This includes setting the correct permissions and restarting Springboard
+- Added Finder-like interface for adding ringtones, wallpapers, and applications.  Uses buttons or drag and drop.  Shows preview images for wallpaper files and application icons.
+- Added "Restore PEM File" button which allows users to restore the original PEM file back onto their phone (useful when trying to undo all modifications for a firmware update)
+- Added "Remove SSH" button for same reason
+- Jailbreak has been verified to work on Windows via a command-line application.  In the process of adding some missing CF functionality so that activation will work too.  It's getting closer... :)
+
+
+v1.1.1 - 09/06/07
+
+- Fixes problems with jailbreak when iTunes 7.4 is installed
+
+
+v1.2 (Éphémère) - 09/11/07
+
+- Added better iTunes version checking so that iNdependence will fail if an unsupported version of iTunes is installed (thus avoiding the nasty problems seen with the iTunes 7.4 update)
+- Put in new fast jailbreak method (thanks to anonymous)
+- Made Activation/Deactivation all-in-one steps (no more fiddling with activation files)
+- Removed PEM and activation file related buttons/menus
+- Created a Windows command-line version of iNdependence (has everything except SSH and Customization)
+- Made it so that if iNdependence detects a phone in restore mode, it will attempt to unbrick it
+
+
+v1.2.1 (Aventinus) - 09/13/07
+
+- Added YouTube fix to activation process
+- Fixed bug where Activation/Deactivation buttons are enabled when no phone is connected
+- Put detected iTunes version number in unsupported version error message
+- Made it so that iNdependence will terminate if it can't initialize properly (eg. bad iTunes version)
+- Fixed iTunes version detection on international (ie. non North American localized) computers
+- Added handling for case where SSH is connecting to the phone for the first time (doesn't know about IP address)
+- Also added handling for case where SSH fails because there is an invalid entry in ~/.ssh/known_hosts.  iNdependence will offer to remove the invalid entry.
+- Added wait dialog when removing applications (restarting Springboard)
+- Fixed bug where, after removing SSH, the install/remove SSH buttons weren't being updated properly
+- Added better wallpaper filename handling
+
+
+v1.2.2 (Coopers) - 10/15/07
+
+- Fixed up problems with the wait dialog/sheet being too small on occasion
+- Got everything working on firmware version 1.1.1
+- Added firmware version detection so that iNdependence cannot be used with unsupported firmware versions
+- Added firmware tab which contains functions related to upgrading and downgrading the phone's firmware (mainly between 1.0.2 and 1.1.1)
+- Numerous bugfixes for the status bar (and probably some new bugs too)
+
+
+v1.2.3 (De Koninck) - 10/16/07
+
+- Fixed bug with SFTP failing on pre-1.1.1 upgrade step under some circumstances
+- Numerous documentation bugfixes
+- Added SpringBoard patch to enable 3rd party applications
+- Integrated the post-1.1.1 upgrade step into jailbreak to make things easier
+- Made the search for fstab on /dev/rdisk0s1 more robust
+- Fixed bug where, after jailbreak, the status bar would continue to report phone as being in recovery mode
+- Fixed the Customize tab
+
+
+v1.2.4 (Dogfish Head) - 10/18/07
+
+- Made it so that iTunes version detection can find iTunes even if it's not in the default location (/Applications/iTunes.app)
+- Fixed a spelling error in the afc2 process label in the modified Services.plist file
+- Fixed a problem with setting the permissions on applications that have a space in the name
+- Fixed ringtone file selection for customization (works now)
+- Fixed bug where, if you perform the "Pre-1.1.1 Upgrade" step and SSH fails, it will still give you a success message at the end (after the SSH failure message)
+- Made 'Yes' the default button in the host verification failed dialog window since people don't seem to be reading it and are just using the default button (which chooses 'No' and makes SSH fail)
+- Added better SSH handling for application removal and restarting SpringBoard
+- Made the documentation more clear with regard to the firmware downgrade
+- Made the SSH timeout 120 seconds (rather than 60 seconds) in hopes that this solves the SSH problems people are having during the Pre-1.1.1 Upgrade step
