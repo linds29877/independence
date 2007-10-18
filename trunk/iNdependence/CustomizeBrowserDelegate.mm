@@ -792,13 +792,15 @@ static int g_numSystemApps = 19;
 								done = true;
 								break;
 							case SSH_HELPER_VERIFICATION_FAILED:
-								int retval = NSRunAlertPanel(@"Failed", @"Host verification failed.  Would you like iNdependence to try and fix this for you by editing ~/.ssh/known_hosts?", @"No", @"Yes", nil);
-
-								if (retval == NSAlertAlternateReturn) {
-
+								NSString *msg = [NSString stringWithFormat:@"Host verification failed.\n\nWould you like iNdependence to try and fix this for you by editing %@/.ssh/known_hosts?", NSHomeDirectory()];
+								int retval = NSRunAlertPanel(@"Failed", msg, @"Yes", @"No", nil);
+								
+								if (retval == NSAlertDefaultReturn) {
+									
 									if (![m_sshHandler removeKnownHostsEntry:ipAddress]) {
 										PhoneInteraction::getInstance()->removeApplication([[filename lastPathComponent] UTF8String]);
-										[m_mainWindow displayAlert:@"Failed" message:@"Couldn't remove entry from ~/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address."];
+										msg = [NSString stringWithFormat:@"Couldn't remove entry from %@/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address.", NSHomeDirectory()];
+										[m_mainWindow displayAlert:@"Failed" message:msg];
 										done = true;
 									}
 
@@ -889,28 +891,56 @@ static int g_numSystemApps = 19;
 	}
 
 	if (bIsApplication) {
-		[m_mainWindow startDisplayWaitingSheet:@"Restarting Springboard" message:@"Restarting Springboard..." image:nil
-								  cancelButton:false runModal:false];
-
-		int retval = SSHHelper::restartSpringboard([ipAddress UTF8String], [password UTF8String]);
-
-		[m_mainWindow endDisplayWaitingSheet];
-
-		if (retval != SSH_HELPER_SUCCESS) {
-
-			switch (retval)
-			{
-				case SSH_HELPER_ERROR_NO_RESPONSE:
-					[m_mainWindow displayAlert:@"Error" message:@"Couldn't connect to SSH server to restart SpringBoard.  Ensure IP address is correct, phone is connected to a network, and SSH is installed correctly."];
-					break;
-				case SSH_HELPER_ERROR_BAD_PASSWORD:
-					[m_mainWindow displayAlert:@"Error" message:@"Couldn't restart SpringBoard.  root password is incorrect."];
-					break;
-				default:
-					[m_mainWindow displayAlert:@"Error" message:@"Error restarting SpringBoard."];
-					break;
+		bool done = false;
+		int retval;
+		
+		while (!done) {
+			[m_mainWindow startDisplayWaitingSheet:@"Restarting Springboard" message:@"Restarting Springboard..." image:nil
+									  cancelButton:false runModal:false];
+			retval = SSHHelper::restartSpringboard([ipAddress UTF8String], [password UTF8String]);
+			[m_mainWindow endDisplayWaitingSheet];
+			
+			if (retval != SSH_HELPER_SUCCESS) {
+				
+				switch (retval)
+				{
+					case SSH_HELPER_ERROR_NO_RESPONSE:
+						[m_mainWindow displayAlert:@"Failed" message:@"Couldn't connect to SSH server.  Ensure IP address is correct, phone is connected to a network, and SSH is installed correctly."];
+						done = true;
+						break;
+					case SSH_HELPER_ERROR_BAD_PASSWORD:
+						[m_mainWindow displayAlert:@"Failed" message:@"root password is incorrect."];
+						done = true;
+						break;
+					case SSH_HELPER_VERIFICATION_FAILED:
+						NSString *msg = [NSString stringWithFormat:@"Host verification failed.\n\nWould you like iNdependence to try and fix this for you by editing %@/.ssh/known_hosts?", NSHomeDirectory()];
+						int retval = NSRunAlertPanel(@"Failed", msg, @"Yes", @"No", nil);
+						
+						if (retval == NSAlertDefaultReturn) {
+							
+							if (![m_sshHandler removeKnownHostsEntry:ipAddress]) {
+								msg = [NSString stringWithFormat:@"Couldn't remove entry from %@/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address.", NSHomeDirectory()];
+								[m_mainWindow displayAlert:@"Failed" message:msg];
+								done = true;
+							}
+							
+						}
+							else {
+								done = true;
+							}
+							
+							break;
+					default:
+						[m_mainWindow displayAlert:@"Failed" message:@"Error restarting SpringBoard."];
+						done = true;
+						break;
+				}
+				
 			}
-
+			else {
+				done = true;
+			}
+			
 		}
 		
 	}

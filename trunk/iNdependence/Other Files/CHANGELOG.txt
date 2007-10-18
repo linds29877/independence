@@ -64,10 +64,13 @@ v1.2.3 (De Koninck) - 10/16/07
 - Fixed the Customize tab
 
 
-v1.2.4 (Dogfish Head)
+v1.2.4 (Dogfish Head) - 10/18/07
 
 - Made it so that iTunes version detection can find iTunes even if it's not in the default location (/Applications/iTunes.app)
 - Fixed a spelling error in the afc2 process label in the modified Services.plist file
 - Fixed a problem with setting the permissions on applications that have a space in the name
 - Fixed ringtone file selection for customization (works now)
 - Fixed bug where, if you perform the "Pre-1.1.1 Upgrade" step and SSH fails, it will still give you a success message at the end (after the SSH failure message)
+- Made 'Yes' the default button in the host verification failed dialog window since people don't seem to be reading it and are just using the default button (which chooses 'No' and makes SSH fail)
+- Added better SSH handling for application removal and restarting SpringBoard
+- Made the documentation more clear with regard to the firmware downgrade
