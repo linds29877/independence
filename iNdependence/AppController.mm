@@ -799,12 +799,14 @@ static void phoneInteractionNotification(int type, const char *msg)
 					done = true;
 					break;
 				case SSH_HELPER_VERIFICATION_FAILED:
-					int retval = NSRunAlertPanel(@"Failed", @"Host verification failed.  Would you like iNdependence to try and fix this for you by editing ~/.ssh/known_hosts?", @"No", @"Yes", nil);
+					NSString *msg = [NSString stringWithFormat:@"Host verification failed.\n\nWould you like iNdependence to try and fix this for you by editing %@/.ssh/known_hosts?", NSHomeDirectory()];
+					int retval = NSRunAlertPanel(@"Failed", msg, @"Yes", @"No", nil);
 
-					if (retval == NSAlertAlternateReturn) {
-						
+					if (retval == NSAlertDefaultReturn) {
+
 						if (![sshHandler removeKnownHostsEntry:ipAddress]) {
-							[mainWindow displayAlert:@"Failed" message:@"Couldn't remove entry from ~/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address."];
+							msg = [NSString stringWithFormat:@"Couldn't remove entry from %@/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address.", NSHomeDirectory()];
+							[mainWindow displayAlert:@"Failed" message:msg];
 							done = true;
 						}
 						
@@ -887,13 +889,15 @@ static void phoneInteractionNotification(int type, const char *msg)
 					done = true;
 					break;
 				case SSH_HELPER_VERIFICATION_FAILED:
-					int retval = NSRunAlertPanel(@"Failed", @"Host verification failed.  Would you like iNdependence to try and fix this for you by editing ~/.ssh/known_hosts?", @"No", @"Yes", nil);
+					NSString *msg = [NSString stringWithFormat:@"Host verification failed.\n\nWould you like iNdependence to try and fix this for you by editing %@/.ssh/known_hosts?", NSHomeDirectory()];
+					int retval = NSRunAlertPanel(@"Failed", msg, @"Yes", @"No", nil);
 					
-					if (retval == NSAlertAlternateReturn) {
+					if (retval == NSAlertDefaultReturn) {
 						
 						if (![sshHandler removeKnownHostsEntry:ipAddress]) {
 							PhoneInteraction::getInstance()->removeApplication([[simUnlockApp lastPathComponent] UTF8String]);
-							[mainWindow displayAlert:@"Failed" message:@"Couldn't remove entry from ~/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address."];
+							msg = [NSString stringWithFormat:@"Couldn't remove entry from %@/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address.", NSHomeDirectory()];
+							[mainWindow displayAlert:@"Failed" message:msg];
 							done = true;
 						}
 						
@@ -981,12 +985,14 @@ static void phoneInteractionNotification(int type, const char *msg)
 					done = true;
 					break;
 				case SSH_HELPER_VERIFICATION_FAILED:
-					int retval = NSRunAlertPanel(@"Failed", @"Host verification failed.  Would you like iNdependence to try and fix this for you by editing ~/.ssh/known_hosts?", @"No", @"Yes", nil);
+					NSString *msg = [NSString stringWithFormat:@"Host verification failed.\n\nWould you like iNdependence to try and fix this for you by editing %@/.ssh/known_hosts?", NSHomeDirectory()];
+					int retval = NSRunAlertPanel(@"Failed", msg, @"Yes", @"No", nil);
 					
-					if (retval == NSAlertAlternateReturn) {
+					if (retval == NSAlertDefaultReturn) {
 						
 						if (![sshHandler removeKnownHostsEntry:ipAddress]) {
-							[mainWindow displayAlert:@"Failed" message:@"Couldn't remove entry from ~/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address."];
+							msg = [NSString stringWithFormat:@"Couldn't remove entry from %@/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address.", NSHomeDirectory()];
+							[mainWindow displayAlert:@"Failed" message:msg];
 							done = true;
 						}
 						

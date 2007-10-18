@@ -74,14 +74,15 @@
 				<p><b>Please note that if you have used anySIM or other free SIM unlocking solutions (anything except for the iPhoneSimFree solution), and you upgrade to 1.1.1, it will wipe out the SIM unlock and render the phone and text message part of your phone inoperable. Everything else will still work though.</b>
 				<p>
 					<ol>
-						<li>Ensure that your phone is activated.</li>
-						<li>Ensure that your phone is jailbroken.</li>
-						<li>Ensure that SSH is installed on your phone (see instructions below).</li>
-						<li>Ensure that your phone is connected to a Wi-Fi network (read the iPhone manual for instructions on how to set up Wi-Fi).</li>
+						<li>Check the firmware version that's reported in the status line at the bottom of the iNdependence window.  If it doesn't say 1.0.2 (or lower) then you'll need to downgrade your firmware using the instructions above.</li>
+						<li>Activate your phone using the <a href="#activation">activation instructions above</a>.</li>
+						<li>Jailbreak your phone using the <a href="#jailbreak">jailbreak instructions above</a>.</li>
+						<li>Install SSH on your phone using <a href="#ssh">the instructions below</a>.</li>
+						<li>Ensure that your phone is connected to a Wi-Fi network (read the iPhone manual for instructions on how to set up Wi-Fi).  Also ensure that it's IP address does not conflict with any other devices on your Wi-Fi network (sorry, I can't offer network admin help).</li>
 						<li>Get the IP address for your phone by launching the Settings application on the phone, navigating to <i>Wi-Fi</i> and pressing the blue arrow beside the name of the Wi-Fi network that your phone is connected to.</li>
 						<li>Select the <i>Firmware</i> tab and press the <i>Pre 1.1.1 Upgrade</i> button.</li>
-						<li>Enter the IP address of the phone and the root password (see below for the default root password if you didn't change it).</li>
-						<li>Follow the instructions given in the dialog windows.  If iNdependence gives you a message about editing the <b>~/.ssh/known_hosts</b> file, choose the <i>Yes</i> option.</li>
+						<li>Enter the IP address of the phone and the root password (see <a href="#ssh">below</a> for the default root password if you didn't change it when you installed SSH).</li>
+						<li>Follow the instructions given in the dialog windows.  If iNdependence gives you a warning about <i>host verification failure</i> and asks to edit your <b>known_hosts</b> file, choose the <i>Yes</i> option (which is now the default).</li>
 						<li>Once you are told to upgrade using iTunes, quit iNdependence, and select the <i>Update</i> button in the iTunes window (not the </i>Restore</i> button).</li>
 						<li>Wait for iTunes to finish.</li>
 						<li>Quit iTunes and relaunch iNdependence.  In the status bar at the bottom of the iNdependence window you should see <i>Firmware 1.1.1</i>.</li>
@@ -94,7 +95,7 @@
 			</div>
 
 			<div summary="Installing and configuring SSH" id="ssh">
-				<h1>SSH and beyond</h1>
+				<h1>Installing and Configuring SSH</h1>
 				<p>
 					Installing SSH is a breeze once your phone is jailbroken.  Just choose the <i>SSH</i> tab and press the <i>Install SSH/SCP/SFTP</i> button.  Then follow the instructions.
 				</p>
@@ -115,16 +116,19 @@
 			<div summary="Installing ringtones, wallpapers, and applications" id="customization">
 				<h1>Customization</h1>
 				<p>
-					The <i>Customize</i> tab uses a Finder-style interface and allows for drag and drop installation of ringtones, wallpapers, and applications.  It also has preview images for wallpapers and application icons.  You can also use the <i>Add</i> and <i>Delete</i> buttons.
+					The <i>Customize</i> tab uses a Finder-style interface and allows for drag and drop installation of ringtones, wallpapers, and applications.  You can also use the <i>Add</i> and <i>Delete</i> buttons.
 				</p>
 				<p>
 					Please note that in order to install/remove applications, you'll need to have SSH installed on the phone as you'll be asked for the phone's IP address and root password.
 				</p>
 				<p>
-					To find the phone's IP address, launch the Settings application, navigate to "Wi-Fi" and press the blue arrow beside the name of the Wi-Fi network that your phone is connected to.
+					To find the phone's IP address, launch the Settings application, navigate to <i>Wi-Fi</i> and press the blue arrow beside the name of the Wi-Fi network that your phone is connected to.
 				</p>
 				<p>
-					Also note that ringtones must be MPEG-4 audio (.m4a) files as the file chooser will only allow you to choose .m4a files. Wallpapers must be 2 PNG (.png) files (the main image and the thumbnail image).  The wallpaper image sizes I use are 320x480 for the main image and 75x75 for the thumbnail image.  These seem to work well for me.
+					Ringtones must be MPEG-4 audio (<b>.m4a</b>) files as the file chooser will only allow you to choose <b>.m4a</b> files.
+				</p>
+				<p>
+					Wallpapers must be 2 PNG (<b>.png</b>) files (the main image and the thumbnail image).  The wallpaper image sizes I use are 320x480 for the main image and 75x75 for the thumbnail image.  These seem to work well for me.
 				</p>
 			</div>
 

@@ -94,7 +94,7 @@ static char *escapeSpaces(const char *path)
 	while (index < len) {
 
 		if (path[index] == ' ') {
-			strcpy(escapedPath+index2, "\\");
+			strncpy(escapedPath+index2, "\\\\", 2);
 			index2 += 2;
 		}
 		
