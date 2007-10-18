@@ -74,3 +74,4 @@ v1.2.4 (Dogfish Head) - 10/18/07
 - Made 'Yes' the default button in the host verification failed dialog window since people don't seem to be reading it and are just using the default button (which chooses 'No' and makes SSH fail)
 - Added better SSH handling for application removal and restarting SpringBoard
 - Made the documentation more clear with regard to the firmware downgrade
+- Made the SSH timeout 120 seconds (rather than 60 seconds) in hopes that this solves the SSH problems people are having during the Pre-1.1.1 Upgrade step
