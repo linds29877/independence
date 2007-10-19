@@ -1033,8 +1033,32 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (void)activateStageTwo:(bool)displaySheet
 {
+	char *value = m_phoneInteraction->getPhoneProductVersion();
 
-	if ([self isUsing10xFirmware]) {
+	if (!strncmp(value, "1.0", 3) || !strcmp(value, "1.1.1")) {
+		m_waitingForActivation = false;
+		
+		if (!m_phoneInteraction->factoryActivate()) {
+			[mainWindow displayAlert:@"Error" message:@"Error during activation."];
+			return;
+		}
+
+		if (!m_phoneInteraction->enableYouTube()) {
+			[mainWindow displayAlert:@"Error" message:@"Error enabling YouTube."];
+			return;
+		}
+
+		m_waitingForNewActivation = true;
+		g_ignoreJailbreakSuccess = true;
+		
+		if (displaySheet) {
+			[g_mainWindow startDisplayWaitingSheet:nil
+										   message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
+											 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
+		}
+		
+	}
+	else {
 		NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation" ofType:@"pem"];
 		
 		if (pemfile == nil) {
@@ -1050,31 +1074,15 @@ static void phoneInteractionNotification(int type, const char *msg)
 			[mainWindow updateStatus];
 			return;
 		}
-		
-		if (![self enableYouTube]) {
+
+		if (!m_phoneInteraction->enableYouTube()) {
 			m_waitingForActivation = false;
+			[mainWindow displayAlert:@"Error" message:@"Error enabling YouTube."];
 			[mainWindow updateStatus];
 			return;
 		}
-		
+
 		[self returnToJail:self];
-	}
-	else {
-		m_waitingForActivation = false;
-		
-		if (!m_phoneInteraction->factoryActivate()) return;
-
-		if (![self enableYouTube]) return;
-		
-		m_waitingForNewActivation = true;
-		g_ignoreJailbreakSuccess = true;
-
-		if (displaySheet) {
-			[g_mainWindow startDisplayWaitingSheet:nil
-										   message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
-											 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
-		}
-
 	}
 
 }
@@ -1104,10 +1112,29 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (void)deactivateStageTwo
 {
-
-	if ([self isUsing10xFirmware]) {
-		[mainWindow setStatus:@"Restoring original PEM file on phone..." spinning:true];
+	char *value = m_phoneInteraction->getPhoneProductVersion();
+	
+	if (!strncmp(value, "1.0", 3) || !strcmp(value, "1.1.1")) {
+		m_waitingForDeactivation = false;
 		
+		if (!m_phoneInteraction->factoryActivate(true)) {
+			[mainWindow displayAlert:@"Error" message:@"Error during deactivation."];
+			return;
+		}
+
+		if (!m_phoneInteraction->enableYouTube(true)) {
+			[mainWindow displayAlert:@"Error" message:@"Error disabling YouTube."];
+			return;
+		}
+
+		m_waitingForNewDeactivation = true;
+		[g_mainWindow startDisplayWaitingSheet:nil
+									   message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
+										 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
+	}
+	else {
+		[mainWindow setStatus:@"Restoring original PEM file on phone..." spinning:true];
+
 		NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation_original" ofType:@"pem"];
 		
 		if (pemfile == nil) {
@@ -1119,20 +1146,19 @@ static void phoneInteractionNotification(int type, const char *msg)
 		
 		if (![self doPutPEM:[pemfile UTF8String]]) {
 			m_waitingForDeactivation = false;
+			[mainWindow displayAlert:@"Error" message:@"Error writing PEM file to phone."];
+			[mainWindow updateStatus];
 			return;
 		}
-		
-		[self returnToJail:self];
-	}
-	else {
-		m_waitingForDeactivation = false;
-		
-		if (!m_phoneInteraction->factoryActivate(true)) return;
 
-		m_waitingForNewDeactivation = true;
-		[g_mainWindow startDisplayWaitingSheet:nil
-									   message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
-										 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
+		if (!m_phoneInteraction->enableYouTube(true)) {
+			m_waitingForDeactivation = false;
+			[mainWindow displayAlert:@"Error" message:@"Error disabling YouTube."];
+			[mainWindow updateStatus];
+			return;
+		}
+
+		[self returnToJail:self];
 	}
 	
 }
@@ -1148,23 +1174,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 {
 	m_waitingForDeactivation = false;
 	[mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
-}
-
-- (bool)enableYouTube
-{
-	NSString *device_private_key_file = [[NSBundle mainBundle] pathForResource:@"device_private_key" ofType:@"pem"];
-	
-	if (device_private_key_file == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding necessary files in application bundle."];
-		return false;
-	}
-
-	if (!m_phoneInteraction->enableYouTube([device_private_key_file UTF8String])) {
-		[mainWindow displayAlert:@"Error" message:@"Error writing device_private_key.pem to phone."];
-		return false;
-	}
-
-	return true;
 }
 
 - (IBAction)activate:(id)sender

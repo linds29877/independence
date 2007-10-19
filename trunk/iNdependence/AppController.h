@@ -101,7 +101,6 @@ class PhoneInteraction;
 - (NSString*)phoneFirmwareVersion;
 
 - (bool)doPutPEM:(const char*)pemfile;
-- (bool)enableYouTube;
 
 - (void)activateStageTwo:(bool)displaySheet;
 - (void)activateStageThree;
