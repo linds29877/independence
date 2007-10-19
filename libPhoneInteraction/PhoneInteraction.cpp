@@ -547,18 +547,6 @@ bool PhoneInteraction::determineiTunesVersion()
 {
 	CFURLRef appUrl, versionPlistUrl;
 
-#ifdef DEBUG
-	char *homedir = getenv("HOME");
-	int len1 = strlen(homedir);
-	int len2 = strlen("/Desktop/iNdependence_debug.txt");
-	char *debugfile = (char*)malloc(len1 + len2 + 1);
-	strcpy(debugfile, homedir);
-	strcat(debugfile, "/Desktop/iNdependence_debug.txt");
-	FILE *fp = fopen(debugfile, "w");
-#else
-	FILE *fp = NULL;
-#endif
-
 	// try searching for iTunes.app using LaunchServices
 	if (LSFindApplicationForInfo(kLSUnknownCreator, NULL, CFSTR("iTunes.app"), NULL, &appUrl) != noErr) {
 
@@ -568,13 +556,6 @@ bool PhoneInteraction::determineiTunesVersion()
 
 			// as a last resort, try the default location
 			if (stat("/Applications/iTunes.app", &st)) {
-
-#ifdef DEBUG
-				fwrite("(DEBUG) Couldn't find iTunes\n", 1, 29, fp);
-				fflush(fp);
-				fclose(fp);
-#endif
-
 				return false;
 			}
 
@@ -585,168 +566,57 @@ bool PhoneInteraction::determineiTunesVersion()
 
 	}
 
-#ifdef DEBUG
-	CFStringRef itunespath = CFURLGetString(appUrl);
-	CFIndex len = CFStringGetLength(itunespath);
-	char *buf = (char*)malloc(len+1);
-	CFStringGetCString(itunespath, buf, len+1, kCFStringEncodingASCII);
-	fwrite("(DEBUG) iTunes path: ", 1,  21, fp);
-	fwrite(buf, 1, len, fp);
-	fwrite("\n", 1, 1, fp);
-	free(buf);
-#endif
-
+	if (appUrl == NULL) {
+		return false;
+	}
+	
 	versionPlistUrl = CFURLCreateCopyAppendingPathComponent(kCFAllocatorDefault,
 															appUrl, CFSTR("Contents/version.plist"), false);
 	CFRelease(appUrl);
 
-#ifdef DEBUG
-	CFStringRef versionpath = CFURLGetString(versionPlistUrl);
-	len = CFStringGetLength(versionpath);
-	buf = (char*)malloc(len+1);
-	CFStringGetCString(versionpath, buf, len+1, kCFStringEncodingASCII);
-	fwrite("(DEBUG) version.plist path: ", 1,  28, fp);
-	fwrite(buf, 1, len, fp);
-	fwrite("\n", 1, 1, fp);
-	free(buf);
-#endif
-
 	if (versionPlistUrl == NULL) {
-#ifdef DEBUG
-		fwrite("(DEBUG) versionPlistUrl is NULL\n", 1, 32, fp);
-		fflush(fp);
-		fclose(fp);
-#endif
 		return false;
 	}
 
 	CFDictionaryRef iTunesVersionDict = NULL;
+	CFDataRef versionPlistData = NULL;
+	SInt32 errorCode;
+	Boolean status = CFURLCreateDataAndPropertiesFromResource(kCFAllocatorDefault, versionPlistUrl,
+															  &versionPlistData, NULL, NULL,
+															  &errorCode);
+
+	if (!status) {
+		CFRelease(versionPlistUrl);
+		return false;
+	}
+
 	CFStringRef errString;
-	CFReadStreamRef stream= CFReadStreamCreateWithFile(kCFAllocatorDefault, versionPlistUrl);
+	iTunesVersionDict = (CFDictionaryRef)CFPropertyListCreateFromXMLData(kCFAllocatorDefault,
+																		 versionPlistData, kCFPropertyListImmutable,
+																		 &errString);
 
-	if (stream == NULL) {
-#ifdef DEBUG
-		fwrite("(DEBUG) stream is NULL\n", 1, 23, fp);
-		fflush(fp);
-		fclose(fp);
-#endif
-		CFRelease(versionPlistUrl);
-		return false;
-	}
-
-	CFReadStreamOpen(stream);
-	CFStreamStatus status = CFReadStreamGetStatus(stream);
-	bool bError = false;
-
-	while (status != kCFStreamStatusOpen) {
-
-		if (status == kCFStreamStatusError) {
-			bError = true;
-			break;
-		}
-
-		usleep(50000);
-		status = CFReadStreamGetStatus(stream);
-	}
-
-	if (bError) {
-#ifdef DEBUG
-		fwrite("(DEBUG) Couldn't open stream\n", 1, 29, fp);
-		fflush(fp);
-		fclose(fp);
-#endif
-		CFRelease(versionPlistUrl);
-		CFRelease(stream);
-		return false;
-	}
-	
-	CFPropertyListFormat format;
-	iTunesVersionDict = (CFDictionaryRef)CFPropertyListCreateFromStream(kCFAllocatorDefault,
-																		stream, 0,
-																		kCFPropertyListMutableContainersAndLeaves,
-																		&format, &errString);
-	CFReadStreamClose(stream);
-	CFRelease(stream);
+	CFRelease(versionPlistData);
 	CFRelease(versionPlistUrl);
 
 	if (errString != NULL) {
-#ifdef DEBUG
-		fwrite("(DEBUG) Couldn't read property list from stream\n", 1, 48, fp);
-		CFIndex len = CFStringGetLength(errString);
-		char *buf = (char*)malloc(len+1);
-		CFStringGetCString(errString, buf, len+1, kCFStringEncodingASCII);
-		fwrite("(DEBUG) errString: ", 1,  19, fp);
-		fwrite(buf, 1, len, fp);
-		fwrite("\n", 1, 1, fp);
-		fflush(fp);
-		fclose(fp);
-		free(buf);
-#endif
 		return false;
 	}
 
 	if (iTunesVersionDict == NULL) {
-#ifdef DEBUG
-		fwrite("(DEBUG) iTunesVersionDict is NULL\n", 1, 34, fp);
-		fflush(fp);
-		fclose(fp);
-#endif
 		return false;
 	}
-
-#ifdef DEBUG
-	buf = (char*)malloc(100000);
-	CFWriteStreamRef writeStrm = CFWriteStreamCreateWithBuffer(kCFAllocatorDefault, (UInt8*)buf, 100000);
-	CFWriteStreamOpen(writeStrm);
-	len = CFPropertyListWriteToStream(iTunesVersionDict, writeStrm, kCFPropertyListXMLFormat_v1_0, NULL);
-	CFWriteStreamClose(writeStrm);
-	fwrite("(DEBUG) version.plist contents:\n===\n", 1, 36, fp);
-	fwrite(buf, 1, len, fp);
-	fwrite("===\n", 1, 4, fp);
-	free(buf);
-#endif
 
 	CFStringRef versionStr = (CFStringRef)CFDictionaryGetValue(iTunesVersionDict, CFSTR("CFBundleVersion"));
 
 	if (versionStr == NULL) {
-#ifdef DEBUG
-		fwrite("(DEBUG) versionStr is NULL\n", 1, 27, fp);
-		fflush(fp);
-		fclose(fp);
-#endif
 		CFRelease(iTunesVersionDict);
 		return false;
 	}
 
-#ifdef DEBUG
-	len = CFStringGetLength(versionStr);
-	buf = (char*)malloc(len+1);
-	CFStringGetCString(versionStr, buf, len+1, kCFStringEncodingASCII);
-	fwrite("(DEBUG) versionString: ", 1,  23, fp);
-	fwrite(buf, 1, len, fp);
-	fwrite("\n", 1, 1, fp);
-	free(buf);
-#endif
-
-	if (!ConvertCFStringToPIVersion(versionStr, &m_iTunesVersion, fp)) {
-#ifdef DEBUG
-		fwrite("(DEBUG) Couldn't convert versionStr to PIVersion\n", 1, 49, fp);
-		fflush(fp);
-		fclose(fp);
-#endif
+	if (!ConvertCFStringToPIVersion(versionStr, &m_iTunesVersion)) {
 		CFRelease(iTunesVersionDict);
 		return false;
 	}
-
-#ifdef DEBUG
-	fwrite("(DEBUG) Successfully obtained iTunes version number: ", 1, 53, fp);
-	char version[10];
-	sprintf(version, "%d.%d.%d", m_iTunesVersion.major, m_iTunesVersion.minor, m_iTunesVersion.point);
-	fwrite(version, 1, strlen(version), fp);
-	fwrite("\n", 1, 1, fp);
-	fflush(fp);
-	fclose(fp);
-#endif
 
 	CFRelease(iTunesVersionDict);
 	return true;
