@@ -34,4 +34,4 @@ typedef struct pi_version
 
 
 bool ConvertCStringToPIVersion(const char *string, PIVersion *version);
-bool ConvertCFStringToPIVersion(CFStringRef string, PIVersion *version, FILE *fp = NULL);
+bool ConvertCFStringToPIVersion(CFStringRef string, PIVersion *version);
