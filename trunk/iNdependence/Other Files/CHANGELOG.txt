@@ -81,3 +81,4 @@ v1.2.5 (Brooklyn)
 - Put in factory activation for all known firmware versions
 - Fixed a rare bug where the detected iTunes version would be 0.0.0
 - Increased the SSH timeout to 300 seconds (5 minutes)
+- Fixed YouTube enabling for all known firmware versions
