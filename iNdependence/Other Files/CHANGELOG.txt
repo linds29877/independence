@@ -76,9 +76,9 @@ v1.2.4 (Dogfish Head) - 10/18/07
 - Made the documentation more clear with regard to the firmware downgrade
 - Made the SSH timeout 120 seconds (rather than 60 seconds) in hopes that this solves the SSH problems people are having during the Pre-1.1.1 Upgrade step
 
+
 v1.2.5 (Brooklyn)
 
 - Put in factory activation for all known firmware versions
-- Fixed a rare bug where the detected iTunes version would be 0.0.0
 - Increased the SSH timeout to 300 seconds (5 minutes)
 - Fixed YouTube enabling for all known firmware versions
