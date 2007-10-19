@@ -34,7 +34,6 @@
 		F2825A510C7DD513006936D6 /* sftp-server in Resources */ = {isa = PBXBuildFile; fileRef = F2825A4E0C7DD513006936D6 /* sftp-server */; };
 		F2825A560C7DD530006936D6 /* libarmfp.dylib in Resources */ = {isa = PBXBuildFile; fileRef = F2825A4C0C7DD513006936D6 /* libarmfp.dylib */; };
 		F29BD5000CC35187004A6F30 /* iNdependenceHelp in Resources */ = {isa = PBXBuildFile; fileRef = F29BD4EB0CC35187004A6F30 /* iNdependenceHelp */; };
-		F29EF3290C982505000240FC /* device_private_key.pem in Resources */ = {isa = PBXBuildFile; fileRef = F29EF3260C982505000240FC /* device_private_key.pem */; };
 		F2CB60C10C6186AB005490ED /* MainWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60C00C6186AB005490ED /* MainWindow.mm */; };
 		F2CB60CD0C61899F005490ED /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60CC0C61899F005490ED /* AppController.mm */; };
 		F2CB623B0C61A77C005490ED /* libPhoneInteraction.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F2CB622B0C61A753005490ED /* libPhoneInteraction.dylib */; };
@@ -112,7 +111,6 @@
 		F2825A4D0C7DD513006936D6 /* scp */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = scp; path = "Other Files/SSH/scp"; sourceTree = SOURCE_ROOT; };
 		F2825A4E0C7DD513006936D6 /* sftp-server */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = "sftp-server"; path = "Other Files/SSH/sftp-server"; sourceTree = SOURCE_ROOT; };
 		F29BD4EC0CC35187004A6F30 /* English */ = {isa = PBXFileReference; lastKnownFileType = folder; name = English; path = English.lproj/iNdependenceHelp; sourceTree = "<group>"; };
-		F29EF3260C982505000240FC /* device_private_key.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = device_private_key.pem; path = "Other Files/YouTube/device_private_key.pem"; sourceTree = SOURCE_ROOT; };
 		F2CB60C00C6186AB005490ED /* MainWindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MainWindow.mm; sourceTree = SOURCE_ROOT; };
 		F2CB60C30C6186CA005490ED /* MainWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainWindow.h; sourceTree = SOURCE_ROOT; };
 		F2CB60CB0C61899F005490ED /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
@@ -216,7 +214,6 @@
 			children = (
 				F29BD4EB0CC35187004A6F30 /* iNdependenceHelp */,
 				F2F7B2E90CA480FD0097C9EE /* SIM Unlock */,
-				F29EF3240C9824DD000240FC /* YouTube */,
 				F25021A10C7B407600B7F437 /* SSH */,
 				F25021500C7B361E00B7F437 /* Jailbreak */,
 				F250214F0C7B361A00B7F437 /* PEM */,
@@ -288,14 +285,6 @@
 				F25021A70C7B408B00B7F437 /* sh */,
 			);
 			name = SSH;
-			sourceTree = "<group>";
-		};
-		F29EF3240C9824DD000240FC /* YouTube */ = {
-			isa = PBXGroup;
-			children = (
-				F29EF3260C982505000240FC /* device_private_key.pem */,
-			);
-			name = YouTube;
 			sourceTree = "<group>";
 		};
 		F2CB62270C61A753005490ED /* Products */ = {
@@ -401,7 +390,6 @@
 				F2F0C27D0C822E5B005F65C6 /* RingtoneFolder.png in Resources */,
 				F2F0C2890C822F3D005F65C6 /* WallpaperFolder.png in Resources */,
 				F2F0C6BE0C82B3D2005F65C6 /* iPhoneActivation_original.pem in Resources */,
-				F29EF3290C982505000240FC /* device_private_key.pem in Resources */,
 				F29BD5000CC35187004A6F30 /* iNdependenceHelp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -124,7 +124,7 @@ static FILE *buildInitialSSHScript(const char *ipAddress, const char *password, 
 	
 	fputs("#!/usr/bin/expect -f\n", fp);
 	fputs("log_user 0\n", fp);
-	fputs("set timeout 120\n\n", fp);
+	fputs("set timeout 300\n\n", fp);
 	snprintf(cmd, len, "if { ![spawn \"%s\" \"root@%s\"] } {\n", g_sshPath, ipAddress);
 	fputs(cmd, fp);
 	fputs("    exit -1\n", fp);
@@ -174,7 +174,7 @@ static FILE *buildInitialSFTPScript(const char *ipAddress, const char *password,
 	
 	fputs("#!/usr/bin/expect -f\n", fp);
 	fputs("log_user 0\n", fp);
-	fputs("set timeout 120\n\n", fp);
+	fputs("set timeout 300\n\n", fp);
 	snprintf(cmd, len, "if { ![spawn \"%s\" \"root@%s\"] } {\n", g_sftpPath, ipAddress);
 	fputs(cmd, fp);
 	fputs("    exit -1\n", fp);

@@ -547,6 +547,18 @@ bool PhoneInteraction::determineiTunesVersion()
 {
 	CFURLRef appUrl, versionPlistUrl;
 
+#ifdef DEBUG
+	char *homedir = getenv("HOME");
+	int len1 = strlen(homedir);
+	int len2 = strlen("/Desktop/iNdependence_debug.txt");
+	char *debugfile = (char*)malloc(len1 + len2 + 1);
+	strcpy(debugfile, homedir);
+	strcat(debugfile, "/Desktop/iNdependence_debug.txt");
+	FILE *fp = fopen(debugfile, "w");
+#else
+	FILE *fp = NULL;
+#endif
+
 	// try searching for iTunes.app using LaunchServices
 	if (LSFindApplicationForInfo(kLSUnknownCreator, NULL, CFSTR("iTunes.app"), NULL, &appUrl) != noErr) {
 
@@ -556,6 +568,13 @@ bool PhoneInteraction::determineiTunesVersion()
 
 			// as a last resort, try the default location
 			if (stat("/Applications/iTunes.app", &st)) {
+
+#ifdef DEBUG
+				fwrite("(DEBUG) Couldn't find iTunes\n", 1, 29, fp);
+				fflush(fp);
+				fclose(fp);
+#endif
+
 				return false;
 			}
 
@@ -566,11 +585,38 @@ bool PhoneInteraction::determineiTunesVersion()
 
 	}
 
+#ifdef DEBUG
+	CFStringRef itunespath = CFURLGetString(appUrl);
+	CFIndex len = CFStringGetLength(itunespath);
+	char *buf = (char*)malloc(len+1);
+	CFStringGetCString(itunespath, buf, len+1, kCFStringEncodingASCII);
+	fwrite("(DEBUG) iTunes path: ", 1,  21, fp);
+	fwrite(buf, 1, len, fp);
+	fwrite("\n", 1, 1, fp);
+	free(buf);
+#endif
+
 	versionPlistUrl = CFURLCreateCopyAppendingPathComponent(kCFAllocatorDefault,
 															appUrl, CFSTR("Contents/version.plist"), false);
 	CFRelease(appUrl);
 
+#ifdef DEBUG
+	CFStringRef versionpath = CFURLGetString(versionPlistUrl);
+	len = CFStringGetLength(versionpath);
+	buf = (char*)malloc(len+1);
+	CFStringGetCString(versionpath, buf, len+1, kCFStringEncodingASCII);
+	fwrite("(DEBUG) version.plist path: ", 1,  28, fp);
+	fwrite(buf, 1, len, fp);
+	fwrite("\n", 1, 1, fp);
+	free(buf);
+#endif
+
 	if (versionPlistUrl == NULL) {
+#ifdef DEBUG
+		fwrite("(DEBUG) versionPlistUrl is NULL\n", 1, 32, fp);
+		fflush(fp);
+		fclose(fp);
+#endif
 		return false;
 	}
 
@@ -579,13 +625,36 @@ bool PhoneInteraction::determineiTunesVersion()
 	CFReadStreamRef stream= CFReadStreamCreateWithFile(kCFAllocatorDefault, versionPlistUrl);
 
 	if (stream == NULL) {
+#ifdef DEBUG
+		fwrite("(DEBUG) stream is NULL\n", 1, 23, fp);
+		fflush(fp);
+		fclose(fp);
+#endif
 		CFRelease(versionPlistUrl);
 		return false;
 	}
 
-	Boolean opened = CFReadStreamOpen(stream);
-	
-	if (opened == FALSE) {
+	CFReadStreamOpen(stream);
+	CFStreamStatus status = CFReadStreamGetStatus(stream);
+	bool bError = false;
+
+	while (status != kCFStreamStatusOpen) {
+
+		if (status == kCFStreamStatusError) {
+			bError = true;
+			break;
+		}
+
+		usleep(50000);
+		status = CFReadStreamGetStatus(stream);
+	}
+
+	if (bError) {
+#ifdef DEBUG
+		fwrite("(DEBUG) Couldn't open stream\n", 1, 29, fp);
+		fflush(fp);
+		fclose(fp);
+#endif
 		CFRelease(versionPlistUrl);
 		CFRelease(stream);
 		return false;
@@ -601,24 +670,83 @@ bool PhoneInteraction::determineiTunesVersion()
 	CFRelease(versionPlistUrl);
 
 	if (errString != NULL) {
+#ifdef DEBUG
+		fwrite("(DEBUG) Couldn't read property list from stream\n", 1, 48, fp);
+		CFIndex len = CFStringGetLength(errString);
+		char *buf = (char*)malloc(len+1);
+		CFStringGetCString(errString, buf, len+1, kCFStringEncodingASCII);
+		fwrite("(DEBUG) errString: ", 1,  19, fp);
+		fwrite(buf, 1, len, fp);
+		fwrite("\n", 1, 1, fp);
+		fflush(fp);
+		fclose(fp);
+		free(buf);
+#endif
 		return false;
 	}
 
 	if (iTunesVersionDict == NULL) {
+#ifdef DEBUG
+		fwrite("(DEBUG) iTunesVersionDict is NULL\n", 1, 34, fp);
+		fflush(fp);
+		fclose(fp);
+#endif
 		return false;
 	}
+
+#ifdef DEBUG
+	buf = (char*)malloc(100000);
+	CFWriteStreamRef writeStrm = CFWriteStreamCreateWithBuffer(kCFAllocatorDefault, (UInt8*)buf, 100000);
+	CFWriteStreamOpen(writeStrm);
+	len = CFPropertyListWriteToStream(iTunesVersionDict, writeStrm, kCFPropertyListXMLFormat_v1_0, NULL);
+	CFWriteStreamClose(writeStrm);
+	fwrite("(DEBUG) version.plist contents:\n===\n", 1, 36, fp);
+	fwrite(buf, 1, len, fp);
+	fwrite("===\n", 1, 4, fp);
+	free(buf);
+#endif
 
 	CFStringRef versionStr = (CFStringRef)CFDictionaryGetValue(iTunesVersionDict, CFSTR("CFBundleVersion"));
 
 	if (versionStr == NULL) {
+#ifdef DEBUG
+		fwrite("(DEBUG) versionStr is NULL\n", 1, 27, fp);
+		fflush(fp);
+		fclose(fp);
+#endif
 		CFRelease(iTunesVersionDict);
 		return false;
 	}
 
-	if (!ConvertCFStringToPIVersion(versionStr, &m_iTunesVersion)) {
+#ifdef DEBUG
+	len = CFStringGetLength(versionStr);
+	buf = (char*)malloc(len+1);
+	CFStringGetCString(versionStr, buf, len+1, kCFStringEncodingASCII);
+	fwrite("(DEBUG) versionString: ", 1,  23, fp);
+	fwrite(buf, 1, len, fp);
+	fwrite("\n", 1, 1, fp);
+	free(buf);
+#endif
+
+	if (!ConvertCFStringToPIVersion(versionStr, &m_iTunesVersion, fp)) {
+#ifdef DEBUG
+		fwrite("(DEBUG) Couldn't convert versionStr to PIVersion\n", 1, 49, fp);
+		fflush(fp);
+		fclose(fp);
+#endif
 		CFRelease(iTunesVersionDict);
 		return false;
 	}
+
+#ifdef DEBUG
+	fwrite("(DEBUG) Successfully obtained iTunes version number: ", 1, 53, fp);
+	char version[10];
+	sprintf(version, "%d.%d.%d", m_iTunesVersion.major, m_iTunesVersion.minor, m_iTunesVersion.point);
+	fwrite(version, 1, strlen(version), fp);
+	fwrite("\n", 1, 1, fp);
+	fflush(fp);
+	fclose(fp);
+#endif
 
 	CFRelease(iTunesVersionDict);
 	return true;
@@ -1000,11 +1128,139 @@ bool PhoneInteraction::enableThirdPartyApplications(bool undo)
 	return true;
 }
 
-bool PhoneInteraction::enableYouTube(const char *privateKeyFile)
+bool PhoneInteraction::enableYouTube(bool bUndo)
 {
+	char *devicePublicKey = NULL;
+	char *devicePrivateKey = NULL;
+	char *dataArkPlist = NULL;
 
-	if (!putFile(privateKeyFile, "/private/var/root/Library/Lockdown/device_private_key.pem",
-				0, 0)) {
+	if (bUndo) {
+		devicePublicKey =
+			"-----BEGIN RSA PUBLIC KEY-----\n"
+			"MIGJAoGBAMOOJTKvYMLX245nLzq6nQnCwbziDH4KGaNKpJ36rRKJJJvqGJQhgDVH\n"
+			"lZDXTVo13c7zVBIMQPkGnVwxlowDJiOJ99/HPGGnaN/6ZkVcrqjY4XPIa02TqAnH\n"
+			"d9Y3CfrVtXGXIecHQqnWgshPuF2bPMZYGpuIt1DlS6uzpbK++yktAgMBAAE=\n"
+			"-----END RSA PUBLIC KEY-----\n";
+
+		devicePrivateKey =
+			"-----BEGIN RSA PRIVATE KEY-----\n"
+			"MIICXgIBAAKBgQDDjiUyr2DC19uOZy86up0JwsG84gx+ChmjSqSd+q0SiSSb6hiU\n"
+			"IYA1R5WQ101aNd3O81QSDED5Bp1cMZaMAyYjifffxzxhp2jf+mZFXK6o2OFzyGtN\n"
+			"k6gJx3fWNwn61bVxlyHnB0Kp1oLIT7hdmzzGWBqbiLdQ5Uurs6WyvvspLQIDAQAB\n"
+			"AoGBAKJxaaT42kAAX3mjbTAz5E8/YQAuJoJskW97idNRcIN9ONPrWg9y5LVdiXiP\n"
+			"4MmXBXHr32I+m5pBTGZRKuWTmBFnZ7HpNgAlea7E/Fb9q/slP5cH6Lmz+Glszkpe\n"
+			"i1qYCuM72eOQFYp8hQUYrbmBSUx61Fh3MnceRpMsGjFP15phAkEA+ocxi78HAsIK\n"
+			"WxeYs4o9P18MqvfCNH3xakk9wujZs2jecnuqJKUMlWpbqDNehWuyRtraVqSk7uqA\n"
+			"VYriDwlKQwJBAMfTk2fORFssIzzEes44lJlYlmes8aymg8fL9hpq+JB15zDaAT/L\n"
+			"MmfO3vPy6Pg8FBXo84OBUXv6Fd/ULZj+H88CQQDNL+UYe8CWNa6dpNngUpyPRp3t\n"
+			"eTaKH4yWbJ41ANks4/ss8LQNh1CjH5UqUchcpjRBbAXfaMHdHBs39KPphMZZAkB3\n"
+			"6qc+F1F8KTuoPvy3fsrmT3xLEUUi5/aTUvoIloM+JhMshNdVEjrYgxPW78IRHfSr\n"
+			"xVVFaLientC7ttf6RR6PAkEAhU9+JeAu20NAy9qmaL5+6Oi+QH84Txo8GGCw4idV\n"
+			"XLmNJhMAdnIa2nMZ9B1QJ/OW7e5z1MbXDCII72ELULz3kw==\n"
+			"-----END RSA PRIVATE KEY-----\n";
+		
+		dataArkPlist =
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			"<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+			"<plist version=\"1.0\">\n"
+			"<dict>\n"
+			"<key>-DeviceName</key>\n"
+			"<string></string>\n"
+			"<key>-FirmwareVersion</key>\n"
+			"<string>iBoot-159</string>\n"
+			"<key>-ProtocolVersion</key>\n"
+			"<string>1</string>\n"
+			"<key>-SBLockdownEverRegisteredKey</key>\n"
+			"<false/>\n"
+			"<key>com.apple.mobile.lockdown_cache-ActivationState</key>\n"
+			"<string>Unactivated</string>\n"
+			"</dict>\n"
+			"</plist>\n";
+	}
+	else {
+		devicePublicKey =
+			"-----BEGIN RSA PUBLIC KEY-----\n"
+			"MIGJAoGBAOWLB1z60B43IwITntQMKBZqnubi1J4xrrNJkoX/FRkcKShzd0fpSEze\n"
+			"6/Yq16d5ci85uKtjTJtGDZcq9mhYmMg6jvTzPxox5gOboHu4aUxcegcGP8mDZTr7\n"
+			"O3mkeMkWDQVGvgsKL0ua4XbYUwbbpzhRS7N5ifDErRYKwRYcYz/VAgMBAAE=\n"
+			"-----END RSA PUBLIC KEY-----\n";
+
+		devicePrivateKey =
+			"-----BEGIN RSA PRIVATE KEY-----\n"
+			"MIICWwIBAAKBgQDliwdc+tAeNyMCE57UDCgWap7m4tSeMa6zSZKF/xUZHCkoc3dH\n"
+			"6UhM3uv2KteneXIvObirY0ybRg2XKvZoWJjIOo708z8aMeYDm6B7uGlMXHoHBj/J\n"
+			"g2U6+zt5pHjJFg0FRr4LCi9LmuF22FMG26c4UUuzeYnwxK0WCsEWHGM/1QIDAQAB\n"
+			"AoGAbmfamMxCgeX/PqZ1RIS8W1vZJjCAF77Jyo5enXi9iyBSY5R2EO6RyfeHAxZE\n"
+			"N9dgJnra6gSO+jhNnSIa9sF2ah8PnA+CA/Mq3G+kdjqIByJfeBCCz6hR6/p5LLIZ\n"
+			"gnTOBs5GkHCbbz9ZKQuFi8OmKPgtj/URLZ6o9wPRUY/JP0ECQQD39LTYgZGAqECI\n"
+			"nVIxFDs3p7JV9iAZa3eiKR17BspOEcDBPvixxmrwWa3TzaRtI9o+0HknloPHYGeD\n"
+			"3V0jV61dAkEA7P1nC5GzE3QtkrRey9/D9KQd834bm07Swkxegbjn8QXP8hmEV8LQ\n"
+			"bvL7vOLiAf8uEo7pq54ADS4Zem3B5bW82QJASmqp4BS664cTnyzAHzS4NRLiZgQx\n"
+			"TA/B3uxCCctW6ilP1W+lyg0HyUzQ67FbONo6xQFiayw0LqFTT/Me4d2NjQJAY5D7\n"
+			"EANApzWyR+Z7xU/XthqVcs1Sr+dn6LXJJtsWp0531REfZve0NkjjtrHjnk8lfiqI\n"
+			"xc912hO6JJOkWOwH0QJAGod7UZwiZuA6WNaFjF0hXsjAGVNT6bVAvm6X3RFeK7qY\n"
+			"owiCq9JAN8ZX5l0VWNDp6MGCVly9OtMNK4Lp6a2Q2Q==\n"
+			"-----END RSA PRIVATE KEY-----\n";
+
+		dataArkPlist =
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			"<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+			"<plist version=\"1.0\">\n"
+			"<dict>\n"
+			"        <key>-ActivationStateAcknowledged</key>\n"
+			"        <true/>\n"
+			"        <key>-DeviceCertificate</key>\n"
+			"        <data>\n"
+			"        LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURQekNDQXFpZ0F3SUJBZ0lLQTRC\n"
+			"        UllCOVBRUms3NlRBTkJna3Foa2lHOXcwQkFRc0ZBREJhTVFzd0NRWUQKVlFRR0V3SlZV\n"
+			"        ekVUTUJFR0ExVUVDaE1LUVhCd2JHVWdTVzVqTGpFVk1CTUdBMVVFQ3hNTVFYQndiR1Vn\n"
+			"        YVZCbwpiMjVsTVI4d0hRWURWUVFERXhaQmNIQnNaU0JwVUdodmJtVWdSR1YyYVdObElF\n"
+			"        TkJNQjRYRFRBM01EY3dOekl6Ck1EZ3dNMW9YRFRFd01EY3dOekl6TURnd00xb3dnWWN4\n"
+			"        TVRBdkJnTlZCQU1US0RNNE5URmhOamRqT0dFM01ETTMKTnpjek9HWXhOVEJsTTJGaFlU\n"
+			"        WTJOV1U1TkRFNU5tUXpOekV4Q3pBSkJnTlZCQVlUQWxWVE1Rc3dDUVlEVlFRSQpFd0pE\n"
+			"        UVRFU01CQUdBMVVFQnhNSlEzVndaWEowYVc1dk1STXdFUVlEVlFRS0V3cEJjSEJzWlNC\n"
+			"        SmJtTXVNUTh3CkRRWURWUVFMRXdacFVHaHZibVV3Z1o4d0RRWUpLb1pJaHZjTkFRRUJC\n"
+			"        UUFEZ1kwQU1JR0pBb0dCQU9XTEIxejYKMEI0M0l3SVRudFFNS0JacW51YmkxSjR4cnJO\n"
+			"        SmtvWC9GUmtjS1NoemQwZnBTRXplNi9ZcTE2ZDVjaTg1dUt0agpUSnRHRFpjcTltaFlt\n"
+			"        TWc2anZUelB4b3g1Z09ib0h1NGFVeGNlZ2NHUDhtRFpUcjdPM21rZU1rV0RRVkd2Z3NL\n"
+			"        CkwwdWE0WGJZVXdiYnB6aFJTN041aWZERXJSWUt3UlljWXovVkFnTUJBQUdqZ2Qwd2dk\n"
+			"        b3dnWUlHQTFVZEl3UjcKTUhtQUZMTCtJU05FaHBWcWVkV0JKbzV6RU5pblRJNTBvVjZr\n"
+			"        WERCYU1Rc3dDUVlEVlFRR0V3SlZVekVUTUJFRwpBMVVFQ2hNS1FYQndiR1VnU1c1akxq\n"
+			"        RVZNQk1HQTFVRUN4TU1RWEJ3YkdVZ2FWQm9iMjVsTVI4d0hRWURWUVFECkV4WkJjSEJz\n"
+			"        WlNCcFVHaHZibVVnUkdWMmFXTmxJRU5CZ2dFQk1CMEdBMVVkRGdRV0JCVHBsVTJrZE5z\n"
+			"        eFpFbmEKTXFUSnVaVWdaQzM1WHpBTUJnTlZIUk1CQWY4RUFqQUFNQTRHQTFVZER3RUIv\n"
+			"        d1FFQXdJRm9EQVdCZ05WSFNVQgpBZjhFRERBS0JnZ3JCZ0VGQlFjREFUQU5CZ2txaGtp\n"
+			"        Rzl3MEJBUXNGQUFPQmdRQ3FjbVNyTnFnWldGdkZJYzluCkNwMktacUVRK0ozdTNLS2h4\n"
+			"        ZUwzR05KZ2twS3JQa3R3RC8rRGhIMlFDRUNtRUNMNTI0MHVLWGkvTzFlZjZZMkIKWjM4\n"
+			"        SVFuOHVoci9oYkRXUWFpV1o2OFhQWUEvTzRFZ3lKMHp6cmlzMks3UzBPSG9vTm1uZVow\n"
+			"        cEVMMElib2ZaOApKRjhHbjRaK0I2dHR6MEtQSDdJWTJ3LzRYZz09Ci0tLS0tRU5EIENF\n"
+			"        UlRJRklDQVRFLS0tLS0K\n"
+			"        </data>\n"
+			"        <key>-DeviceName</key>\n"
+			"        <string></string>\n"
+			"        <key>-FirmwareVersion</key>\n"
+			"        <string>iBoot-159</string>\n"
+			"        <key>-PasswordProtected</key>\n"
+			"        <false/>\n"
+			"        <key>-ProtocolVersion</key>\n"
+			"        <string>1</string>\n"
+			"        <key>-SBLockdownEverRegisteredKey</key>\n"
+			"        <true/>\n"
+			"        <key>com.apple.mobile.lockdown_cache-ActivationState</key>\n"
+			"        <string>Activated</string>\n"
+			"</dict>\n"
+			"</plist>\n";
+	}
+
+	if (!putData(devicePublicKey, strlen(devicePublicKey), "/var/root/Library/Lockdown/device_public_key.pem", 0, 0)) {
+		return false;
+	}
+	
+	if (!putData(devicePrivateKey, strlen(devicePrivateKey), "/var/root/Library/Lockdown/device_private_key.pem", 0, 0)) {
+		return false;
+	}
+
+	if (!putData(dataArkPlist, strlen(dataArkPlist), "/var/root/Library/Lockdown/data_ark.plist", 0, 0)) {
 		return false;
 	}
 
@@ -1015,7 +1271,6 @@ bool PhoneInteraction::factoryActivate(bool undo)
 {
 	unsigned char *buf;
 	int size;
-	bool bModified = false;
 	
 	if (!getFileData((void**)&buf, &size, "/usr/libexec/lockdownd", 0, 0)) {
 		return false;
@@ -1023,8 +1278,67 @@ bool PhoneInteraction::factoryActivate(bool undo)
 
 	char *phoneProdVer = getPhoneProductVersion();
 
-	// TODO: Figure out how to patch older versions of lockdownd
-	if (!strcmp(phoneProdVer, "1.1.1")) {
+	if (!strcmp(phoneProdVer, "1.0")) {
+
+		if (undo) {
+			buf[0x90A4] = 0x01;
+			buf[0x90A7] = 0x03;
+			buf[0x90A8] = 0x3C;
+			buf[0x90AB] = 0x05;
+			buf[0x90B3] = 0x0A; 
+			buf[0x9263] = 0x0A;            
+		}
+		else {
+			buf[0x90A4] = 0x00;
+			buf[0x90A7] = 0xE3;
+			buf[0x90A8] = 0x68;
+			buf[0x90AB] = 0xE5;
+			buf[0x90B3] = 0xEA; 
+			buf[0x9263] = 0xEA;
+		}
+
+	}
+	else if (!strcmp(phoneProdVer, "1.0.1")) {
+
+		if (undo) {
+			buf[0x94C4] = 0x01;
+			buf[0x94C7] = 0x03;
+			buf[0x94C8] = 0x3C;
+			buf[0x94CB] = 0x05;
+			buf[0x94D3] = 0x0A; 
+			buf[0x9683] = 0x0A;            
+		}
+		else {
+			buf[0x94C4] = 0x00;
+			buf[0x94C7] = 0xE3;
+			buf[0x94C8] = 0x68;
+			buf[0x94CB] = 0xE5;
+			buf[0x94D3] = 0xEA; 
+			buf[0x9683] = 0xEA;
+		}
+
+	}
+	else if (!strcmp(phoneProdVer, "1.0.2")) {
+		
+		if (undo) {
+			buf[0x94F0] = 0x01;
+			buf[0x94F3] = 0x03;
+			buf[0x94F4] = 0x3C;
+			buf[0x94F7] = 0x05;
+			buf[0x94FF] = 0x0A; 
+			buf[0x96AF] = 0x0A;            
+		}
+		else {
+			buf[0x94F0] = 0x00;
+			buf[0x94F3] = 0xE3;
+			buf[0x94F4] = 0x68;
+			buf[0x94F7] = 0xE5;
+			buf[0x94FF] = 0xEA; 
+			buf[0x96AF] = 0xEA;
+		}
+		
+	}
+	else if (!strcmp(phoneProdVer, "1.1.1")) {
 
 		if (undo) {
 			buf[0xB810] = 0x04;
@@ -1041,16 +1355,15 @@ bool PhoneInteraction::factoryActivate(bool undo)
 			buf[0xB818] = 0x00;
 		}
 		
-		bModified = true;
 	}
-
-	if (bModified) {
+	else {
+		free(buf);
+		return false;
+	}
 		
-		if (!putData(buf, size, "/usr/libexec/lockdownd", 0, 0)) {
-			free(buf);
-			return false;
-		}
-		
+	if (!putData(buf, size, "/usr/libexec/lockdownd", 0, 0)) {
+		free(buf);
+		return false;
 	}
 	
 	free(buf);
@@ -1063,12 +1376,6 @@ bool PhoneInteraction::activate(const char* filename, const char *pemfile)
 	if (!isConnected()) {
 		(*m_notifyFunc)(NOTIFY_ACTIVATION_FAILED, "Can't activate when no phone is connected.");
 		return false;
-	}
-
-	char *phoneProdVer = getPhoneProductVersion();
-	
-	if (!strncmp(phoneProdVer, "1.1", 3)) {
-		return factoryActivate();
 	}
 
 	if (isPhoneJailbroken()) {
@@ -1310,6 +1617,10 @@ bool PhoneInteraction::isPhoneActivated()
 	if (result == NULL) {
 		return false;
 	}
+
+#ifdef DEBUG
+	CFShow(result);
+#endif
 
 	if ( (CFStringCompare(result, CFSTR("Activated"), kCFCompareCaseInsensitive) == kCFCompareEqualTo) ||
 		 (CFStringCompare(result, CFSTR("FactoryActivated"), kCFCompareCaseInsensitive) == kCFCompareEqualTo) ) {
@@ -2509,7 +2820,7 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error, couldn't perform jailbreak.  You need to downgrade to version 1.0.2, then perform the special upgrade to 1.1.1 (see Help documentation for more details).");
 		return;
 	}
-	
+
 	if (m_statusFunc) {
 		(*m_statusFunc)("Performing new jailbreak...", false);
 	}

@@ -154,7 +154,7 @@ public:
 	bool enableThirdPartyApplications(bool undo = false);
 
 	// use to enable/disable YouTube
-	bool enableYouTube(const char *privateKeyFile);
+	bool enableYouTube(bool undo = false);
 
 	// used for notifications from MobileDevice library
 	void recoveryModeStarted(struct am_recovery_device *dev);

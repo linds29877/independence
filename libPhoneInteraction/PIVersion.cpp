@@ -137,7 +137,7 @@ bool ConvertCStringToPIVersion(const char *versionStr, PIVersion *version)
 	return true;
 }
 
-bool ConvertCFStringToPIVersion(CFStringRef versionStr, PIVersion *version)
+bool ConvertCFStringToPIVersion(CFStringRef versionStr, PIVersion *version, FILE *fp)
 {
 	version->major = 0;
 	version->minor = 0;
@@ -146,6 +146,11 @@ bool ConvertCFStringToPIVersion(CFStringRef versionStr, PIVersion *version)
 	CFIndex len = CFStringGetLength(versionStr);
 	
 	if (len < 1) {
+
+		if (fp != NULL) {
+			fwrite("(DEBUG) len < 1\n", 1, 16, fp);
+		}
+
 		return false;
 	}
 	
@@ -154,12 +159,28 @@ bool ConvertCFStringToPIVersion(CFStringRef versionStr, PIVersion *version)
 	CFRange sub;
 	
 	if (dot.location == kCFNotFound) {
+
+		if (fp != NULL) {
+			fwrite("(DEBUG) No dot found\n", 1, 21, fp);
+		}
+
 		SInt32 major = CFStringGetIntValue(versionStr);
-		
+
 		if ( (major == INT_MAX) || (major == INT_MIN) ) {
+
+			if (fp != NULL) {
+				fwrite("(DEBUG) major is invalid\n", 1, 25, fp);
+			}
+
 			return false;
 		}
-		
+
+		if (fp != NULL) {
+			char buf[20];
+			sprintf(buf, "(DEBUG) major = %d\n", (int)major);
+			fwrite(buf, 1, strlen(buf), fp);
+		}
+
 		version->major = (int)major;
 		return true;
 	}
@@ -168,18 +189,52 @@ bool ConvertCFStringToPIVersion(CFStringRef versionStr, PIVersion *version)
 		sub.length = dot.location;
 		CFStringRef majorStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
 														   sub);
-		
+
+		if (fp != NULL) {
+			char subinfo[50];
+			sprintf(subinfo, "(DEBUG) sub.location = %d, sub.length = %d\n", sub.location, sub.length);
+			fwrite(subinfo, 1, strlen(subinfo), fp);
+		}
+
 		if (majorStr == NULL) {
+			
+			if (fp != NULL) {
+				fwrite("(DEBUG) majorStr is NULL\n", 1, 25, fp);
+			}
+			
 			return false;
 		}
-		
+
+		// DEBUG
+		if (fp != NULL) {
+			CFIndex len = CFStringGetLength(majorStr);
+			char *buf = (char*)malloc(len+1);
+			CFStringGetCString(majorStr, buf, len+1, kCFStringEncodingASCII);
+			fwrite("(DEBUG) majorString: ", 1,  21, fp);
+			fwrite(buf, 1, len, fp);
+			fwrite("\n", 1, 1, fp);
+			free(buf);
+		}
+		// DEBUG
+
 		SInt32 major = CFStringGetIntValue(majorStr);
 		CFRelease(majorStr);
 		
 		if ( (major == INT_MAX) || (major == INT_MIN) ) {
+			
+			if (fp != NULL) {
+				fwrite("(DEBUG) major is invalid 2\n", 1, 27, fp);
+			}
+			
 			return false;
 		}
 		
+		if (fp != NULL) {
+			char buf[20];
+			sprintf(buf, "(DEBUG) major = %d\n", (int)major);
+			fwrite(buf, 1, strlen(buf), fp);
+		}
+
 		version->major = (int)major;
 	}
 	
@@ -195,17 +250,51 @@ bool ConvertCFStringToPIVersion(CFStringRef versionStr, PIVersion *version)
 		CFStringRef minorStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
 														   sub);
 		
+		if (fp != NULL) {
+			char subinfo[50];
+			sprintf(subinfo, "(DEBUG) sub.location = %d, sub.length = %d\n", sub.location, sub.length);
+			fwrite(subinfo, 1, strlen(subinfo), fp);
+		}
+		
 		if (minorStr == NULL) {
+			
+			if (fp != NULL) {
+				fwrite("(DEBUG) minorStr is NULL\n", 1, 25, fp);
+			}
+			
 			return false;
 		}
 		
+		// DEBUG
+		if (fp != NULL) {
+			CFIndex len = CFStringGetLength(minorStr);
+			char *buf = (char*)malloc(len+1);
+			CFStringGetCString(minorStr, buf, len+1, kCFStringEncodingASCII);
+			fwrite("(DEBUG) minorString: ", 1,  21, fp);
+			fwrite(buf, 1, len, fp);
+			fwrite("\n", 1, 1, fp);
+			free(buf);
+		}
+		// DEBUG
+
 		SInt32 minor = CFStringGetIntValue(minorStr);
 		CFRelease(minorStr);
 		
 		if ( (minor == INT_MAX) || (minor == INT_MIN) ) {
+			
+			if (fp != NULL) {
+				fwrite("(DEBUG) minor is invalid\n", 1, 25, fp);
+			}
+			
 			return false;
 		}
 		
+		if (fp != NULL) {
+			char buf[20];
+			sprintf(buf, "(DEBUG) minor = %d\n", (int)minor);
+			fwrite(buf, 1, strlen(buf), fp);
+		}
+
 		version->minor = (int)minor;
 		return true;
 	}
@@ -214,17 +303,51 @@ bool ConvertCFStringToPIVersion(CFStringRef versionStr, PIVersion *version)
 		CFStringRef minorStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
 														   sub);
 		
+		if (fp != NULL) {
+			char subinfo[50];
+			sprintf(subinfo, "(DEBUG) sub.location = %d, sub.length = %d\n", sub.location, sub.length);
+			fwrite(subinfo, 1, strlen(subinfo), fp);
+		}
+
 		if (minorStr == NULL) {
+			
+			if (fp != NULL) {
+				fwrite("(DEBUG) minorStr is NULL\n", 1, 25, fp);
+			}
+			
 			return false;
 		}
 		
+		// DEBUG
+		if (fp != NULL) {
+			CFIndex len = CFStringGetLength(minorStr);
+			char *buf = (char*)malloc(len+1);
+			CFStringGetCString(minorStr, buf, len+1, kCFStringEncodingASCII);
+			fwrite("(DEBUG) minorString: ", 1,  21, fp);
+			fwrite(buf, 1, len, fp);
+			fwrite("\n", 1, 1, fp);
+			free(buf);
+		}
+		// DEBUG
+
 		SInt32 minor = CFStringGetIntValue(minorStr);
 		CFRelease(minorStr);
 		
 		if ( (minor == INT_MAX) || (minor == INT_MIN) ) {
+			
+			if (fp != NULL) {
+				fwrite("(DEBUG) minor is invalid 2\n", 1, 27, fp);
+			}
+			
 			return false;
 		}
 		
+		if (fp != NULL) {
+			char buf[20];
+			sprintf(buf, "(DEBUG) minor = %d\n", (int)minor);
+			fwrite(buf, 1, strlen(buf), fp);
+		}
+
 		version->minor = (int)minor;
 	}
 	
@@ -240,17 +363,51 @@ bool ConvertCFStringToPIVersion(CFStringRef versionStr, PIVersion *version)
 		CFStringRef pointStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
 														   sub);
 		
+		if (fp != NULL) {
+			char subinfo[50];
+			sprintf(subinfo, "(DEBUG) sub.location = %d, sub.length = %d\n", sub.location, sub.length);
+			fwrite(subinfo, 1, strlen(subinfo), fp);
+		}
+		
 		if (pointStr == NULL) {
+			
+			if (fp != NULL) {
+				fwrite("(DEBUG) pointStr is NULL\n", 1, 25, fp);
+			}
+			
 			return false;
 		}
 		
+		// DEBUG
+		if (fp != NULL) {
+			CFIndex len = CFStringGetLength(pointStr);
+			char *buf = (char*)malloc(len+1);
+			CFStringGetCString(pointStr, buf, len+1, kCFStringEncodingASCII);
+			fwrite("(DEBUG) pointString: ", 1,  21, fp);
+			fwrite(buf, 1, len, fp);
+			fwrite("\n", 1, 1, fp);
+			free(buf);
+		}
+		// DEBUG
+
 		SInt32 point = CFStringGetIntValue(pointStr);
 		CFRelease(pointStr);
 		
 		if ( (point == INT_MAX) || (point == INT_MIN) ) {
+			
+			if (fp != NULL) {
+				fwrite("(DEBUG) point is invalid\n", 1, 25, fp);
+			}
+			
 			return false;
 		}
 		
+		if (fp != NULL) {
+			char buf[20];
+			sprintf(buf, "(DEBUG) point = %d\n", (int)point);
+			fwrite(buf, 1, strlen(buf), fp);
+		}
+
 		version->point = (int)point;
 	}
 	else if (dot.location > sub.location) {
@@ -258,15 +415,49 @@ bool ConvertCFStringToPIVersion(CFStringRef versionStr, PIVersion *version)
 		CFStringRef pointStr = CFStringCreateWithSubstring(kCFAllocatorDefault, versionStr,
 														   sub);
 		
+		if (fp != NULL) {
+			char subinfo[50];
+			sprintf(subinfo, "(DEBUG) sub.location = %d, sub.length = %d\n", sub.location, sub.length);
+			fwrite(subinfo, 1, strlen(subinfo), fp);
+		}
+
 		if (pointStr == NULL) {
+			
+			if (fp != NULL) {
+				fwrite("(DEBUG) pointStr is NULL\n", 1, 25, fp);
+			}
+			
 			return false;
 		}
 		
+		// DEBUG
+		if (fp != NULL) {
+			CFIndex len = CFStringGetLength(pointStr);
+			char *buf = (char*)malloc(len+1);
+			CFStringGetCString(pointStr, buf, len+1, kCFStringEncodingASCII);
+			fwrite("(DEBUG) pointString: ", 1,  21, fp);
+			fwrite(buf, 1, len, fp);
+			fwrite("\n", 1, 1, fp);
+			free(buf);
+		}
+		// DEBUG
+
 		SInt32 point = CFStringGetIntValue(pointStr);
 		CFRelease(pointStr);
 		
 		if ( (point == INT_MAX) || (point == INT_MIN) ) {
+			
+			if (fp != NULL) {
+				fwrite("(DEBUG) point is invalid 2\n", 1, 27, fp);
+			}
+			
 			return false;
+		}
+		
+		if (fp != NULL) {
+			char buf[20];
+			sprintf(buf, "(DEBUG) point = %d\n", (int)point);
+			fwrite(buf, 1, strlen(buf), fp);
 		}
 		
 		version->point = (int)point;
