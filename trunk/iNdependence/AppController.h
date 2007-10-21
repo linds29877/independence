@@ -43,8 +43,6 @@ class PhoneInteraction;
 	IBOutlet NSButton* pre111UpgradeButton;
 	IBOutlet NSButton* post111UpgradeButton;
 	IBOutlet CustomizeBrowser* customizeBrowser;
-	IBOutlet NSWindow* keyGenerationOutput;
-	IBOutlet NSTextView* logOutput;
 	IBOutlet SSHHandler* sshHandler;
 
 	PhoneInteraction *m_phoneInteraction;
@@ -90,6 +88,8 @@ class PhoneInteraction;
 - (void)setPerformingJailbreak:(bool)bJailbreaking;
 - (void)setReturningToJail:(bool)bReturning;
 
+- (bool)isOpenSSHInstalled;
+- (bool)isDropbearSSHInstalled;
 - (bool)isSSHInstalled;
 - (bool)isanySIMInstalled;
 
@@ -118,13 +118,13 @@ class PhoneInteraction;
 - (IBAction)installSimUnlock:(id)sender;
 - (IBAction)removeSimUnlock:(id)sender;
 - (IBAction)changePassword:(id)sender;
+
 - (IBAction)installSSH:(id)sender;
 - (IBAction)removeSSH:(id)sender;
+- (void)sshInstallStageTwo;
 - (void)finishInstallingSSH:(bool)bCancelled;
 
 - (IBAction)waitDialogCancel:(id)sender;
-
-- (IBAction)keyGenerationOutputDismiss:(id)sender;
 
 - (IBAction)passwordDialogCancel:(id)sender;
 - (IBAction)passwordDialogOk:(id)sender;

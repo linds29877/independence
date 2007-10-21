@@ -13,7 +13,6 @@
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		F207EF8E0CC27BE4002AC0AA /* Services111_mod.plist in Resources */ = {isa = PBXBuildFile; fileRef = F207EF8C0CC27BE4002AC0AA /* Services111_mod.plist */; };
 		F207EF8F0CC27BE4002AC0AA /* Services111.plist in Resources */ = {isa = PBXBuildFile; fileRef = F207EF8D0CC27BE4002AC0AA /* Services111.plist */; };
-		F22F9ADE0C7D4789007DCE73 /* dropbearkey in Resources */ = {isa = PBXBuildFile; fileRef = F22F9ADD0C7D4789007DCE73 /* dropbearkey */; };
 		F25021470C7B354F00B7F437 /* jailbreak.jpg in Resources */ = {isa = PBXBuildFile; fileRef = F25021460C7B354F00B7F437 /* jailbreak.jpg */; };
 		F250214D0C7B356D00B7F437 /* home_sleep_buttons.gif in Resources */ = {isa = PBXBuildFile; fileRef = F250214C0C7B356D00B7F437 /* home_sleep_buttons.gif */; };
 		F25021550C7B363F00B7F437 /* fstab in Resources */ = {isa = PBXBuildFile; fileRef = F25021510C7B363F00B7F437 /* fstab */; };
@@ -22,17 +21,18 @@
 		F25021580C7B363F00B7F437 /* Services.plist in Resources */ = {isa = PBXBuildFile; fileRef = F25021540C7B363F00B7F437 /* Services.plist */; };
 		F250215B0C7B365600B7F437 /* iPhoneActivation_private.pem in Resources */ = {isa = PBXBuildFile; fileRef = F25021590C7B365600B7F437 /* iPhoneActivation_private.pem */; };
 		F250215C0C7B365600B7F437 /* iPhoneActivation.pem in Resources */ = {isa = PBXBuildFile; fileRef = F250215A0C7B365600B7F437 /* iPhoneActivation.pem */; };
-		F25021A80C7B408B00B7F437 /* au.asn.ucc.matt.dropbear.plist in Resources */ = {isa = PBXBuildFile; fileRef = F25021A20C7B408B00B7F437 /* au.asn.ucc.matt.dropbear.plist */; };
-		F25021A90C7B408B00B7F437 /* chmod in Resources */ = {isa = PBXBuildFile; fileRef = F25021A30C7B408B00B7F437 /* chmod */; };
-		F25021AA0C7B408B00B7F437 /* dropbear in Resources */ = {isa = PBXBuildFile; fileRef = F25021A40C7B408B00B7F437 /* dropbear */; };
-		F25021AD0C7B408B00B7F437 /* sh in Resources */ = {isa = PBXBuildFile; fileRef = F25021A70C7B408B00B7F437 /* sh */; };
 		F26A50AB0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = F26A50AA0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm */; };
 		F26A51EA0C80EAEC00A1C30C /* Add.png in Resources */ = {isa = PBXBuildFile; fileRef = F26A51E90C80EAEC00A1C30C /* Add.png */; };
 		F26A51EC0C80EAF100A1C30C /* Delete.png in Resources */ = {isa = PBXBuildFile; fileRef = F26A51EB0C80EAF100A1C30C /* Delete.png */; };
 		F2825A100C7DCDE8006936D6 /* iNdependence.icns in Resources */ = {isa = PBXBuildFile; fileRef = F2825A0F0C7DCDE8006936D6 /* iNdependence.icns */; };
-		F2825A500C7DD513006936D6 /* scp in Resources */ = {isa = PBXBuildFile; fileRef = F2825A4D0C7DD513006936D6 /* scp */; };
-		F2825A510C7DD513006936D6 /* sftp-server in Resources */ = {isa = PBXBuildFile; fileRef = F2825A4E0C7DD513006936D6 /* sftp-server */; };
-		F2825A560C7DD530006936D6 /* libarmfp.dylib in Resources */ = {isa = PBXBuildFile; fileRef = F2825A4C0C7DD513006936D6 /* libarmfp.dylib */; };
+		F286571A0CC969B600A01FCE /* sftp-server in Resources */ = {isa = PBXBuildFile; fileRef = F286570F0CC969B600A01FCE /* sftp-server */; };
+		F28657220CC969B600A01FCE /* sshd in Resources */ = {isa = PBXBuildFile; fileRef = F28657170CC969B600A01FCE /* sshd */; };
+		F28657240CC9870400A01FCE /* sshd_config in Resources */ = {isa = PBXBuildFile; fileRef = F28657230CC9870400A01FCE /* sshd_config */; };
+		F286572B0CCA4C1000A01FCE /* chmod in Resources */ = {isa = PBXBuildFile; fileRef = F28657280CCA4C1000A01FCE /* chmod */; };
+		F286572D0CCA4C1000A01FCE /* sh in Resources */ = {isa = PBXBuildFile; fileRef = F286572A0CCA4C1000A01FCE /* sh */; };
+		F286572F0CCA4C2200A01FCE /* org.thebends.openssh.plist in Resources */ = {isa = PBXBuildFile; fileRef = F286572E0CCA4C2200A01FCE /* org.thebends.openssh.plist */; };
+		F28657450CCA4CE000A01FCE /* libarmfp.dylib in Resources */ = {isa = PBXBuildFile; fileRef = F28657290CCA4C1000A01FCE /* libarmfp.dylib */; };
+		F28657890CCABBCC00A01FCE /* scp in Resources */ = {isa = PBXBuildFile; fileRef = F28657880CCABBCC00A01FCE /* scp */; };
 		F29BD5000CC35187004A6F30 /* iNdependenceHelp in Resources */ = {isa = PBXBuildFile; fileRef = F29BD4EB0CC35187004A6F30 /* iNdependenceHelp */; };
 		F2CB60C10C6186AB005490ED /* MainWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60C00C6186AB005490ED /* MainWindow.mm */; };
 		F2CB60CD0C61899F005490ED /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60CC0C61899F005490ED /* AppController.mm */; };
@@ -89,7 +89,6 @@
 		8D1107320486CEB800E47090 /* iNdependence.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iNdependence.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F207EF8C0CC27BE4002AC0AA /* Services111_mod.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services111_mod.plist; path = "Other Files/jailbreak files/Services111_mod.plist"; sourceTree = SOURCE_ROOT; };
 		F207EF8D0CC27BE4002AC0AA /* Services111.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services111.plist; path = "Other Files/jailbreak files/Services111.plist"; sourceTree = SOURCE_ROOT; };
-		F22F9ADD0C7D4789007DCE73 /* dropbearkey */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = dropbearkey; path = "Other Files/SSH/dropbearkey"; sourceTree = SOURCE_ROOT; };
 		F25021460C7B354F00B7F437 /* jailbreak.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = jailbreak.jpg; path = images/jailbreak.jpg; sourceTree = SOURCE_ROOT; };
 		F250214C0C7B356D00B7F437 /* home_sleep_buttons.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = home_sleep_buttons.gif; path = images/home_sleep_buttons.gif; sourceTree = SOURCE_ROOT; };
 		F25021510C7B363F00B7F437 /* fstab */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = fstab; path = "Other Files/jailbreak files/fstab"; sourceTree = SOURCE_ROOT; };
@@ -98,18 +97,19 @@
 		F25021540C7B363F00B7F437 /* Services.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services.plist; path = "Other Files/jailbreak files/Services.plist"; sourceTree = SOURCE_ROOT; };
 		F25021590C7B365600B7F437 /* iPhoneActivation_private.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = iPhoneActivation_private.pem; path = "Other Files/PEMs/iPhoneActivation_private.pem"; sourceTree = SOURCE_ROOT; };
 		F250215A0C7B365600B7F437 /* iPhoneActivation.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = iPhoneActivation.pem; path = "Other Files/PEMs/iPhoneActivation.pem"; sourceTree = SOURCE_ROOT; };
-		F25021A20C7B408B00B7F437 /* au.asn.ucc.matt.dropbear.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = au.asn.ucc.matt.dropbear.plist; path = "Other Files/SSH/au.asn.ucc.matt.dropbear.plist"; sourceTree = SOURCE_ROOT; };
-		F25021A30C7B408B00B7F437 /* chmod */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = chmod; path = "Other Files/SSH/chmod"; sourceTree = SOURCE_ROOT; };
-		F25021A40C7B408B00B7F437 /* dropbear */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = dropbear; path = "Other Files/SSH/dropbear"; sourceTree = SOURCE_ROOT; };
-		F25021A70C7B408B00B7F437 /* sh */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = sh; path = "Other Files/SSH/sh"; sourceTree = SOURCE_ROOT; };
 		F26A50A90C80BB6D00A1C30C /* CustomizeBrowserDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomizeBrowserDelegate.h; sourceTree = "<group>"; };
 		F26A50AA0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CustomizeBrowserDelegate.mm; sourceTree = "<group>"; };
 		F26A51E90C80EAEC00A1C30C /* Add.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Add.png; path = images/Add.png; sourceTree = "<group>"; };
 		F26A51EB0C80EAF100A1C30C /* Delete.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Delete.png; path = images/Delete.png; sourceTree = "<group>"; };
 		F2825A0F0C7DCDE8006936D6 /* iNdependence.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = iNdependence.icns; path = images/iNdependence.icns; sourceTree = SOURCE_ROOT; };
-		F2825A4C0C7DD513006936D6 /* libarmfp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libarmfp.dylib; path = "Other Files/SSH/libarmfp.dylib"; sourceTree = SOURCE_ROOT; };
-		F2825A4D0C7DD513006936D6 /* scp */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = scp; path = "Other Files/SSH/scp"; sourceTree = SOURCE_ROOT; };
-		F2825A4E0C7DD513006936D6 /* sftp-server */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = "sftp-server"; path = "Other Files/SSH/sftp-server"; sourceTree = SOURCE_ROOT; };
+		F286570F0CC969B600A01FCE /* sftp-server */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = "sftp-server"; path = "Other Files/SSH/OpenSSH/sftp-server"; sourceTree = SOURCE_ROOT; };
+		F28657170CC969B600A01FCE /* sshd */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = sshd; path = "Other Files/SSH/OpenSSH/sshd"; sourceTree = SOURCE_ROOT; };
+		F28657230CC9870400A01FCE /* sshd_config */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = sshd_config; path = "Other Files/SSH/OpenSSH/sshd_config"; sourceTree = SOURCE_ROOT; };
+		F28657280CCA4C1000A01FCE /* chmod */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = chmod; path = "Other Files/SSH/chmod"; sourceTree = SOURCE_ROOT; };
+		F28657290CCA4C1000A01FCE /* libarmfp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libarmfp.dylib; path = "Other Files/SSH/libarmfp.dylib"; sourceTree = SOURCE_ROOT; };
+		F286572A0CCA4C1000A01FCE /* sh */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = sh; path = "Other Files/SSH/sh"; sourceTree = SOURCE_ROOT; };
+		F286572E0CCA4C2200A01FCE /* org.thebends.openssh.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = org.thebends.openssh.plist; path = "Other Files/SSH/OpenSSH/org.thebends.openssh.plist"; sourceTree = SOURCE_ROOT; };
+		F28657880CCABBCC00A01FCE /* scp */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = scp; path = "Other Files/SSH/OpenSSH/scp"; sourceTree = SOURCE_ROOT; };
 		F29BD4EC0CC35187004A6F30 /* English */ = {isa = PBXFileReference; lastKnownFileType = folder; name = English; path = English.lproj/iNdependenceHelp; sourceTree = "<group>"; };
 		F2CB60C00C6186AB005490ED /* MainWindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MainWindow.mm; sourceTree = SOURCE_ROOT; };
 		F2CB60C30C6186CA005490ED /* MainWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainWindow.h; sourceTree = SOURCE_ROOT; };
@@ -275,14 +275,14 @@
 		F25021A10C7B407600B7F437 /* SSH */ = {
 			isa = PBXGroup;
 			children = (
-				F2825A4C0C7DD513006936D6 /* libarmfp.dylib */,
-				F2825A4D0C7DD513006936D6 /* scp */,
-				F2825A4E0C7DD513006936D6 /* sftp-server */,
-				F22F9ADD0C7D4789007DCE73 /* dropbearkey */,
-				F25021A20C7B408B00B7F437 /* au.asn.ucc.matt.dropbear.plist */,
-				F25021A30C7B408B00B7F437 /* chmod */,
-				F25021A40C7B408B00B7F437 /* dropbear */,
-				F25021A70C7B408B00B7F437 /* sh */,
+				F28657880CCABBCC00A01FCE /* scp */,
+				F286572E0CCA4C2200A01FCE /* org.thebends.openssh.plist */,
+				F28657280CCA4C1000A01FCE /* chmod */,
+				F28657290CCA4C1000A01FCE /* libarmfp.dylib */,
+				F286572A0CCA4C1000A01FCE /* sh */,
+				F28657230CC9870400A01FCE /* sshd_config */,
+				F286570F0CC969B600A01FCE /* sftp-server */,
+				F28657170CC969B600A01FCE /* sshd */,
 			);
 			name = SSH;
 			sourceTree = "<group>";
@@ -375,15 +375,7 @@
 				F207EF8F0CC27BE4002AC0AA /* Services111.plist in Resources */,
 				F250215B0C7B365600B7F437 /* iPhoneActivation_private.pem in Resources */,
 				F250215C0C7B365600B7F437 /* iPhoneActivation.pem in Resources */,
-				F25021A80C7B408B00B7F437 /* au.asn.ucc.matt.dropbear.plist in Resources */,
-				F2825A560C7DD530006936D6 /* libarmfp.dylib in Resources */,
-				F25021A90C7B408B00B7F437 /* chmod in Resources */,
-				F25021AA0C7B408B00B7F437 /* dropbear in Resources */,
-				F25021AD0C7B408B00B7F437 /* sh in Resources */,
-				F22F9ADE0C7D4789007DCE73 /* dropbearkey in Resources */,
 				F2825A100C7DCDE8006936D6 /* iNdependence.icns in Resources */,
-				F2825A500C7DD513006936D6 /* scp in Resources */,
-				F2825A510C7DD513006936D6 /* sftp-server in Resources */,
 				F26A51EA0C80EAEC00A1C30C /* Add.png in Resources */,
 				F26A51EC0C80EAF100A1C30C /* Delete.png in Resources */,
 				F2F0C26A0C822C22005F65C6 /* UserFolder.png in Resources */,
@@ -391,6 +383,14 @@
 				F2F0C2890C822F3D005F65C6 /* WallpaperFolder.png in Resources */,
 				F2F0C6BE0C82B3D2005F65C6 /* iPhoneActivation_original.pem in Resources */,
 				F29BD5000CC35187004A6F30 /* iNdependenceHelp in Resources */,
+				F286571A0CC969B600A01FCE /* sftp-server in Resources */,
+				F28657220CC969B600A01FCE /* sshd in Resources */,
+				F28657240CC9870400A01FCE /* sshd_config in Resources */,
+				F286572B0CCA4C1000A01FCE /* chmod in Resources */,
+				F286572D0CCA4C1000A01FCE /* sh in Resources */,
+				F286572F0CCA4C2200A01FCE /* org.thebends.openssh.plist in Resources */,
+				F28657450CCA4CE000A01FCE /* libarmfp.dylib in Resources */,
+				F28657890CCABBCC00A01FCE /* scp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -479,8 +479,10 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/Other Files/SSH\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/Other Files/SSH\"";
 				PREBINDING = NO;
 				PRODUCT_NAME = iNdependence;
 				USER_HEADER_SEARCH_PATHS = "$(inherited) \"../Public Headers\"";
@@ -504,8 +506,10 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/Other Files/SSH\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/Other Files/SSH\"";
 				PREBINDING = NO;
 				PRODUCT_NAME = iNdependence;
 				USER_HEADER_SEARCH_PATHS = "$(inherited) \"../Public Headers\"";

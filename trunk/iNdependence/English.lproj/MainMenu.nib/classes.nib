@@ -12,7 +12,6 @@
                 imeiDialogOk = id; 
                 installSSH = id; 
                 installSimUnlock = id; 
-                keyGenerationOutputDismiss = id; 
                 passwordDialogCancel = id; 
                 passwordDialogOk = id; 
                 performJailbreak = id; 
@@ -42,8 +41,6 @@
                 installSSHButton = NSButton; 
                 installSimUnlockButton = NSButton; 
                 jailbreakButton = NSButton; 
-                keyGenerationOutput = NSWindow; 
-                logOutput = NSTextView; 
                 mainWindow = MainWindow; 
                 newPasswordDialog = NSWindow; 
                 passwordAgainField = NSSecureTextField; 
