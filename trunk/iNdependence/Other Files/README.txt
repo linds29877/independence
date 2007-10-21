@@ -1,5 +1,5 @@
  *
- * iNdependence v1.2.4
+ * iNdependence v1.2.5
  * Copyright 2007 The Operator
  *
  * This software is free software; you can redistribute it and/or
@@ -27,7 +27,6 @@ Credit to:
   - geohot, ixtli, nightwatch, warren, ziel for the code based on iPhoneInterface
   - nightwatch for the 1.0.x jailbreak exploit
   - ixtli for jailbreak on PPC
-  - Matt Johnston for DropbearSSH
   - nightwatch, netkas, and nervegas for the binkit binaries
   - MHW for the code based on iphone-fixpng
   - anonymous for the fast jailbreak method
