@@ -34,23 +34,29 @@
 			    <p>
 					<ol>
 						<li>First, check the firmware version that's reported in the status line at the bottom of the iNdependence window.  If it doesn't say <i>Firmware 1.1.1</i> then you don't need to downgrade.</li>
-						<li>Download the <a href="http://content.info.apple.com/iPhone/061-3823.20070821.vormd/iPhone1,1_1.0.2_1C28_Restore.ipsw">1.0.2 firmware file</a> from Apple.</li>
-						<li>If your web browser didn't automatically decompress that file to a folder, then change the file extension from <b>.ipsw</b> to <b>.zip</b> so that it becomes <i>iPhone1,1_1.0.2_1C28_Restore.zip</i> and unzip it yourself by right-clicking (or Ctrl-clicking) it, selecting <i>Open With</i> from the menu, and then selecting <i>BOMArchiveHelper</i>.</li>
-						<li>You now should have a folder named <i>iPhone1,1_1.0.2_1C28_Restore</i> containing all of the firmware files as well as a file named either <i>iPhone1,1_1.0.2_1C28_Restore.zip</i> (if you had to rename it in the previous step) or <i>iPhone1,1_1.0.2_1C28_Restore.ipsw</i> (if you didn't have to rename it).</li>
-						<li>If you have a file named <i>iPhone1,1_1.0.2_1C28_Restore.zip</i>, then change it's file extension from <b>.zip</b> back to <b>.ipsw</b> so that it becomes <i>iPhone1,1_1.0.2_1C28_Restore.ipsw</i> again.</li>
+						<li>
+							Download the <a href="http://content.info.apple.com/iPhone/061-3823.20070821.vormd/iPhone1,1_1.0.2_1C28_Restore.ipsw">1.0.2 firmware file</a> from Apple if you don't have it already.
+							<ul>
+								<li>If you downloaded it using Safari, then it's likely that Safari will have automatically decompressed the file you downloaded to a folder and removed it.  If this is the case, then open Finder, navigate to where the folder is, right-click (or Ctrl-click) it, and select the <i>Create Archive of "foldername"</i> menu item to recreate the downloaded file again.</li>
+								<li>If you downloaded it using another web browser, and the browser didn't automatically decompress that file to a folder, then change the file extension from <b>.ipsw</b> to <b>.zip</b> and unzip it yourself by right-clicking (or Ctrl-clicking) it, selecting <i>Open With</i> from the menu, and then selecting <i>BOMArchiveHelper</i>.</li>
+							</ul>
+						</li>
+						<li>You should now have a folder which has a name starting with <i>iPhone1,1_1</i> that contains all of the firmware files as well as a file with the same name as the folder but with an extension of either <b>.zip</b> or <b>.ipsw</b>.</li>
+						<li>If the file has an extension of <b>.zip</b>, then rename it so that it's file extension is <b>.ipsw</b> instead of <b>.zip</b>.</li>
+						<li>Before proceeding make sure that you have a folder containing the firmware files and a <b>.ipsw</b> file.</li>
 						<li>Launch iNdependence.</li>
 						<li>Select the <i>Firmware</i> tab and press the <i>Enter DFU Mode</i> button.</li>
-						<li>You'll be prompted to choose the directory where you unzipped the firmware files.  Select the <i>iPhone1,1_1.0.2_1C28_Restore</i> directory (not the <i>iPhone1,1_1.0.2_1C28_Restore.ipsw</i> file).</li>
+						<li>You'll be prompted to choose the folder where you unzipped the firmware files (the one discussed in the previous steps).  Ensure that you choose the folder and not the <b>.ipsw</b> file.</li>
 						<li>If you get an error message saying <i>Error entering recovery mode</i> then quit iNdependence, restart it, and try entering DFU mode again (you don't need to do the firmware steps again).</li>
 						<li>After you see the success message, click <i>OK</i> and then quit iNdependence.</li>
 						<li>Launch iTunes.  You should see a message saying that <i>iTunes has detected an iPhone in recovery mode ...</i>.  Press the <i>OK</i> button.</li>
 						<li>Now, hold down the <b>Option</b> key while you click the <i>Restore</i> button in iTunes.</li>
-						<li>You should then be presented with a file chooser dialog.  Select the <i>iPhone1,1_1.0.2_1C28_Restore.ipsw</i> file this time (not the <i>iPhone1,1_1.0.2_1C28_Restore</i> directory).</li>
+						<li>You should then be presented with a file chooser dialog.  Select the <b>.ipsw</b> file this time (not the folder).</li>
 						<li>iTunes should then begin to restore the firmware on your phone.  This will take a while.</li>
 						<li>You will get a message from iTunes at the end saying that <i>the iPhone could not be restored</i>.  This is normal (and expected).  The restore actually worked fine, but the error is shown because the modem firmware could not be downgraded (which is ok).</li>
 						<li>You should now see a yellow triangle on the screen of your iPhone, and iTunes telling you that you need to restore again.  <b>Don't do this!</b></li>
 						<li>Quit iTunes and then launch iNdependence again.</li>
-						<li>iNdependence will kick the phone out of recovery mode and after a few seconds you should see the main screen with <i>Activate iPhone</i> message on it.</li>
+						<li>Wait about 15 seconds for iNdependence to kick the phone out of recovery mode and get it back to the main screen with <i>Activate iPhone</i> message on it.</li>
 					</ol>
 				</p>
 				<p>Congratulations!  You've successfully downgraded your phone to firmware 1.0.2.</p>
@@ -58,7 +64,7 @@
 
 			<div summary="How to upgrade to 1.1.1 so that you can jailbreak and activate" id="upgrade">
 				<h1>To upgrade to 1.1.1 so that you can activate/jailbreak your phone:</h1>
-				<p><b>Please note that if you have used anySIM or other free SIM unlocking solutions (anything except for the iPhoneSimFree solution), and you upgrade to 1.1.1, it will wipe out the SIM unlock and render the phone and text message part of your phone inoperable. Everything else will still work though.</b>
+				<p><b>Please note that if you have used anySIM 1.0 or other older free SIM unlocking solutions (anything except for anySIM 1.1. and iPhoneSimFree) to SIM unlock your phone, and you upgrade to 1.1.1, it will wipe out the SIM unlock and render the phone and text message part of your phone inoperable.  Everything else will work though.</b>
 				<p>
 					<ol>
 						<li>Check the firmware version that's reported in the status line at the bottom of the iNdependence window.  If it doesn't say 1.0.2 (or lower) then you'll need to downgrade your firmware using the instructions above.</li>
@@ -70,7 +76,7 @@
 						<li>Select the <i>Firmware</i> tab and press the <i>Pre 1.1.1 Upgrade</i> button.</li>
 						<li>Enter the IP address of the phone and the root password (see <a href="#ssh">below</a> for the default root password if you didn't change it when you installed SSH).</li>
 						<li>Follow the instructions given in the dialog windows.  If iNdependence gives you a warning about <i>host verification failure</i> and asks to edit your <b>known_hosts</b> file, choose the <i>Yes</i> option (which is now the default).</li>
-						<li>Once you are told to upgrade using iTunes, quit iNdependence, and select the <i>Update</i> button in the iTunes window (not the </i>Restore</i> button).</li>
+						<li>Once you are told to upgrade using iTunes, quit iNdependence, and select the <i>Update</i> button in the iTunes window (not the </i>Restore</i> button).  Note that the button might be labelled <i>Upgrade</i> instead of <i>Update</i>.</li>
 						<li>Wait for iTunes to finish.</li>
 						<li>Quit iTunes and relaunch iNdependence.  In the status bar at the bottom of the iNdependence window you should see <i>Firmware 1.1.1</i>.</li>
 						<li>Congratulations!  You are now ready to activate/jailbreak your phone using the instructions below.</li>
