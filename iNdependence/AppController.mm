@@ -344,10 +344,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 			m_bootCount++;
 			[mainWindow endDisplayWaitingSheet];
 
-			if (m_bootCount < 2) {
-				[mainWindow startDisplayWaitingSheet:nil
-											 message:@"Please reboot your phone again using the same steps..."
-											   image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:true runModal:false];
+			if (m_bootCount == 1) {
+				[self sshInstallStageTwo];
 			}
 			else {
 				[self finishInstallingSSH:false];
@@ -583,9 +581,19 @@ static void phoneInteractionNotification(int type, const char *msg)
 	return m_activated;
 }
 
-- (bool)isSSHInstalled
+- (bool)isOpenSSHInstalled
+{
+	return m_phoneInteraction->fileExists("/usr/bin/sshd");
+}
+
+- (bool)isDropbearSSHInstalled
 {
 	return m_phoneInteraction->fileExists("/usr/bin/dropbear");
+}
+
+- (bool)isSSHInstalled
+{
+	return ([self isOpenSSHInstalled] || [self isDropbearSSHInstalled]);
 }
 
 - (bool)isanySIMInstalled
@@ -1204,6 +1212,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 {
 
 	if (m_installingSSH) {
+		m_installingSSH = false;
 		[mainWindow endDisplayWaitingSheet];
 		[self finishInstallingSSH:true];
 	}
@@ -1299,138 +1308,156 @@ static void phoneInteractionNotification(int type, const char *msg)
 	[NSApp stopModalWithCode:0];
 }
 
-- (IBAction)keyGenerationOutputDismiss:(id)sender
-{
-	[keyGenerationOutput orderOut:self];
-}
-
 - (IBAction)installSSH:(id)sender
 {
+	[mainWindow startDisplayWaitingSheet:nil
+								 message:@"Generating SSH keys..."
+								   image:nil cancelButton:false runModal:false];
 
-	// first generate the dropbear RSA and DSS keys
-	NSString *dropbearkeyPath = [[NSBundle mainBundle] pathForResource:@"dropbearkey" ofType:@""];
-
-	if (dropbearkeyPath == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding dropbearkey in bundle."];
-		return;
-	}
-
-	[logOutput setString:@""];
-	[keyGenerationOutput orderFront:self];
-
+	// first generate the RSA and DSA keys
+	NSString *sshKeygenPath = @"/usr/bin/ssh-keygen";
 	NSString *tmpDir = NSTemporaryDirectory();
-	NSMutableString *dropbearRSAFile = [NSMutableString stringWithString:tmpDir];
-	[dropbearRSAFile appendString:@"/dropbear_rsa_host_key"];
+	NSMutableString *sshHostKey = [NSMutableString stringWithString:tmpDir];
+	[sshHostKey appendString:@"/ssh_host_key"];
+	NSMutableString *sshHostKeyPub = [NSMutableString stringWithString:sshHostKey];
+	[sshHostKeyPub appendString:@".pub"];
 
-	// remove old file if it exists
-	remove([dropbearRSAFile UTF8String]);
+	// remove old files if they exist
+	remove([sshHostKey UTF8String]);
+	remove([sshHostKeyPub UTF8String]);
 
-	NSArray *args = [NSArray arrayWithObjects:@"-t", @"rsa", @"-f", dropbearRSAFile, nil];
+	NSArray *args = [NSArray arrayWithObjects:@"-t", @"rsa1", @"-f", sshHostKey, @"-N", @"", nil];
 	NSTask *task = [[NSTask alloc] init];
-	NSPipe *pipe = [NSPipe pipe];
-	NSFileHandle *readHandle = [pipe fileHandleForReading];
-	NSData *inData = nil;
-
-	[task setStandardOutput:pipe];
-	[task setStandardError:pipe];
-	[task setLaunchPath:dropbearkeyPath];
+	[task setLaunchPath:sshKeygenPath];
 	[task setArguments:args];
 	[task launch];
-
-	NSTextStorage *textStore = [logOutput textStorage];
-	
-	// output to log window
-	while ((inData = [readHandle availableData]) && [inData length]) {
-		int len = [inData length];
-		char buf[len+1];
-		memcpy(buf, [inData bytes], len);
-
-		if (buf[len-1] != 0) {
-			buf[len] = 0;
-		}
-
-		NSAttributedString *tmpString = [[NSAttributedString alloc] initWithString:[NSString stringWithUTF8String:buf]];
-		[textStore appendAttributedString:tmpString];
-		[logOutput scrollRangeToVisible:NSMakeRange([textStore length]-2, 1)];
-		[tmpString release];
-	}
-
 	[task waitUntilExit];
 
 	if ([task terminationStatus] != 0) {
 		[task release];
-		[mainWindow displayAlert:@"Error" message:@"Error occurred while executing dropbearkey."];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error occurred while executing ssh-keygen."];
 		return;
 	}
 
 	[task release];
 
-	NSMutableString *dropbearDSSFile = [NSMutableString stringWithString:tmpDir];
-	[dropbearDSSFile appendString:@"/dropbear_dss_host_key"];
+	NSMutableString *sshHostRSAKey = [NSMutableString stringWithString:tmpDir];
+	[sshHostRSAKey appendString:@"/ssh_host_rsa_key"];
+	NSMutableString *sshHostRSAKeyPub = [NSMutableString stringWithString:sshHostRSAKey];
+	[sshHostRSAKeyPub appendString:@".pub"];
 
-	// remove old file if it exists
-	remove([dropbearDSSFile UTF8String]);
+	// remove old files if they exist
+	remove([sshHostRSAKey UTF8String]);
+	remove([sshHostRSAKeyPub UTF8String]);
 
-	args = [NSArray arrayWithObjects:@"-t", @"dss", @"-f", dropbearDSSFile, nil];
+	args = [NSArray arrayWithObjects:@"-t", @"rsa", @"-f", sshHostRSAKey, @"-N", @"", nil];
 	task = [[NSTask alloc] init];
-	pipe = [NSPipe pipe];
-	readHandle = [pipe fileHandleForReading];
-
-	[task setStandardOutput:pipe];
-	[task setStandardError:pipe];
-	[task setLaunchPath:dropbearkeyPath];
+	[task setLaunchPath:sshKeygenPath];
 	[task setArguments:args];
 	[task launch];
-
-	// output to log window
-	while ((inData = [readHandle availableData]) && [inData length]) {
-		int len = [inData length];
-		char buf[len+1];
-		memcpy(buf, [inData bytes], len);
-		
-		if (buf[len-1] != 0) {
-			buf[len] = 0;
-		}
-		
-		NSAttributedString *tmpString = [[NSAttributedString alloc] initWithString:[NSString stringWithUTF8String:buf]];
-		[textStore appendAttributedString:tmpString];
-		[logOutput scrollRangeToVisible:NSMakeRange([textStore length]-2, 1)];
-		[tmpString release];
-	}
-
 	[task waitUntilExit];
 
 	if ([task terminationStatus] != 0) {
 		[task release];
-		[mainWindow displayAlert:@"Error" message:@"Error occurred while executing dropbearkey."];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error occurred while executing ssh-keygen."];
 		return;
 	}
 
 	[task release];
 
-	if (!m_phoneInteraction->createDirectory("/etc/dropbear")) {
-		[mainWindow displayAlert:@"Error" message:@"Error creating /etc/dropbear directory on phone."];
+	NSMutableString *sshHostDSAKey = [NSMutableString stringWithString:tmpDir];
+	[sshHostDSAKey appendString:@"/ssh_host_dsa_key"];
+	NSMutableString *sshHostDSAKeyPub = [NSMutableString stringWithString:sshHostDSAKey];
+	[sshHostDSAKeyPub appendString:@".pub"];
+	
+	// remove old files if they exist
+	remove([sshHostDSAKey UTF8String]);
+	remove([sshHostDSAKeyPub UTF8String]);
+
+	args = [NSArray arrayWithObjects:@"-t", @"dsa", @"-f", sshHostDSAKey, @"-N", @"", nil];
+	task = [[NSTask alloc] init];
+	[task setLaunchPath:sshKeygenPath];
+	[task setArguments:args];
+	[task launch];
+	[task waitUntilExit];
+	
+	if ([task terminationStatus] != 0) {
+		[task release];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error occurred while executing ssh-keygen."];
+		return;
+	}
+	
+	[task release];
+
+	if (!m_phoneInteraction->createDirectory("/etc/ssh")) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error creating /etc/ssh directory on phone."];
 		return;
 	}
 
-	if (!m_phoneInteraction->putFile([dropbearRSAFile UTF8String], "/etc/dropbear/dropbear_rsa_host_key")) {
-		[mainWindow displayAlert:@"Error" message:@"Error writing /etc/dropbear/dropbear_rsa_host_key to phone."];
+	if (!m_phoneInteraction->putFile([sshHostKey UTF8String], "/etc/ssh/ssh_host_key")) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /etc/ssh/ssh_host_key to phone."];
 		return;
 	}
 
-	if (!m_phoneInteraction->putFile([dropbearDSSFile UTF8String], "/etc/dropbear/dropbear_dss_host_key")) {
-		[mainWindow displayAlert:@"Error" message:@"Error writing /etc/dropbear/dropbear_dss_host_key to phone."];
+	if (!m_phoneInteraction->putFile([sshHostKeyPub UTF8String], "/etc/ssh/ssh_host_key.pub")) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /etc/ssh/ssh_host_key.pub to phone."];
+		return;
+	}
+	
+	if (!m_phoneInteraction->putFile([sshHostRSAKey UTF8String], "/etc/ssh/ssh_host_rsa_key")) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /etc/ssh/ssh_host_rsa_key to phone."];
+		return;
+	}
+
+	if (!m_phoneInteraction->putFile([sshHostRSAKeyPub UTF8String], "/etc/ssh/ssh_host_rsa_key.pub")) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /etc/ssh/ssh_host_rsa_key.pub to phone."];
+		return;
+	}
+	
+	if (!m_phoneInteraction->putFile([sshHostDSAKey UTF8String], "/etc/ssh/ssh_host_dsa_key")) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /etc/ssh/ssh_host_dsa_key to phone."];
+		return;
+	}
+
+	if (!m_phoneInteraction->putFile([sshHostDSAKeyPub UTF8String], "/etc/ssh/ssh_host_dsa_key.pub")) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /etc/ssh/ssh_host_dsa_key.pub to phone."];
+		return;
+	}
+	
+	NSString *sshdConfigFile = [[NSBundle mainBundle] pathForResource:@"sshd_config" ofType:@""];
+
+	if (sshdConfigFile == nil) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error finding sshd_config in bundle."];
+		return;
+	}
+
+	if (!m_phoneInteraction->putFile([sshdConfigFile UTF8String], "/etc/ssh/sshd_config")) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /etc/ssh/sshd_config to phone."];
 		return;
 	}
 
 	NSString *chmodFile = [[NSBundle mainBundle] pathForResource:@"chmod" ofType:@""];
 
 	if (chmodFile == nil) {
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error finding chmod in bundle."];
 		return;
 	}
 	
 	if (!m_phoneInteraction->putFile([chmodFile UTF8String], "/bin/chmod")) {
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error writing /bin/chmod to phone."];
 		return;
 	}
@@ -1438,11 +1465,13 @@ static void phoneInteractionNotification(int type, const char *msg)
 	NSString *shFile = [[NSBundle mainBundle] pathForResource:@"sh" ofType:@""];
 
 	if (shFile == nil) {
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error finding sh in bundle."];
 		return;
 	}
 	
 	if (!m_phoneInteraction->putFile([shFile UTF8String], "/bin/sh")) {
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error writing /bin/sh to phone."];
 		return;
 	}
@@ -1450,61 +1479,74 @@ static void phoneInteractionNotification(int type, const char *msg)
 	NSString *sftpFile = [[NSBundle mainBundle] pathForResource:@"sftp-server" ofType:@""];
 
 	if (sftpFile == nil) {
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error finding sftp-server in bundle."];
 		return;
 	}
 	
-	if (!m_phoneInteraction->putFile([sftpFile UTF8String], "/usr/libexec/sftp-server")) {
-		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/libexec/sftp-server to phone."];
+	if (!m_phoneInteraction->putFile([sftpFile UTF8String], "/usr/bin/sftp-server")) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/bin/sftp-server to phone."];
 		return;
 	}
 
 	NSString *scpFile = [[NSBundle mainBundle] pathForResource:@"scp" ofType:@""];
 	
 	if (scpFile == nil) {
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error finding scp in bundle."];
 		return;
 	}
 	
 	if (!m_phoneInteraction->putFile([scpFile UTF8String], "/usr/bin/scp")) {
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/bin/scp to phone."];
 		return;
 	}
-	
+
 	NSString *libarmfpFile = [[NSBundle mainBundle] pathForResource:@"libarmfp" ofType:@"dylib"];
 	
 	if (libarmfpFile == nil) {
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error finding libarmfp.dylib in bundle."];
 		return;
 	}
 	
 	if (!m_phoneInteraction->putFile([libarmfpFile UTF8String], "/usr/lib/libarmfp.dylib")) {
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/lib/libarmfp.dylib to phone."];
 		return;
 	}
 	
-	NSString *dropbearFile = [[NSBundle mainBundle] pathForResource:@"dropbear" ofType:@""];
-	
-	if (dropbearFile == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding dropbear in bundle."];
+	NSString *sshdFile = [[NSBundle mainBundle] pathForResource:@"sshd" ofType:@""];
+
+	if (sshdFile == nil) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error finding sshd in bundle."];
 		return;
 	}
 	
-	if (!m_phoneInteraction->putFile([dropbearFile UTF8String], "/usr/bin/dropbear")) {
-		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/bin/dropbear to phone."];
+	if (!m_phoneInteraction->putFile([sshdFile UTF8String], "/usr/bin/sshd")) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/bin/sshd to phone."];
 		return;
 	}
 	
 	NSMutableString *tmpFilePath = [NSMutableString stringWithString:tmpDir];
 	[tmpFilePath appendString:@"/update.backup.iNdependence"];
 
+	// remove old file if it exists
+	remove([tmpFilePath UTF8String]);
+
 	if (!m_phoneInteraction->getFile("/usr/sbin/update", [tmpFilePath UTF8String])) {
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error reading /usr/sbin/update from phone."];
 		return;
 	}
 
 	if (!m_phoneInteraction->putFile([chmodFile UTF8String], "/usr/sbin/update")) {
 		remove([tmpFilePath UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/sbin/update to phone."];
 		return;
 	}
@@ -1512,8 +1554,13 @@ static void phoneInteractionNotification(int type, const char *msg)
 	NSMutableString *tmpFilePath2 = [NSMutableString stringWithString:tmpDir];
 	[tmpFilePath2 appendString:@"/com.apple.update.plist.backup.iNdependence"];
 
+	// remove old file if it exists
+	remove([tmpFilePath2 UTF8String]);
+
 	if (!m_phoneInteraction->getFile("/System/Library/LaunchDaemons/com.apple.update.plist", [tmpFilePath2 UTF8String])) {
+		m_phoneInteraction->putFile([tmpFilePath UTF8String], "/usr/sbin/update");
 		remove([tmpFilePath UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error reading /System/Library/LaunchDaemons/com.apple.update.plist from phone."];
 		return;
 	}
@@ -1521,8 +1568,10 @@ static void phoneInteractionNotification(int type, const char *msg)
 	int fd = open([tmpFilePath2 UTF8String], O_RDONLY, 0);
 
 	if (fd == -1) {
+		m_phoneInteraction->putFile([tmpFilePath UTF8String], "/usr/sbin/update");
 		remove([tmpFilePath UTF8String]);
 		remove([tmpFilePath2 UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error opening com.apple.update.plist.backup.iNdependence for reading."];
 		return;
 	}
@@ -1531,8 +1580,10 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	if (fstat(fd, &st) == -1) {
 		close(fd);
+		m_phoneInteraction->putFile([tmpFilePath UTF8String], "/usr/sbin/update");
 		remove([tmpFilePath UTF8String]);
 		remove([tmpFilePath2 UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error obtaining com.apple.update.plist.original file size."];
 		return;
 	}
@@ -1544,8 +1595,10 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	if (fd2 == -1) {
 		close(fd);
+		m_phoneInteraction->putFile([tmpFilePath UTF8String], "/usr/sbin/update");
 		remove([tmpFilePath UTF8String]);
 		remove([tmpFilePath2 UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error opening com.apple.update.plist.iNdependence for writing."];
 		return;
 	}
@@ -1568,9 +1621,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 	close(fd2);
 
 	if (readCount < st.st_size) {
+		m_phoneInteraction->putFile([tmpFilePath UTF8String], "/usr/sbin/update");
 		remove([tmpFilePath UTF8String]);
 		remove([tmpFilePath2 UTF8String]);
 		remove([tmpFilePath3 UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error copying com.apple.update.plist."];
 		return;
 	}
@@ -1583,57 +1638,105 @@ static void phoneInteractionNotification(int type, const char *msg)
 	[mutArgs addObject:@"555"];
 	[mutArgs addObject:@"/bin/chmod"];
 	[mutArgs addObject:@"/bin/sh"];
-	[mutArgs addObject:@"/usr/bin/dropbear"];
-	[mutArgs addObject:@"/usr/libexec/sftp-server"];
+	[mutArgs addObject:@"/usr/bin/sshd"];
+	[mutArgs addObject:@"/usr/bin/sftp-server"];
 	[mutArgs addObject:@"/usr/bin/scp"];
 	[mutDict setObject:mutArgs forKey:@"ProgramArguments"];
 
 	if (remove([tmpFilePath3 UTF8String]) == -1) {
+		m_phoneInteraction->putFile([tmpFilePath UTF8String], "/usr/sbin/update");
 		remove([tmpFilePath UTF8String]);
 		remove([tmpFilePath2 UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error deleting com.apple.update.plist.iNdependence"];
 		return;
 	}
 
 	if (![mutDict writeToFile:tmpFilePath3 atomically:YES]) {
+		m_phoneInteraction->putFile([tmpFilePath UTF8String], "/usr/sbin/update");
 		remove([tmpFilePath UTF8String]);
 		remove([tmpFilePath2 UTF8String]);
 		remove([tmpFilePath3 UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error creating new com.apple.update.plist."];
 		return;
 	}
 
 	if (!m_phoneInteraction->putFile([tmpFilePath3 UTF8String], "/System/Library/LaunchDaemons/com.apple.update.plist")) {
+		m_phoneInteraction->putFile([tmpFilePath UTF8String], "/usr/sbin/update");
 		remove([tmpFilePath UTF8String]);
 		remove([tmpFilePath2 UTF8String]);
 		remove([tmpFilePath3 UTF8String]);
+		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error writing /System/Library/LaunchDaemons/com.apple.update.plist to phone."];
 		return;
 	}
 
-	NSString *dropbearPlistFile = [[NSBundle mainBundle] pathForResource:@"au.asn.ucc.matt.dropbear" ofType:@"plist"];
+	NSString *sshPlistFile = [[NSBundle mainBundle] pathForResource:@"org.thebends.openssh" ofType:@"plist"];
 
-	if (dropbearPlistFile == nil) {
+	if (sshPlistFile == nil) {
+		m_phoneInteraction->putFile([tmpFilePath UTF8String], "/usr/sbin/update");
+		m_phoneInteraction->putFile([tmpFilePath2 UTF8String], "/System/Library/LaunchDaemons/com.apple.update.plist");
 		remove([tmpFilePath UTF8String]);
 		remove([tmpFilePath2 UTF8String]);
 		remove([tmpFilePath3 UTF8String]);
-		[mainWindow displayAlert:@"Error" message:@"Error finding au.asn.ucc.matt.dropbear.plist in bundle."];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error finding org.thebends.openssh.plist in bundle."];
 		return;
 	}
 	
-	if (!m_phoneInteraction->putFile([dropbearPlistFile UTF8String], "/System/Library/LaunchDaemons/au.asn.ucc.matt.dropbear.plist")) {
+	if (!m_phoneInteraction->putFile([sshPlistFile UTF8String], "/System/Library/LaunchDaemons/org.thebends.openssh.plist")) {
+		m_phoneInteraction->putFile([tmpFilePath UTF8String], "/usr/sbin/update");
+		m_phoneInteraction->putFile([tmpFilePath2 UTF8String], "/System/Library/LaunchDaemons/com.apple.update.plist");
 		remove([tmpFilePath UTF8String]);
 		remove([tmpFilePath2 UTF8String]);
 		remove([tmpFilePath3 UTF8String]);
-		[mainWindow displayAlert:@"Error" message:@"Error writing /System/Library/LaunchDaemons/au.asn.ucc.matt.dropbear.plist to phone."];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /System/Library/LaunchDaemons/org.thebends.openssh.plist to phone."];
 		return;
 	}
 
 	m_installingSSH = true;
 	m_bootCount = 0;
 
+	[mainWindow endDisplayWaitingSheet];
 	[mainWindow startDisplayWaitingSheet:nil
 								 message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
+								   image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:true runModal:false];
+}
+
+- (void)sshInstallStageTwo
+{
+	NSMutableString *backupFilePath = [NSMutableString stringWithString:NSTemporaryDirectory()];
+	[backupFilePath appendString:@"/com.apple.update.plist.iNdependence"];
+
+	NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:backupFilePath];
+	NSMutableDictionary *mutDict = [NSMutableDictionary dictionaryWithCapacity:[dict count]];
+	[mutDict addEntriesFromDictionary:dict];
+	NSMutableArray *mutArgs = [NSMutableArray arrayWithCapacity:5];
+	[mutArgs addObject:@"/usr/sbin/update"];
+	[mutArgs addObject:@"600"];
+	[mutArgs addObject:@"/etc/ssh/ssh_host_key"];
+	[mutArgs addObject:@"/etc/ssh/ssh_host_rsa_key"];
+	[mutArgs addObject:@"/etc/ssh/ssh_host_dsa_key"];
+	[mutDict setObject:mutArgs forKey:@"ProgramArguments"];
+	
+	remove([backupFilePath UTF8String]);
+	
+	if (![mutDict writeToFile:backupFilePath atomically:YES]) {
+		[self finishInstallingSSH:true];
+		[mainWindow displayAlert:@"Error" message:@"Error creating new com.apple.update.plist."];
+		return;
+	}
+
+	if (!m_phoneInteraction->putFile([backupFilePath UTF8String], "/System/Library/LaunchDaemons/com.apple.update.plist")) {
+		[self finishInstallingSSH:true];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /System/Library/LaunchDaemons/com.apple.update.plist to phone."];
+		return;
+	}
+
+	[mainWindow startDisplayWaitingSheet:nil
+								 message:@"Please reboot your phone again using the same steps..."
 								   image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:true runModal:false];
 }
 
@@ -1651,6 +1754,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 	[backupFilePath3 appendString:@"/com.apple.update.plist.iNdependence"];
 
 	if (!m_phoneInteraction->putFile([backupFilePath UTF8String], "/System/Library/LaunchDaemons/com.apple.update.plist")) {
+		m_phoneInteraction->putFile([backupFilePath2 UTF8String], "/usr/sbin/update");
 		remove([backupFilePath UTF8String]);
 		remove([backupFilePath2 UTF8String]);
 		remove([backupFilePath3 UTF8String]);
@@ -1672,68 +1776,126 @@ static void phoneInteractionNotification(int type, const char *msg)
 	remove([backupFilePath3 UTF8String]);
 
 	if (!bCancelled) {
-		[mainWindow displayAlert:@"Success" message:@"Successfully installed Dropbear SSH, SFTP, and SCP on your phone."];
+		[mainWindow displayAlert:@"Success" message:@"Successfully installed SSH, SFTP, and SCP on your phone."];
 	}
 
 }
 
 - (IBAction)removeSSH:(id)sender
 {
-
-	if (!m_phoneInteraction->removePath("/usr/bin/dropbear")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/dropbear from phone."];
-		return;
-	}
-	
 	[installSSHButton setEnabled:YES];
 	[removeSSHButton setEnabled:NO];
-
-	if (!m_phoneInteraction->removePath("/usr/libexec/sftp-server")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/libexec/sftp-server from phone."];
-		return;
-	}
 	
+	
+	if ([self isDropbearSSHInstalled]) {
+
+		if (!m_phoneInteraction->removePath("/usr/bin/dropbear")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/dropbear from phone."];
+			return;
+		}
+
+		if (!m_phoneInteraction->removePath("/usr/libexec/sftp-server")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /usr/libexec/sftp-server from phone."];
+			return;
+		}
+	
+		if (!m_phoneInteraction->removePath("/etc/dropbear/dropbear_rsa_host_key")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/dropbear/dropbear_rsa_host_key from phone."];
+			return;
+		}
+
+		if (!m_phoneInteraction->removePath("/etc/dropbear/dropbear_dss_host_key")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/dropbear/dropbear_dss_host_key from phone."];
+			return;
+		}
+
+		if (!m_phoneInteraction->removePath("/etc/dropbear")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/dropbear from phone."];
+			return;
+		}
+
+		if (!m_phoneInteraction->removePath("/System/Library/LaunchDaemons/au.asn.ucc.matt.dropbear.plist")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /System/Library/LaunchDaemons/au.asn.ucc.matt.dropbear.plist from phone."];
+			return;
+		}
+		
+	}
+
+	if ([self isOpenSSHInstalled]) {
+		
+		if (!m_phoneInteraction->removePath("/usr/bin/sshd")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/sshd from phone."];
+			return;
+		}
+		
+		if (!m_phoneInteraction->removePath("/usr/bin/sftp-server")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/sftp-server from phone."];
+			return;
+		}
+		
+		if (!m_phoneInteraction->removePath("/etc/ssh/ssh_host_key")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh/ssh_host_key from phone."];
+			return;
+		}
+		
+		if (!m_phoneInteraction->removePath("/etc/ssh/ssh_host_key.pub")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh/ssh_host_key.pub from phone."];
+			return;
+		}
+		
+		if (!m_phoneInteraction->removePath("/etc/ssh/ssh_host_rsa_key")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh/ssh_host_rsa_key from phone."];
+			return;
+		}
+		
+		if (!m_phoneInteraction->removePath("/etc/ssh/ssh_host_rsa_key.pub")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh/ssh_host_rsa_key.pub from phone."];
+			return;
+		}
+		
+		if (!m_phoneInteraction->removePath("/etc/ssh/ssh_host_dsa_key")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh/ssh_host_dsa_key from phone."];
+			return;
+		}
+		
+		if (!m_phoneInteraction->removePath("/etc/ssh/ssh_host_dsa_key.pub")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh/ssh_host_dsa_key.pub from phone."];
+			return;
+		}
+		
+		if (!m_phoneInteraction->removePath("/etc/ssh")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh from phone."];
+			return;
+		}
+		
+		if (!m_phoneInteraction->removePath("/System/Library/LaunchDaemons/org.thebends.openssh.plist")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /System/Library/LaunchDaemons/org.thebends.openssh.plist from phone."];
+			return;
+		}
+		
+	}
+
 	if (!m_phoneInteraction->removePath("/usr/bin/scp")) {
 		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/scp from phone."];
 		return;
 	}
-	
+		
 	if (!m_phoneInteraction->removePath("/usr/lib/libarmfp.dylib")) {
 		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/lib/libarmfp.dylib from phone."];
 		return;
 	}
-	
-	if (!m_phoneInteraction->removePath("/etc/dropbear/dropbear_rsa_host_key")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /etc/dropbear/dropbear_rsa_host_key from phone."];
-		return;
-	}
-
-	if (!m_phoneInteraction->removePath("/etc/dropbear/dropbear_dss_host_key")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /etc/dropbear/dropbear_dss_host_key from phone."];
-		return;
-	}
-
-	if (!m_phoneInteraction->removePath("/etc/dropbear")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /etc/dropbear from phone."];
-		return;
-	}
-
+		
 	if (!m_phoneInteraction->removePath("/bin/chmod")) {
 		[mainWindow displayAlert:@"Error" message:@"Error removing /bin/chmod from phone."];
 		return;
 	}
-	
+
 	if (!m_phoneInteraction->removePath("/bin/sh")) {
 		[mainWindow displayAlert:@"Error" message:@"Error removing /bin/sh from phone."];
 		return;
 	}
 	
-	if (!m_phoneInteraction->removePath("/System/Library/LaunchDaemons/au.asn.ucc.matt.dropbear.plist")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /System/Library/LaunchDaemons/au.asn.ucc.matt.dropbear.plist from phone."];
-		return;
-	}
-	
-	[mainWindow displayAlert:@"Success" message:@"Successfully removed Dropbear SSH, SFTP, and SCP from your phone."];
+	[mainWindow displayAlert:@"Success" message:@"Successfully removed SSH, SFTP, and SCP from your phone.\n\nNote that SSH will continue to run on the phone until you reboot it."];
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem
