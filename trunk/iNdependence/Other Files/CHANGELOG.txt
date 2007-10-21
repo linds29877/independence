@@ -80,10 +80,10 @@ v1.2.4 (Dogfish Head) - 10/18/07
 v1.2.5 (Brooklyn)
 
 - Put in factory activation (lockdownd patch) for all known firmware versions (1.0, 1.0.1, 1.0.2, 1.1.1)
-- Due to the above change, activation will not return your phone to jail anymore (requested by many)
+- Due to the above change, activation will not return your phone to jail anymore (something requested by many people)
 - Increased the SSH timeout to 300 seconds (5 minutes)
 - Fixed YouTube enabling for all known firmware versions
 - Switched from Dropbear to OpenSSH in hopes that this will finally solve the SSH timeout problems people are having
-- More documentation updates.  This time documenting how to deal with the problem where Safari removes the downloaded firmware file after it decompresses it.
+- Many documentation updates dealing with all the problems one can face when downgrading to 1.0.2 and doing the special upgrade to 1.1.1.  I walked through this entire process myself again to ensure that the documentation is perfectly accurate and clear about all the steps.
 - Updated the documentation about SIM unlocking and upgrading to 1.1.1 to be clear about the difference between anySIM 1.0 and anySIM 1.1
-- Added dialog during SSH removal which asks whether user wants to also remove libarmfp.dylib at that time
+- Added dialog during SSH removal which asks whether user wants to also remove libarmfp.dylib at that time.  The reason is because removing this file could cause any installed 3rd party applications to become inoperable.
