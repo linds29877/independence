@@ -1783,10 +1783,13 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (IBAction)removeSSH:(id)sender
 {
-	[installSSHButton setEnabled:YES];
-	[removeSSHButton setEnabled:NO];
-	
-	
+	int retval = NSRunAlertPanel(@"Failed", @"During SSH installation, a file named libarmfp.dylib was installed.  This is needed by SSH, but is also needed by many 3rd party applications.  Removing it could render many 3rd party applications you have installed inoperable.\n\nWould you like to remove libarmfp.dylib during SSH removal?", @"No", @"Yes", nil);
+	bool bRemoveLibarmfp = false;
+
+	if (retval == NSAlertAlternateReturn) {
+		bRemoveLibarmfp = true;
+	}
+
 	if ([self isDropbearSSHInstalled]) {
 
 		if (!m_phoneInteraction->removePath("/usr/bin/dropbear")) {
@@ -1875,16 +1878,23 @@ static void phoneInteractionNotification(int type, const char *msg)
 		
 	}
 
+	[installSSHButton setEnabled:YES];
+	[removeSSHButton setEnabled:NO];
+
 	if (!m_phoneInteraction->removePath("/usr/bin/scp")) {
 		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/scp from phone."];
 		return;
 	}
-		
-	if (!m_phoneInteraction->removePath("/usr/lib/libarmfp.dylib")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/lib/libarmfp.dylib from phone."];
-		return;
+
+	if (bRemoveLibarmfp) {
+
+		if (!m_phoneInteraction->removePath("/usr/lib/libarmfp.dylib")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing /usr/lib/libarmfp.dylib from phone."];
+			return;
+		}
+
 	}
-		
+
 	if (!m_phoneInteraction->removePath("/bin/chmod")) {
 		[mainWindow displayAlert:@"Error" message:@"Error removing /bin/chmod from phone."];
 		return;
@@ -1894,7 +1904,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[mainWindow displayAlert:@"Error" message:@"Error removing /bin/sh from phone."];
 		return;
 	}
-	
+
 	[mainWindow displayAlert:@"Success" message:@"Successfully removed SSH, SFTP, and SCP from your phone.\n\nNote that SSH will continue to run on the phone until you reboot it."];
 }
 
