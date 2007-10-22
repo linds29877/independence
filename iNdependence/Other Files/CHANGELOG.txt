@@ -87,4 +87,4 @@ v1.2.5 (Brooklyn) - 10/21/07
 - Many documentation updates dealing with all the problems one can face when downgrading to 1.0.2 and doing the special upgrade to 1.1.1.  I walked through this entire process myself again to ensure that the documentation is perfectly accurate and clear about all the steps.
 - Updated the documentation about SIM unlocking and upgrading to 1.1.1 to be clear about the difference between anySIM 1.0 and anySIM 1.1
 - Added dialog during SSH removal which asks whether user wants to also remove libarmfp.dylib at that time.  The reason is because removing this file could cause any installed 3rd party applications to become inoperable.
-- Ringtone customization still doesn't work in this release
+- Ringtone customization on 1.1.1 still doesn't work in this release
