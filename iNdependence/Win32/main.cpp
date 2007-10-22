@@ -307,16 +307,16 @@ void phoneInteractionNotification(int type, const char *msg)
     case NOTIFY_JAILRETURN_RECOVERY_WAIT:
 	    cout << "Waiting for return to jail..." << endl;
 	    break;
-    case NOTIFY_JAILBREAK_RECOVERY_CONNECTED:
+    case NOTIFY_RECOVERY_CONNECTED:
         cout << ".rcc." << endl;
  	    break;
-    case NOTIFY_JAILBREAK_RECOVERY_DISCONNECTED:
+    case NOTIFY_RECOVERY_DISCONNECTED:
 	    cout << ".rcd." << endl;
 	    break;
-    case NOTIFY_JAILBREAK_RESTORE_CONNECTED:
+    case NOTIFY_RESTORE_CONNECTED:
 	    cout << ".rsc." << endl;
 	    break;
-    case NOTIFY_JAILBREAK_RESTORE_DISCONNECTED:
+    case NOTIFY_RESTORE_DISCONNECTED:
 	    cout << ".rsd." << endl;
 	    break;
     case NOTIFY_INITIALIZATION_FAILED:

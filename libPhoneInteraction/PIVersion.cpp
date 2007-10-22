@@ -16,7 +16,7 @@
  * See the GNU General Public License version 2 for more details 
  */
 
-#include "PIVersion.h"
+#include "PhoneInteraction/PIVersion.h"
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>

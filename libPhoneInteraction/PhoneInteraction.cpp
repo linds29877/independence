@@ -61,6 +61,8 @@ typedef unsigned int (*t_sendCommandToDevice)(struct am_recovery_device *rdev,
 
 
 static PhoneInteraction *g_phoneInteraction = NULL;
+
+#if defined (__APPLE__)
 static char *g_symlinks[] =
 {
 	"etc",
@@ -185,6 +187,7 @@ static char *g_symlinkOriginals[] =
 };
 
 static int g_numSymlinks = 58;
+#endif
 
 static int g_recoveryAttempts = 0;
 
@@ -2238,8 +2241,10 @@ bool PhoneInteraction::copyFilesystemRecursive(afc_connection *conn, const char 
 	char phoneWorkingDir[PATH_MAX+1];
 	char computerWorkingDir[PATH_MAX+1];
 	char *fileName = NULL;
+#if defined(__APPLE__)
 	int phoneBaselen = strlen(phoneBasepath);
 	int baselen = strlen(basepath);
+#endif
 
 	strcpy(phoneWorkingDir, dirpath);
 	strcpy(computerWorkingDir, dest);
@@ -2730,7 +2735,7 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 		void *ptr = memchr(buf, searchstr[searchoffset], bufsize);
 
 		while (ptr != NULL) {
-			unsigned long long bufoffset = (unsigned long long)ptr - (unsigned long long)buf;
+			unsigned long long bufoffset = (unsigned long long)((unsigned int)ptr - (unsigned int)buf);
 			unsigned int bufleft = bufsize - bufoffset;
 			unsigned int searchleft = searchstrlen - searchoffset;
 
