@@ -9,6 +9,7 @@
 using namespace std;
 
 static PhoneInteraction *g_phoneInteraction;
+static bool g_bUndo;
 
 
 void updateStatus(const char *msg, bool waiting)
@@ -16,7 +17,7 @@ void updateStatus(const char *msg, bool waiting)
     cout << msg << endl;
 }
 
-void patchSpringBoard()
+void patchSpringBoard(bool bUndo)
 {
     char *version = g_phoneInteraction->getPhoneProductVersion();
 	
@@ -30,7 +31,7 @@ void patchSpringBoard()
 		return;
     }
 	
-    if (!g_phoneInteraction->enableThirdPartyApplications()) {
+    if (!g_phoneInteraction->enableThirdPartyApplications(g_bUndo)) {
 		cout << "Error: Patch failed." << endl;
 		return;
     }
@@ -44,7 +45,7 @@ void phoneNotification(int type, const char *msg)
     switch (type) {
 		case NOTIFY_CONNECTED:
 			cout << "connected!" << endl;
-			patchSpringBoard();
+			patchSpringBoard(g_bUndo);
 			CFRunLoopStop(CFRunLoopGetCurrent());
 			break;
 		case NOTIFY_DISCONNECTED:
@@ -70,6 +71,21 @@ void phoneNotification(int type, const char *msg)
 
 int main(int argc, char **argv)
 {
+	g_bUndo = false;
+
+	if (argc > 1) {
+		char *arg = argv[1];
+
+		if (!strncmp(arg, "-undo", 5)) {
+			g_bUndo = true;
+		}
+		else if (!strncmp(arg, "-?", 2) || !strncmp(arg, "-h", 2)) {
+			cout << "Usage: " << argv[0] << " [-undo]" << endl;
+			exit(0);
+		}
+
+	}
+
     g_phoneInteraction = PhoneInteraction::getInstance(updateStatus, phoneNotification);
     CFRunLoopRun();
     return 0;
