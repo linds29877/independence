@@ -201,8 +201,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 			case NOTIFY_NEW_JAILBREAK_STAGE_ONE_WAIT:
 				[g_mainWindow endDisplayWaitingSheet];
 				[g_mainWindow startDisplayWaitingSheet:nil
-											   message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
-												 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
+											   message:@"Please press and hold the Sleep/Wake button for 3 seconds, then power off your phone, then press Sleep/Wake again to restart it."
+												 image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
 				break;
 			case NOTIFY_NEW_JAILBREAK_STAGE_TWO_WAIT:
 				[g_mainWindow endDisplayWaitingSheet];
@@ -213,7 +213,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 				[g_mainWindow startDisplayWaitingSheet:nil
 											   message:@"Please reboot your phone again using the same steps..."
-												 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
+												 image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
 				break;
 			case NOTIFY_JAILBREAK_RECOVERY_WAIT:
 				[g_mainWindow startDisplayWaitingSheet:nil message:@"Waiting for jail break..." image:[NSImage imageNamed:@"jailbreak"] cancelButton:false runModal:false];
@@ -854,6 +854,12 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 
+	int retval = NSRunAlertPanel(@"Confirm", @"Please note that anySIM only works on phones which have never been SIM unlocked before, or have been reset to a virgin state after a previous SIM unlock.\n\nDo you still want to install it?", @"Yes", @"No", nil);
+
+	if (retval != NSAlertDefaultReturn) {
+		return;
+	}
+
 	bool bCancelled = false;
 	NSString *ipAddress, *password;
 
@@ -873,7 +879,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 	NSString *appName = [NSString stringWithFormat:@"%@/%@", @"/Applications", [simUnlockApp lastPathComponent]];
 
 	bool done = false, permsSet = false;
-	int retval;
 	
 	while (!done) {
 		[mainWindow startDisplayWaitingSheet:@"Setting Permissions" message:@"Setting application permissions..." image:nil
@@ -940,7 +945,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 	}
 
 	if (permsSet) {
-		[mainWindow displayAlert:@"Success" message:@"The anySIM application should now be installed on your phone.  Simply run it and it will finish the SIM unlock process.\n\nAfter you are done, you can remove it from your phone."];
+		[mainWindow displayAlert:@"Success" message:@"The anySIM application should now be installed on your phone.  Simply run it, follow the instructions, and it will complete the SIM unlock process.\n\nAfter you are done, you can remove it from your phone."];
 	}
 
 }
@@ -1061,8 +1066,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 		
 		if (displaySheet) {
 			[g_mainWindow startDisplayWaitingSheet:nil
-										   message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
-											 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
+										   message:@"Please press and hold the Sleep/Wake button for 3 seconds, then power off your phone, then press Sleep/Wake again to restart it."
+											 image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
 		}
 		
 	}
@@ -1137,8 +1142,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 		m_waitingForNewDeactivation = true;
 		[g_mainWindow startDisplayWaitingSheet:nil
-									   message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
-										 image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:false runModal:false];
+									   message:@"Please press and hold the Sleep/Wake button for 3 seconds, then power off your phone, then press Sleep/Wake again to restart it."
+										 image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
 	}
 	else {
 		[mainWindow setStatus:@"Restoring original PEM file on phone..." spinning:true];
@@ -1701,8 +1706,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	[mainWindow endDisplayWaitingSheet];
 	[mainWindow startDisplayWaitingSheet:nil
-								 message:@"Please press and hold the Home + Sleep buttons for 3 seconds, then power off your phone, then press Sleep again to restart it."
-								   image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:true runModal:false];
+								 message:@"Please press and hold the Sleep/Wake button for 3 seconds, then power off your phone, then press Sleep/Wake again to restart it."
+								   image:[NSImage imageNamed:@"sleep_button"] cancelButton:true runModal:false];
 }
 
 - (void)sshInstallStageTwo
@@ -1737,7 +1742,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	[mainWindow startDisplayWaitingSheet:nil
 								 message:@"Please reboot your phone again using the same steps..."
-								   image:[NSImage imageNamed:@"home_sleep_buttons"] cancelButton:true runModal:false];
+								   image:[NSImage imageNamed:@"sleep_button"] cancelButton:true runModal:false];
 }
 
 - (void)finishInstallingSSH:(bool)bCancelled
