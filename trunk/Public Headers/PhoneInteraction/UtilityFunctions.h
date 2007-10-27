@@ -33,6 +33,12 @@ public:
 	// Used to get the last path element from a given path (eg. /var/tmp -> tmp)
 	static const char *getLastPathElement(const char *path);
 
+	// Used to get the file extension from a given path (eg. file.mp3 -> mp3)
+	static const char *getFileExtension(const char *file);
+
+	// Used to find a unique GUID given a ringtone dictionary
+	static UInt64 getUniqueRingtoneGUID(CFDictionaryRef *ringtoneDicts, int numDicts);
+
 	// These functions are used to generate an activation record or request
 	// from a device ID, IMEI, ICCID, and PEM file
 	static bool generateActivationRecord(CFDictionaryRef *activationRecord, const char *pemfile,
@@ -40,5 +46,8 @@ public:
 	static bool generateActivationRequest(CFDictionaryRef *activationrequest,
 										  const char *pemfile, const char *deviceid,
 										  const char *imei, const char *iccid);
+
+	// Used to generate a unique ringtone base filename given a list of existing files
+	static char *generateUniqueRingtoneBasename(const char **existingFiles, const int numFiles);
 
 };

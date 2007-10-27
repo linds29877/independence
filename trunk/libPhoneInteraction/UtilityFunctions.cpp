@@ -59,6 +59,34 @@ const char *UtilityFunctions::getLastPathElement(const char *path)
 	return filename;
 }
 
+const char *UtilityFunctions::getFileExtension(const char *file)
+{
+	const char *extension = file;
+	int len = strlen(file);
+
+	if (len > 0) {
+		int count = 1;
+		extension = file + (len-count);
+
+		while ( (count < len) && (*extension != '.') ) {
+			count++;
+			extension = file + (len-count);
+		}
+		
+		if (*extension == '.') {
+
+			if (count == 1) {
+				return NULL;
+			}
+
+			return extension + 1;
+		}
+		
+	}
+	
+	return NULL;
+}
+
 bool UtilityFunctions::generateActivationRecord(CFDictionaryRef *activationRecord, const char *pemfile,
 												const char *deviceid, const char *imei, const char *iccid)
 {
@@ -164,4 +192,167 @@ bool UtilityFunctions::generateActivationRequest(CFDictionaryRef *activationrequ
 	if (*activationrequest == NULL) return false;
 
 	return true;
+}
+
+char *UtilityFunctions::generateUniqueRingtoneBasename(const char **existingFiles, const int numFiles)
+{
+	int count1 = 0, count2 = 0, count3 = 0, count4 = 0;
+	char *basename = (char*)malloc(5);
+	char fullname[9];
+	bool bFound;
+
+	basename[4] = 0;
+
+	while (1) {
+		basename[0] = 'A' + count1;
+		basename[1] = 'A' + count2;
+		basename[2] = 'A' + count3;
+		basename[3] = 'A' + count4;
+
+		strcpy(fullname, basename);
+		strcat(fullname, ".m4a");
+
+		bFound = false;
+
+		for (int i = 0; i < numFiles; i++) {
+
+			if (!strcmp(existingFiles[i], fullname)) {
+				bFound = true;
+				break;
+			}
+
+		}
+
+		if (!bFound) {
+			break;
+		}
+
+		count4 += 1;
+
+		if (count4 > 25) {
+			count4 = 0;
+			count3 += 1;
+		}
+
+		if (count3 > 25) {
+			count3 = 0;
+			count2 += 1;
+		}
+
+		if (count2 > 25) {
+			count2 = 0;
+			count1 += 1;
+		}
+
+		if (count1 > 25) {
+			free(basename);
+			basename = NULL;
+			break;
+		}
+
+	}
+
+	return basename;
+}
+
+static UInt64 convertCFSTRHexToInteger(CFStringRef str)
+{
+	UInt64 value = 0;
+	int multiplier = 1;
+	CFIndex len = CFStringGetLength(str);
+	char ch;
+
+	for (int i = len-1; i >= 0; i--) {
+		ch = (char)CFStringGetCharacterAtIndex(str, (CFIndex)i);
+
+		switch (ch)
+		{
+			case 'F':
+			case 'f':
+				value += multiplier;
+			case 'E':
+			case 'e':
+				value += multiplier;
+			case 'D':
+			case 'd':
+				value += multiplier;
+			case 'C':
+			case 'c':
+				value += multiplier;
+			case 'B':
+			case 'b':
+				value += multiplier;
+			case 'A':
+			case 'a':
+				value += multiplier;
+			case '9':
+				value += multiplier;
+			case '8':
+				value += multiplier;
+			case '7':
+				value += multiplier;
+			case '6':
+				value += multiplier;
+			case '5':
+				value += multiplier;
+			case '4':
+				value += multiplier;
+			case '3':
+				value += multiplier;
+			case '2':
+				value += multiplier;
+			case '1':
+				value += multiplier;
+			default:
+				break;
+		}
+
+		multiplier *= 16;
+	}
+
+	return value;
+}
+
+UInt64 UtilityFunctions::getUniqueRingtoneGUID(CFDictionaryRef *ringtoneDicts, int numDicts)
+{
+
+	if (numDicts == 0) {
+		return random() + 1;
+	}
+
+	bool bDone = false, bFound;
+	UInt64 value, existingValue;
+	CFDictionaryRef dict;
+	CFStringRef guid;
+	int tries = 0;
+
+	while (tries < 100000) {
+		value = random();
+		bFound = false;
+
+		for (int i = 0; i < numDicts; i++) {
+			dict = ringtoneDicts[i];
+			guid = (CFStringRef)CFDictionaryGetValue(dict, CFSTR("GUID"));
+			existingValue = convertCFSTRHexToInteger(guid);
+
+			if (value == existingValue) {
+				bFound = true;
+				break;
+			}
+
+		}
+
+		if (!bFound) {
+			bDone = true;
+			break;
+		}
+
+		tries++;
+	}
+
+	if (bDone) {
+		return value;
+	}
+
+	return 0;
 }

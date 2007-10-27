@@ -478,32 +478,30 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[customizeBrowser setEnabled:YES];
 		[changePasswordButton setEnabled:YES];
 		[jailbreakButton setEnabled:NO];
-		
+
+		if (m_phoneInteraction->areRingtonesOutOfSync()) {
+			[syncRingtonesButton setEnabled:YES];
+		}
+		else {
+			[syncRingtonesButton setEnabled:NO];
+		}
+
 		if ([self isSSHInstalled]) {
 			[installSSHButton setEnabled:NO];
 			[removeSSHButton setEnabled:YES];
 
 			if ([self isUsing10xFirmware]) {
 
-				if (!m_phoneInteraction->fileExists("/var/root/Media.backup")) {
+				if (!m_phoneInteraction->fileExists("/private/var/root/Media.iNdependence")) {
 					[pre111UpgradeButton setEnabled:YES];
 				}
 				else {
 					[pre111UpgradeButton setEnabled:NO];
 				}
 
-				[post111UpgradeButton setEnabled:NO];
 			}
 			else {
 				[pre111UpgradeButton setEnabled:NO];
-
-				if (m_phoneInteraction->fileExists("/var/root/Media.backup")) {
-					[post111UpgradeButton setEnabled:YES];
-				}
-				else {
-					[post111UpgradeButton setEnabled:NO];
-				}
-
 			}
 
 			if ([self isanySIMInstalled]) {
@@ -533,7 +531,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[changePasswordButton setEnabled:NO];
 		[customizeBrowser setEnabled:NO];
 		[pre111UpgradeButton setEnabled:NO];
-		[post111UpgradeButton setEnabled:NO];
+		[syncRingtonesButton setEnabled:NO];
 
 		if ([self isConnected] && [self isAFCConnected]) {
 			[jailbreakButton setEnabled:YES];
@@ -2010,6 +2008,18 @@ static void phoneInteractionNotification(int type, const char *msg)
 	}
 	
 	return YES;
+}
+
+- (IBAction)syncRingtones:(id)sender
+{
+
+	if (!m_phoneInteraction->syncRingtones()) {
+		[mainWindow displayAlert:@"Error" message:@"Ringtone sync failed."];
+		return;
+	}
+
+	[mainWindow displayAlert:@"Success" message:@"Ringtones have been restored."];
+	[syncRingtonesButton setEnabled:NO];
 }
 
 @end

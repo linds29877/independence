@@ -134,6 +134,12 @@ public:
 	char *getPhoneProductVersion();
 	char *getPhoneBuildVersion();
 
+	// ringtone related functions
+	char *getUserRingtoneName(const char *filename);
+	bool getUserRingtoneFilenames(const char *ringtoneName, char ***filenames, int *numFiles);
+	bool areRingtonesOutOfSync();
+	bool syncRingtones();
+
 	// activation related functions
 	bool activate(const char* filename, const char* pemfile = NULL);
 	bool factoryActivate(bool undo = false);
@@ -199,7 +205,7 @@ public:
 	bool putPEMOnPhone(const char *pemFile);
 	bool putServicesFileOnPhone(const char *servicesFile);
 	bool putFstabFileOnPhone(const char *fstabFile);
-	bool putRingtoneOnPhone(const char *ringtoneFile, bool bInSystemDir = false);
+	bool putRingtoneOnPhone(const char *ringtoneFile, const char *ringtoneName = NULL, bool bInSystemDir = false);
 	bool putWallpaperOnPhone(const char *wallpaperFile, const char *thumbnailFile, bool bInSystemDir = false);
 
 	// This works, but it won't set the file permissions correctly since there doesn't appear
@@ -246,6 +252,7 @@ private:
 	bool removePathRecursive(const char *path);
 	bool writeDataToFile(void *buf, int size, const char *file, int failureMsg = 0, int successMsg = 0);
 	void recoveryModeStarted_dfu(struct am_recovery_device *rdev);
+	CFMutableDictionaryRef getConglomeratedRingtoneDictionaries();
 
 	// private data members
 	bool m_connected;

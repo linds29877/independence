@@ -41,9 +41,9 @@ class PhoneInteraction;
 	IBOutlet NSButton* removeSimUnlockButton;
 	IBOutlet NSButton* enterDFUModeButton;
 	IBOutlet NSButton* pre111UpgradeButton;
-	IBOutlet NSButton* post111UpgradeButton;
 	IBOutlet CustomizeBrowser* customizeBrowser;
 	IBOutlet SSHHandler* sshHandler;
+	IBOutlet NSButton* syncRingtonesButton;
 
 	PhoneInteraction *m_phoneInteraction;
 	bool m_connected;
@@ -128,5 +128,7 @@ class PhoneInteraction;
 
 - (IBAction)passwordDialogCancel:(id)sender;
 - (IBAction)passwordDialogOk:(id)sender;
+
+- (IBAction)syncRingtones:(id)sender;
 
 @end
