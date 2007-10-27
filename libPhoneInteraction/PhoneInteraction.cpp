@@ -1566,17 +1566,22 @@ bool PhoneInteraction::putData(void *data, int len, char *dest, int failureMsg, 
 		
 		return false;
 	}
-	
-	if (AFCFileRefWrite(m_hAFC, rAFC, data, len)) {
-		AFCFileRefClose(m_hAFC, rAFC);
-		
-		if (failureMsg) {
-			(*m_notifyFunc)(failureMsg, "Error writing destination file on phone.");
+
+	// 0p: People may want to just create an empty file
+	if (len > 0) {
+
+		if (AFCFileRefWrite(m_hAFC, rAFC, data, len)) {
+			AFCFileRefClose(m_hAFC, rAFC);
+			
+			if (failureMsg) {
+				(*m_notifyFunc)(failureMsg, "Error writing destination file on phone.");
+			}
+			
+			return false;
 		}
 		
-		return false;
 	}
-	
+
 	AFCFileRefClose(m_hAFC, rAFC);
 	
 	if (successMsg) {
@@ -1749,7 +1754,349 @@ bool PhoneInteraction::putFstabFileOnPhone(const char *fstabFile)
 	return putFile(fstabFile, "/etc/fstab", NOTIFY_PUTFSTAB_FAILED, NOTIFY_PUTFSTAB_SUCCESS);
 }
 
-bool PhoneInteraction::putRingtoneOnPhone(const char *ringtoneFile, bool bInSystemDir)
+char *PhoneInteraction::getUserRingtoneName(const char *filename)
+{
+
+	if (!isConnected()) {
+		return NULL;
+	}
+	
+	char *value = getPhoneProductVersion();
+	
+	if (!strncmp(value, "1.0", 3)) {
+		return (char*)filename;
+	}
+
+	const char *ringtoneConfigFile = "/private/var/root/Media/iTunes_Control/iTunes/Ringtones_PI.plist";
+
+	if (!fileExists(ringtoneConfigFile)) {
+		ringtoneConfigFile = "/private/var/root/Media/iTunes_Control/iTunes/Ringtones.plist";
+
+		if (!fileExists(ringtoneConfigFile)) {
+			return NULL;
+		}
+
+	}
+
+	// file exists, read it into a dictionary
+	unsigned char *buf;
+	int bufsize;
+	
+	if (!getFileData((void**)&buf, &bufsize, ringtoneConfigFile, 0, 0)) {
+		return NULL;
+	}
+	
+	CFDataRef pData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, (const UInt8*)buf,
+												  (CFIndex)bufsize, kCFAllocatorNull);
+	
+	if (pData == NULL) {
+		free(buf);
+		return NULL;
+	}
+	
+	CFDictionaryRef configFileContents = (CFDictionaryRef)CFPropertyListCreateFromXMLData(kCFAllocatorDefault, pData,
+																						  kCFPropertyListImmutable,
+																						  NULL);
+
+	if (configFileContents == NULL) {
+		free(buf);
+		CFRelease(pData);
+		return NULL;
+	}
+
+	free(buf);
+	CFRelease(pData);
+
+	CFDictionaryRef ringtoneList = (CFDictionaryRef)CFDictionaryGetValue(configFileContents,
+																		 CFSTR("Ringtones"));
+
+	if (ringtoneList == NULL) {
+		CFRelease(configFileContents);
+		return NULL;
+	}
+
+	CFStringRef filenameStr = CFStringCreateWithCString(kCFAllocatorDefault, filename, kCFStringEncodingUTF8);
+
+	if (filenameStr == NULL) {
+		CFRelease(configFileContents);
+		return NULL;
+	}
+
+	CFDictionaryRef ringtoneDict = (CFDictionaryRef)CFDictionaryGetValue(ringtoneList, filenameStr);
+	CFRelease(filenameStr);
+
+	if (ringtoneDict == NULL) {
+		CFRelease(configFileContents);
+		return NULL;
+	}
+
+	CFStringRef ringtone = (CFStringRef)CFDictionaryGetValue(ringtoneDict, CFSTR("Name"));
+
+	if (ringtone == NULL) {
+		CFRelease(configFileContents);
+		return NULL;
+	}
+
+	CFIndex len = CFStringGetLength(ringtone);
+	char *ringtoneName = (char*)malloc(len+1);
+
+	if (!CFStringGetCString(ringtone, ringtoneName, len+1, kCFStringEncodingUTF8)) {
+		CFRelease(configFileContents);
+		free(ringtoneName);
+		return NULL;
+	}
+
+	CFRelease(configFileContents);
+	return ringtoneName;
+}
+
+bool PhoneInteraction::getUserRingtoneFilenames(const char *ringtoneName, char ***filenames, int *numFiles)
+{
+	
+	if (!isConnected()) {
+		return false;
+	}
+	
+	char *value = getPhoneProductVersion();
+	
+	if (!strncmp(value, "1.0", 3)) {
+		*numFiles = 1;
+		*filenames = (char**)malloc(sizeof(char*));
+		(*filenames)[0] = (char*)malloc(strlen(ringtoneName)+1);
+		strcpy((*filenames)[0], ringtoneName);
+		return true;
+	}
+
+	CFMutableDictionaryRef conglomeratedRingtones = getConglomeratedRingtoneDictionaries();
+	CFDictionaryRef ringtoneList = (CFDictionaryRef)CFDictionaryGetValue(conglomeratedRingtones, CFSTR("Ringtones"));
+	CFStringRef ringtoneNameStr = CFStringCreateWithCString(kCFAllocatorDefault, ringtoneName, kCFStringEncodingUTF8);
+
+	if (ringtoneNameStr == NULL) {
+		CFRelease(conglomeratedRingtones);
+		return false;
+	}
+
+	CFIndex count = CFDictionaryGetCount(ringtoneList);
+	CFTypeRef keys[count], values[count];
+	CFDictionaryGetKeysAndValues(ringtoneList, keys, values);
+	CFDictionaryRef dictValue;
+	CFStringRef valName;
+	int fileCount = 0;
+
+	// count the number of matching files
+	for (int i = 0; i < count; i++) {
+		dictValue = (CFDictionaryRef)values[i];
+		valName = (CFStringRef)CFDictionaryGetValue(dictValue, CFSTR("Name"));
+
+		if (valName != NULL) {
+
+			if (CFStringCompare(ringtoneNameStr, valName, 0) == kCFCompareEqualTo) {
+				fileCount++;
+			}
+
+		}
+
+	}
+
+	*numFiles = fileCount;
+	*filenames = (char**)malloc(fileCount * sizeof(char*));
+	fileCount = 0;
+
+	// now add them to the list
+	for (int i = 0; i < count; i++) {
+		dictValue = (CFDictionaryRef)values[i];
+		valName = (CFStringRef)CFDictionaryGetValue(dictValue, CFSTR("Name"));
+		
+		if (valName != NULL) {
+
+			if (CFStringCompare(ringtoneNameStr, valName, 0) == kCFCompareEqualTo) {
+				CFIndex keyLength = CFStringGetLength((CFStringRef)keys[i]);
+				(*filenames)[fileCount] = (char*)malloc(keyLength+1);
+				CFStringGetCString((CFStringRef)keys[i], (*filenames)[fileCount], keyLength+1,
+								   kCFStringEncodingUTF8);
+				fileCount++;
+			}
+			
+		}
+		
+	}
+
+	CFRelease(conglomeratedRingtones);
+	CFRelease(ringtoneNameStr);
+	return true;
+}
+
+CFMutableDictionaryRef PhoneInteraction::getConglomeratedRingtoneDictionaries()
+{
+	char *value = getPhoneProductVersion();
+
+	if (!strncmp(value, "1.0", 3)) {
+		return NULL;
+	}
+
+	const char *ringtoneConfigDir = "/private/var/root/Media/iTunes_Control/iTunes/";
+	
+	// read in the iTunes ringtone plist file
+	char iTunesConfigFilePath[PATH_MAX+1];
+	strcpy(iTunesConfigFilePath, ringtoneConfigDir);
+	strcat(iTunesConfigFilePath, "Ringtones.plist");
+	
+	CFDictionaryRef iTunesConfigFileContents = NULL;
+	
+	if (fileExists(iTunesConfigFilePath)) {
+		
+		// file exists, read it into a dictionary
+		unsigned char *buf;
+		int bufsize;
+		
+		if (!getFileData((void**)&buf, &bufsize, iTunesConfigFilePath, 0, 0)) {
+			return NULL;
+		}
+		
+		CFDataRef pData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, (const UInt8*)buf,
+													  (CFIndex)bufsize, kCFAllocatorNull);
+		
+		if (pData == NULL) {
+			free(buf);
+			return NULL;
+		}
+		
+		iTunesConfigFileContents = (CFDictionaryRef)CFPropertyListCreateFromXMLData(kCFAllocatorDefault, pData,
+																					kCFPropertyListImmutable,
+																					NULL);
+		
+		if (iTunesConfigFileContents == NULL) {
+			free(buf);
+			CFRelease(pData);
+			return NULL;
+		}
+		
+		free(buf);
+		CFRelease(pData);
+	}
+	
+	// read in our ringtone plist
+	char ourConfigFilePath[PATH_MAX+1];
+	strcpy(ourConfigFilePath, ringtoneConfigDir);
+	strcat(ourConfigFilePath, "Ringtones_PI.plist");
+	
+	CFDictionaryRef ourConfigFileContents = NULL;
+	
+	if (fileExists(ourConfigFilePath)) {
+		
+		// file exists, read it into a dictionary
+		unsigned char *buf;
+		int bufsize;
+		
+		if (!getFileData((void**)&buf, &bufsize, ourConfigFilePath, 0, 0)) {
+			return NULL;
+		}
+		
+		CFDataRef pData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, (const UInt8*)buf,
+													  (CFIndex)bufsize, kCFAllocatorNull);
+		
+		if (pData == NULL) {
+			free(buf);
+			return NULL;
+		}
+		
+		ourConfigFileContents = (CFDictionaryRef)CFPropertyListCreateFromXMLData(kCFAllocatorDefault, pData,
+																				 kCFPropertyListImmutable,
+																				 NULL);
+		
+		if (ourConfigFileContents == NULL) {
+			free(buf);
+			CFRelease(pData);
+			return NULL;
+		}
+		
+		free(buf);
+		CFRelease(pData);
+	}
+	
+	// now conglomerate the two of them into a single mutable dictionary
+	CFMutableDictionaryRef conglomeratedRingtones = NULL;
+
+	if (iTunesConfigFileContents != NULL) {
+		conglomeratedRingtones = CFDictionaryCreateMutableCopy(kCFAllocatorDefault,
+															   0, iTunesConfigFileContents);
+		CFRelease(iTunesConfigFileContents);
+		
+		if (conglomeratedRingtones == NULL) {
+			
+			if (ourConfigFileContents != NULL) {
+				CFRelease(ourConfigFileContents);
+			}
+			
+			return NULL;
+		}
+		
+		if (ourConfigFileContents != NULL) {
+			CFDictionaryRef ourValues = (CFDictionaryRef)CFDictionaryGetValue(ourConfigFileContents,
+																			  CFSTR("Ringtones"));
+			CFDictionaryRef theirValues = (CFDictionaryRef)CFDictionaryGetValue(conglomeratedRingtones,
+																				CFSTR("Ringtones"));
+			
+			if (ourValues != NULL) {
+				
+				if (theirValues != NULL) {
+					CFMutableDictionaryRef conglomeratedContents = CFDictionaryCreateMutableCopy(kCFAllocatorDefault,
+																								 0, theirValues);
+
+					if (conglomeratedContents == NULL) {
+						CFRelease(conglomeratedRingtones);
+						CFRelease(ourConfigFileContents);
+						return NULL;
+					}
+					
+					CFIndex count = CFDictionaryGetCount(ourValues);
+					CFTypeRef keys[count], values[count];
+					
+					CFDictionaryGetKeysAndValues(ourValues, keys, values);
+					
+					for (CFIndex i = 0; i < count; i++) {
+						// just overwrite theirs with ours for now
+						CFDictionarySetValue(conglomeratedContents, keys[i], values[i]);
+					}
+
+					CFDictionarySetValue(conglomeratedRingtones, CFSTR("Ringtones"), conglomeratedContents);
+				}
+				else {
+					CFDictionarySetValue(conglomeratedRingtones, CFSTR("Ringtones"), ourValues);
+				}
+				
+				CFRelease(ourConfigFileContents);
+			}
+			
+		}
+		
+	}
+	else if (ourConfigFileContents != NULL) {
+		conglomeratedRingtones = CFDictionaryCreateMutableCopy(kCFAllocatorDefault,
+															   0, ourConfigFileContents);
+		CFRelease(ourConfigFileContents);
+		
+		if (conglomeratedRingtones == NULL) {
+			return NULL;
+		}
+		
+	}
+	else {
+		conglomeratedRingtones = CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+														   &kCFTypeDictionaryKeyCallBacks,
+														   &kCFTypeDictionaryValueCallBacks);
+		
+		if (conglomeratedRingtones == NULL) {
+			return NULL;
+		}
+		
+	}
+
+	return conglomeratedRingtones;
+}
+
+bool PhoneInteraction::putRingtoneOnPhone(const char *ringtoneFile, const char *ringtoneName,
+										  bool bInSystemDir)
 {
 
 	if (!isConnected()) {
@@ -1757,11 +2104,39 @@ bool PhoneInteraction::putRingtoneOnPhone(const char *ringtoneFile, bool bInSyst
 		return false;
 	}
 
-	struct afc_directory *dir;
-	const char *ringtoneDir = "/var/root/Library/Ringtones";
+	char *value = getPhoneProductVersion();
 
 	if (bInSystemDir) {
-		ringtoneDir = "/Library/Ringtones";
+
+		if (!strncmp(value, "1.1", 3)) {
+			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Can't add ringtones to System directory when using firmware version 1.1.1");
+			return false;
+		}
+
+	}
+
+	struct afc_directory *dir;
+	const char *ringtoneConfigDir = NULL;
+	const char *ringtoneDir = NULL;
+
+	if (!strncmp(value, "1.0", 3)) {
+
+		if (bInSystemDir) {
+			ringtoneDir = "/Library/Ringtones";
+		}
+		else {
+			ringtoneDir = "/private/var/root/Library/Ringtones";
+		}
+
+	}
+	else {
+		ringtoneConfigDir = "/private/var/root/Media/iTunes_Control/iTunes";
+		ringtoneDir = "/private/var/root/Media/iTunes_Control/Ringtones";
+	}
+
+	if (ringtoneDir == NULL) {
+		(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Couldn't determine ringtone directory.");
+		return false;
 	}
 
 	if (AFCDirectoryOpen(m_hAFC, (char*)ringtoneDir, &dir)) {
@@ -1779,16 +2154,260 @@ bool PhoneInteraction::putRingtoneOnPhone(const char *ringtoneFile, bool bInSyst
 	}
 
 	AFCDirectoryClose(m_hAFC, dir);
-
+	
 	const char *ringtoneFilename = UtilityFunctions::getLastPathElement(ringtoneFile);
 	char ringtonePath[PATH_MAX+1];
 	strcpy(ringtonePath, ringtoneDir);
 	strcat(ringtonePath, "/");
-	strcat(ringtonePath, ringtoneFilename);
 
-	if (!putFile(ringtoneFile, ringtonePath)) {
-		(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error putting ringtone file on phone.");
-		return false;
+	if (!strncmp(value, "1.0", 3)) {
+		strcat(ringtonePath, ringtoneFilename);
+
+		if (!putFile(ringtoneFile, ringtonePath)) {
+			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error putting ringtone file on phone.");
+			return false;
+		}
+
+	}
+	else {
+		CFMutableDictionaryRef conglomeratedRingtones = getConglomeratedRingtoneDictionaries();
+		CFDictionaryRef tmpContents = (CFDictionaryRef)CFDictionaryGetValue(conglomeratedRingtones, CFSTR("Ringtones"));
+
+		if (tmpContents == NULL) {
+			CFRelease(conglomeratedRingtones);
+			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error getting list of ringtones.");
+			return false;
+		}
+
+		CFMutableDictionaryRef conglomeratedContents = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, tmpContents);
+
+		if (conglomeratedContents == NULL) {
+			CFRelease(conglomeratedRingtones);
+			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error getting list of ringtones.");
+			return false;
+		}
+
+		// grab a list of the existing ringtone files
+		char **fileList;
+		int numFiles;
+
+		if (!directoryFileList(ringtoneDir, &fileList, &numFiles)) {
+			CFRelease(conglomeratedContents);
+			CFRelease(conglomeratedRingtones);
+			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error getting list of files in ringtone directory.");
+			return false;
+		}
+
+		// now generate a unique name for our new ringtone
+		char *basename = UtilityFunctions::generateUniqueRingtoneBasename((const char**)fileList, numFiles);
+
+		for (int i = 0; i < numFiles; i++) {
+			free(fileList[i]);
+		}
+
+		free(fileList);
+
+		if (basename == NULL) {
+			CFRelease(conglomeratedContents);
+			CFRelease(conglomeratedRingtones);
+			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error finding unique filename for ringtone.");
+			return false;
+		}
+
+		// put the main ringtone file
+		const char *fileExtension = UtilityFunctions::getFileExtension(ringtoneFilename);
+
+		if (fileExtension == NULL) {
+			fileExtension = "m4a";
+		}
+
+		strcat(ringtonePath, basename);
+		strcat(ringtonePath, ".");
+		strcat(ringtonePath, fileExtension);
+
+		if (!putFile(ringtoneFile, ringtonePath)) {
+			CFRelease(conglomeratedContents);
+			CFRelease(conglomeratedRingtones);
+			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error putting ringtone file on phone.");
+			return false;
+		}
+
+		// now put the empty .m4r version of it
+		char ringtonePath2[PATH_MAX+1];
+		strcpy(ringtonePath2, ringtoneDir);
+		strcat(ringtonePath2, "/");
+		strcat(ringtonePath2, basename);
+		strcat(ringtonePath2, ".m4r");
+		free(basename);
+
+		if (!putData(NULL, 0, ringtonePath2, 0, 0)) {
+			CFRelease(conglomeratedContents);
+			CFRelease(conglomeratedRingtones);
+			removePath(ringtonePath);
+			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error putting empty ringtone file on phone.");
+			return false;
+		}
+
+		// now create our new dictionaries for the two ringtone files
+		CFMutableDictionaryRef newEntry1, newEntry2;
+		newEntry1 = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
+											  &kCFTypeDictionaryValueCallBacks);
+		
+		if (newEntry1 == NULL) {
+			CFRelease(conglomeratedContents);
+			CFRelease(conglomeratedRingtones);
+			removePath(ringtonePath);
+			removePath(ringtonePath2);
+			return false;
+		}
+
+		CFIndex size = CFDictionaryGetCount(conglomeratedContents);
+		CFTypeRef keys[size], values[size];
+
+		CFDictionaryGetKeysAndValues(conglomeratedContents, keys, values);
+
+		// get a unique GUID
+		UInt64 guid = UtilityFunctions::getUniqueRingtoneGUID((CFDictionaryRef*)values, (int)size);
+
+		if (guid == 0) {
+			CFRelease(newEntry1);
+			CFRelease(conglomeratedContents);
+			CFRelease(conglomeratedRingtones);
+			removePath(ringtonePath);
+			removePath(ringtonePath2);
+			return false;
+		}
+
+		CFStringRef guidStr = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%016qX"), guid);
+
+		if (guidStr == NULL) {
+			CFRelease(newEntry1);
+			CFRelease(conglomeratedContents);
+			CFRelease(conglomeratedRingtones);
+			removePath(ringtonePath);
+			removePath(ringtonePath2);
+			return false;
+		}
+
+		CFStringRef nameStr;
+
+		if (ringtoneName == NULL) {
+			// strip the file extension from the filename to get the ringtone name
+			const char *ptr = UtilityFunctions::getFileExtension(ringtoneFilename);
+			int len;
+
+			if (ptr != NULL) {
+				len = ptr - ringtoneFilename;
+			}
+			else {
+				len = strlen(ringtoneFilename);
+			}
+
+			char name[len+1];
+			strncpy(name, ringtoneFilename, len);
+			name[len] = 0;
+
+			nameStr = CFStringCreateWithCString(kCFAllocatorDefault, name, kCFStringEncodingUTF8);
+		}
+		else {
+			nameStr = CFStringCreateWithCString(kCFAllocatorDefault, ringtoneName, kCFStringEncodingUTF8);
+		}
+
+		if (nameStr == NULL) {
+			CFRelease(guidStr);
+			CFRelease(newEntry1);
+			CFRelease(conglomeratedContents);
+			CFRelease(conglomeratedRingtones);
+			removePath(ringtonePath);
+			removePath(ringtonePath2);
+			return false;
+		}
+
+		CFDictionarySetValue(newEntry1, CFSTR("GUID"), guidStr);
+		CFDictionarySetValue(newEntry1, CFSTR("Name"), nameStr);
+
+		newEntry2 = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
+											  &kCFTypeDictionaryValueCallBacks);
+
+		if (newEntry2 == NULL) {
+			CFRelease(newEntry1);
+			CFRelease(conglomeratedContents);
+			CFRelease(conglomeratedRingtones);
+			removePath(ringtonePath);
+			removePath(ringtonePath2);
+			return false;
+		}
+
+		CFDictionarySetValue(newEntry2, CFSTR("GUID"), guidStr);
+		CFDictionarySetValue(newEntry2, CFSTR("Name"), nameStr);
+
+		// now add our new dictionaries to the ringtone list dictionary
+		const char *entryName = UtilityFunctions::getLastPathElement(ringtonePath);
+		CFStringRef entryNameStr = CFStringCreateWithCString(kCFAllocatorDefault, entryName,
+															 kCFStringEncodingUTF8);
+
+		if (entryNameStr == NULL) {
+			CFRelease(newEntry1);
+			CFRelease(newEntry2);
+			CFRelease(conglomeratedContents);
+			CFRelease(conglomeratedRingtones);
+			removePath(ringtonePath);
+			removePath(ringtonePath2);
+			return false;
+		}
+
+		CFDictionarySetValue(conglomeratedContents, entryNameStr, newEntry1);
+		CFRelease(entryNameStr);
+
+		entryName = UtilityFunctions::getLastPathElement(ringtonePath2);
+		entryNameStr = CFStringCreateWithCString(kCFAllocatorDefault, entryName,
+												 kCFStringEncodingUTF8);
+		
+		if (entryNameStr == NULL) {
+			CFRelease(newEntry2);
+			CFRelease(conglomeratedContents);
+			CFRelease(conglomeratedRingtones);
+			removePath(ringtonePath);
+			removePath(ringtonePath2);
+			return false;
+		}
+
+		CFDictionarySetValue(conglomeratedContents, entryNameStr, newEntry2);
+
+		// finally, add the ringtone list dictionary to the main plist dictionary
+		CFDictionarySetValue(conglomeratedRingtones, CFSTR("Ringtones"), conglomeratedContents);
+
+		// create the XML data from the plist dictionary and write it to the phone
+		CFDataRef pData = CFPropertyListCreateXMLData(kCFAllocatorDefault, (CFPropertyListRef)conglomeratedRingtones);
+
+		if (pData == NULL) {
+			CFRelease(conglomeratedRingtones);
+			removePath(ringtonePath);
+			removePath(ringtonePath2);
+			return false;
+		}
+
+		const UInt8 *pBytes = CFDataGetBytePtr(pData);
+		CFIndex length = CFDataGetLength(pData);
+
+		if (!putData((void*)pBytes, (int)length, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones_PI.plist", 0, 0)) {
+			CFRelease(conglomeratedRingtones);
+			CFRelease(pData);
+			removePath(ringtonePath);
+			removePath(ringtonePath2);
+			return false;
+		}
+
+		if (!putData((void*)pBytes, (int)length, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones.plist", 0, 0)) {
+			CFRelease(conglomeratedRingtones);
+			CFRelease(pData);
+			removePath(ringtonePath);
+			removePath(ringtonePath2);
+			return false;
+		}
+
+		CFRelease(pData);
+		CFRelease(conglomeratedRingtones);
 	}
 
 	(*m_notifyFunc)(NOTIFY_PUTFILE_SUCCESS, "Successfully put ringtone on phone.");
@@ -1895,17 +2514,154 @@ bool PhoneInteraction::putApplicationOnPhone(const char *applicationDir)
 
 bool PhoneInteraction::removeRingtone(const char *ringtoneFilename, bool bInSystemDir)
 {
-	const char *ringtoneDir = "/var/root/Library/Ringtones/";
+	const char *ringtoneConfigDir = NULL;
+	const char *ringtoneDir = NULL;
+	char ringtonePath[PATH_MAX+1];
+	char *value = getPhoneProductVersion();
 	
-	if (bInSystemDir) {
-		ringtoneDir = "/Library/Ringtones/";
+	if (!strncmp(value, "1.0", 3)) {
+		
+		if (bInSystemDir) {
+			ringtoneDir = "/Library/Ringtones";
+		}
+		else {
+			ringtoneDir = "/private/var/root/Library/Ringtones";
+		}
+		
+		strcpy(ringtonePath, ringtoneDir);
+		strcat(ringtonePath, ringtoneFilename);
+		return removePath(ringtonePath);
+	}
+	else {
+
+		if (bInSystemDir) {
+			ringtoneDir = "/Library/Ringtones";
+
+			strcpy(ringtonePath, ringtoneDir);
+			strcat(ringtonePath, ringtoneFilename);
+			return removePath(ringtonePath);
+		}
+		else {
+			ringtoneConfigDir = "/private/var/root/Media/iTunes_Control/iTunes";
+			ringtoneDir = "/private/var/root/Media/iTunes_Control/Ringtones";
+		}
+
+	}
+
+	// remove the files
+	char **filenames;
+	int numFiles;
+
+	if (!getUserRingtoneFilenames(ringtoneFilename, &filenames, &numFiles)) {
+		return false;
+	}
+
+	if (numFiles == 0) {
+		return true;
+	}
+
+	for (int i = 0; i < numFiles; i++) {
+		strcpy(ringtonePath, ringtoneDir);
+		strcat(ringtonePath, "/");
+		strcat(ringtonePath, filenames[i]);
+
+		if (!removePath(ringtonePath)) {
+
+			for (int i = 0; i < numFiles; i++) {
+				free(filenames[i]);
+			}
+			
+			free(filenames);
+			return false;
+		}
+
+	}
+
+	// now remove the plist entries
+	CFMutableDictionaryRef conglomeratedRingtones = getConglomeratedRingtoneDictionaries();
+	CFDictionaryRef tmpContents = (CFDictionaryRef)CFDictionaryGetValue(conglomeratedRingtones, CFSTR("Ringtones"));
+	
+	if (tmpContents == NULL) {
+
+		for (int i = 0; i < numFiles; i++) {
+			free(filenames[i]);
+		}
+		
+		free(filenames);
+		CFRelease(conglomeratedRingtones);
+		(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error getting list of ringtones.");
+		return false;
 	}
 	
-	char ringtonePath[PATH_MAX+1];
-	strcpy(ringtonePath, ringtoneDir);
-	strcat(ringtonePath, ringtoneFilename);
+	CFMutableDictionaryRef conglomeratedContents = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, tmpContents);
+	
+	if (conglomeratedContents == NULL) {
 
-	return removePath(ringtonePath);
+		for (int i = 0; i < numFiles; i++) {
+			free(filenames[i]);
+		}
+		
+		free(filenames);
+		CFRelease(conglomeratedRingtones);
+		(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error getting list of ringtones.");
+		return false;
+	}
+
+	CFStringRef fileStr;
+
+	for (int i = 0; i < numFiles; i++) {
+		fileStr = CFStringCreateWithCString(kCFAllocatorDefault, filenames[i], kCFStringEncodingUTF8);
+
+		if (fileStr == NULL) {
+
+			for (int i = 0; i < numFiles; i++) {
+				free(filenames[i]);
+			}
+			
+			free(filenames);
+			CFRelease(conglomeratedContents);
+			CFRelease(conglomeratedRingtones);
+			return false;
+		}
+
+		CFDictionaryRemoveValue(conglomeratedContents, fileStr);
+	}
+
+	for (int i = 0; i < numFiles; i++) {
+		free(filenames[i]);
+	}
+
+	free(filenames);
+
+	// finally, add the ringtone list dictionary to the main plist dictionary
+	CFDictionarySetValue(conglomeratedRingtones, CFSTR("Ringtones"), conglomeratedContents);
+
+	// create the XML data from the plist dictionary and write it to the phone
+	CFDataRef pData = CFPropertyListCreateXMLData(kCFAllocatorDefault, (CFPropertyListRef)conglomeratedRingtones);
+	
+	if (pData == NULL) {
+		CFRelease(conglomeratedRingtones);
+		return false;
+	}
+
+	const UInt8 *pBytes = CFDataGetBytePtr(pData);
+	CFIndex length = CFDataGetLength(pData);
+	
+	if (!putData((void*)pBytes, (int)length, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones_PI.plist", 0, 0)) {
+		CFRelease(pData);
+		CFRelease(conglomeratedRingtones);
+		return false;
+	}
+	
+	if (!putData((void*)pBytes, (int)length, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones.plist", 0, 0)) {
+		CFRelease(pData);
+		CFRelease(conglomeratedRingtones);
+		return false;
+	}
+
+	CFRelease(pData);
+	CFRelease(conglomeratedRingtones);
+	return true;
 }
 
 bool PhoneInteraction::removeWallpaper(const char *wallpaperFilename, bool bInSystemDir)
@@ -1932,20 +2688,62 @@ bool PhoneInteraction::removeApplication(const char *applicationFilename)
 	return removePath(applicationPath);
 }
 
-bool PhoneInteraction::ringtoneExists(const char *ringtoneFile, bool bInSystemDir)
+bool PhoneInteraction::ringtoneExists(const char *ringtoneName, bool bInSystemDir)
 {
-	const char *ringtoneDir = "/var/root/Library/Ringtones/";
+	char *value = getPhoneProductVersion();
+
+	if (!strncmp(value, "1.0", 3)) {
+		const char *ringtoneDir = "/var/root/Library/Ringtones/";
 	
-	if (bInSystemDir) {
-		ringtoneDir = "/Library/Ringtones/";
+		if (bInSystemDir) {
+			ringtoneDir = "/Library/Ringtones/";
+		}
+
+		char filepath[PATH_MAX+1];
+		strcpy(filepath, ringtoneDir);
+		strcat(filepath, ringtoneName);
+		return fileExists(filepath);
+	}
+	else if (bInSystemDir) {
+		char filepath[PATH_MAX+1];
+		strcpy(filepath, "/Library/Ringtones/");
+		strcat(filepath, ringtoneName);
+		return fileExists(filepath);
 	}
 
-	char filepath[PATH_MAX+1];
-	memset(filepath, 0, PATH_MAX+1);
-	strcpy(filepath, ringtoneDir);
-	strcat(filepath, ringtoneFile);
+	CFStringRef ringtoneNameStr = CFStringCreateWithCString(kCFAllocatorDefault, ringtoneName, kCFStringEncodingUTF8);
+	
+	if (ringtoneNameStr == NULL) {
+		return false;
+	}
 
-	return fileExists(filepath);
+	CFMutableDictionaryRef conglomeratedRingtones = getConglomeratedRingtoneDictionaries();
+	CFDictionaryRef contents = (CFDictionaryRef)CFDictionaryGetValue(conglomeratedRingtones, CFSTR("Ringtones"));
+	CFIndex count = CFDictionaryGetCount(contents);
+	CFTypeRef keys[count], values[count];
+	CFDictionaryGetKeysAndValues(contents, keys, values);
+	CFDictionaryRef dictValue;
+	CFStringRef valName;
+	
+	for (int i = 0; i < count; i++) {
+		dictValue = (CFDictionaryRef)values[i];
+		valName = (CFStringRef)CFDictionaryGetValue(dictValue, CFSTR("Name"));
+		
+		if (valName != NULL) {
+			
+			if (CFStringCompare(ringtoneNameStr, valName, 0) == kCFCompareEqualTo) {
+				CFRelease(ringtoneNameStr);
+				CFRelease(conglomeratedRingtones);
+				return true;
+			}
+			
+		}
+		
+	}
+
+	CFRelease(ringtoneNameStr);
+	CFRelease(conglomeratedRingtones);
+	return false;
 }
 
 bool PhoneInteraction::wallpaperExists(const char *wallpaperFile, bool bInSystemDir)
@@ -2994,6 +3792,78 @@ void PhoneInteraction::jailbreakFinished()
 bool PhoneInteraction::isPhoneJailbroken()
 {
 	return m_jailbroken;
+}
+
+bool PhoneInteraction::areRingtonesOutOfSync()
+{
+
+	if (!isConnected()) {
+		return false;
+	}
+
+	unsigned char *buf1, *buf2;
+	int size1, size2;
+
+	if (!getFileData((void**)&buf1, &size1, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones.plist", 0, 0)) {
+		return false;
+	}
+
+	if (!getFileData((void**)&buf2, &size2, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones_PI.plist", 0, 0)) {
+		free(buf1);
+		return false;
+	}
+
+	if (size1 != size2) {
+		free(buf1);
+		free(buf2);
+		return true;
+	}
+
+	if (memcmp(buf1, buf2, size1)) {
+		free(buf1);
+		free(buf2);
+		return true;
+	}
+
+	free(buf1);
+	free(buf2);
+	return false;
+}
+
+bool PhoneInteraction::syncRingtones()
+{
+	CFMutableDictionaryRef dict = getConglomeratedRingtoneDictionaries();
+
+	if (dict == NULL) {
+		return false;
+	}
+
+	// create the XML data from the plist dictionary and write it to the phone
+	CFDataRef pData = CFPropertyListCreateXMLData(kCFAllocatorDefault, (CFPropertyListRef)dict);
+
+	if (pData == NULL) {
+		CFRelease(dict);
+		return false;
+	}
+	
+	const UInt8 *pBytes = CFDataGetBytePtr(pData);
+	CFIndex length = CFDataGetLength(pData);
+	
+	if (!putData((void*)pBytes, (int)length, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones_PI.plist", 0, 0)) {
+		CFRelease(dict);
+		CFRelease(pData);
+		return false;
+	}
+	
+	if (!putData((void*)pBytes, (int)length, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones.plist", 0, 0)) {
+		CFRelease(dict);
+		CFRelease(pData);
+		return false;
+	}
+	
+	CFRelease(pData);
+	CFRelease(dict);
+	return true;
 }
 
 void PhoneInteraction::recoveryModeStarted_dfu(struct am_recovery_device *rdev)

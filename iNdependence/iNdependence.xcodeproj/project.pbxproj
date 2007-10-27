@@ -38,6 +38,7 @@
 		F2CB60C10C6186AB005490ED /* MainWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60C00C6186AB005490ED /* MainWindow.mm */; };
 		F2CB60CD0C61899F005490ED /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60CC0C61899F005490ED /* AppController.mm */; };
 		F2CB623B0C61A77C005490ED /* libPhoneInteraction.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F2CB622B0C61A753005490ED /* libPhoneInteraction.dylib */; };
+		F2D6EE490CD2B56800E86C41 /* Sync.png in Resources */ = {isa = PBXBuildFile; fileRef = F2D6EE480CD2B56800E86C41 /* Sync.png */; };
 		F2F0C2100C8228FA005F65C6 /* CustomizeBrowserCell.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2F0C20E0C8228FA005F65C6 /* CustomizeBrowserCell.mm */; };
 		F2F0C26A0C822C22005F65C6 /* UserFolder.png in Resources */ = {isa = PBXBuildFile; fileRef = F2F0C2690C822C22005F65C6 /* UserFolder.png */; };
 		F2F0C27D0C822E5B005F65C6 /* RingtoneFolder.png in Resources */ = {isa = PBXBuildFile; fileRef = F2F0C27C0C822E5B005F65C6 /* RingtoneFolder.png */; };
@@ -118,6 +119,7 @@
 		F2CB60CB0C61899F005490ED /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
 		F2CB60CC0C61899F005490ED /* AppController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AppController.mm; sourceTree = "<group>"; };
 		F2CB62260C61A753005490ED /* libPhoneInteraction.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libPhoneInteraction.xcodeproj; path = ../libPhoneInteraction/libPhoneInteraction.xcodeproj; sourceTree = SOURCE_ROOT; };
+		F2D6EE480CD2B56800E86C41 /* Sync.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Sync.png; path = images/Sync.png; sourceTree = SOURCE_ROOT; };
 		F2F0C20E0C8228FA005F65C6 /* CustomizeBrowserCell.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CustomizeBrowserCell.mm; sourceTree = "<group>"; };
 		F2F0C20F0C8228FA005F65C6 /* CustomizeBrowserCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomizeBrowserCell.h; sourceTree = "<group>"; };
 		F2F0C2690C822C22005F65C6 /* UserFolder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = UserFolder.png; path = images/UserFolder.png; sourceTree = "<group>"; };
@@ -239,6 +241,7 @@
 		F25021480C7B355B00B7F437 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				F2D6EE480CD2B56800E86C41 /* Sync.png */,
 				F2C1F6F50CCFC345003AE395 /* sleep_button.gif */,
 				F25021460C7B354F00B7F437 /* jailbreak.jpg */,
 				F26A51E90C80EAEC00A1C30C /* Add.png */,
@@ -393,6 +396,7 @@
 				F28657890CCABBCC00A01FCE /* scp in Resources */,
 				F2C1F6B90CCFBD5B003AE395 /* anySIM.app in Resources */,
 				F2C1F6F60CCFC345003AE395 /* sleep_button.gif in Resources */,
+				F2D6EE490CD2B56800E86C41 /* Sync.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

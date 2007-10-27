@@ -88,3 +88,14 @@ v1.2.5 (Brooklyn) - 10/21/07
 - Updated the documentation about SIM unlocking and upgrading to 1.1.1 to be clear about the difference between anySIM 1.0 and anySIM 1.1
 - Added dialog during SSH removal which asks whether user wants to also remove libarmfp.dylib at that time.  The reason is because removing this file could cause any installed 3rd party applications to become inoperable.
 - Ringtone customization on 1.1.1 still doesn't work in this release
+
+
+v1.3 (Creemore) - 10/26/07
+
+- Added anySIM 1.1 installation/removal to allow for SIM unlocking (finally!)
+- Included warning when installing anySIM about needing a virgin phone
+- Changed all reboot instructions to indicate that only the Sleep button needs to be held down to turn phone off
+- Added confirmation and warning about deleting libarmfp.dylib when uninstalling SSH.  This should solve the conflict between Installer.app and iNdependence
+- Got Windows build working again (still out of date functionally though)
+- Got ringtone customization working on firmware 1.1.1 (lots of new code for this so it could be a bit buggy still)
+- Added 'Sync Ringtones' button to restore ringtones after iTunes clobbers them when it syncs

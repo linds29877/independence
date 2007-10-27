@@ -23,6 +23,7 @@
                 restorePEM = id; 
                 returnToJail = id; 
                 showAboutPanel = id; 
+                syncRingtones = id; 
                 waitDialogCancel = id; 
             }; 
             CLASS = AppController; 
@@ -53,6 +54,7 @@
                 restorePEMButton = NSButton; 
                 returnToJailButton = NSButton; 
                 sshHandler = SSHHandler; 
+                syncRingtonesButton = NSButton; 
             }; 
             SUPERCLASS = NSObject; 
         }, 
