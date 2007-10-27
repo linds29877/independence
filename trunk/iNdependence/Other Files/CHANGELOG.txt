@@ -90,7 +90,7 @@ v1.2.5 (Brooklyn) - 10/21/07
 - Ringtone customization on 1.1.1 still doesn't work in this release
 
 
-v1.3 (Creemore) - 10/26/07
+v1.3 beta (Creemore) - 10/26/07
 
 - Added anySIM 1.1 installation/removal to allow for SIM unlocking (finally!)
 - Included warning when installing anySIM about needing a virgin phone
@@ -99,3 +99,4 @@ v1.3 (Creemore) - 10/26/07
 - Got Windows build working again (still out of date functionally though)
 - Got ringtone customization working on firmware 1.1.1 (lots of new code for this so it could be a bit buggy still)
 - Added 'Sync Ringtones' button to restore ringtones after iTunes clobbers them when it syncs
+- Documentation has not yet been added for the new 1.1.1 ringtone functionality or anySIM installation
