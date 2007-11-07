@@ -104,6 +104,6 @@ v1.3 beta (Creemore) - 10/26/07
 
 v1.3 (Creemore)
 
-- Added MeCCA patch to 1.1 jailbreak process to allow for addition of custom ringtones to the System ringtone directory (/Library/Ringtones)
-- Removed the ability to add ringtones to the User ringtone directory as it's too buggy (left the ability to delete them though)
+- Added MeCCA patch to 1.1.1 jailbreak process to allow for addition of custom ringtones to the System ringtone directory (/Library/Ringtones)
+- Removed the ability to add ringtones to the User ringtone directory as it's too buggy (left in the ability to delete them though)
 - Since the version of the MobileDevice framework which comes with iTunes 7.5 doesn't allow for jailbreak, I've added the ability to include MobileDevice as a dylib directly in the application bundle.  This makes it so that people can upgrade to iTunes 7.5 (or later) and not have to worry about breaking iNdependence.
