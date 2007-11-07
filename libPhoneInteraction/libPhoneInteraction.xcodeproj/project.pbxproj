@@ -14,10 +14,10 @@
 		F210E3C40C8F6CE70029B820 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F210E3C30C8F6CE70029B820 /* libz.dylib */; };
 		F2567DB10C56F683009FAEA2 /* PhoneInteraction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F2567DAF0C56F683009FAEA2 /* PhoneInteraction.cpp */; };
 		F2567DB20C56F683009FAEA2 /* UtilityFunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F2567DB00C56F683009FAEA2 /* UtilityFunctions.cpp */; };
-		F2567DC10C56F7DD009FAEA2 /* MobileDevice.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F2567DC00C56F7DD009FAEA2 /* MobileDevice.framework */; };
 		F2567DC70C56F81A009FAEA2 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F2567DC60C56F81A009FAEA2 /* libcrypto.dylib */; };
 		F26F96820C885AA70024C0DF /* SSHHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F26F96810C885AA70024C0DF /* SSHHelper.cpp */; };
 		F28191240C94BD8200C34484 /* base64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F28191220C94BD8200C34484 /* base64.cpp */; };
+		F2BCB65D0CE03B6D0020A283 /* libMobDev.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F2BCB65C0CE03B6D0020A283 /* libMobDev.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,7 +33,6 @@
 		F24BD4360C965A4D00AA3B91 /* CFCompatibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CFCompatibility.h; path = "../Public Headers/PhoneInteraction/CFCompatibility.h"; sourceTree = SOURCE_ROOT; };
 		F2567DAF0C56F683009FAEA2 /* PhoneInteraction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PhoneInteraction.cpp; sourceTree = SOURCE_ROOT; };
 		F2567DB00C56F683009FAEA2 /* UtilityFunctions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UtilityFunctions.cpp; sourceTree = SOURCE_ROOT; };
-		F2567DC00C56F7DD009FAEA2 /* MobileDevice.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileDevice.framework; path = /System/Library/PrivateFrameworks/MobileDevice.framework; sourceTree = "<absolute>"; };
 		F2567DC60C56F81A009FAEA2 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = /usr/lib/libcrypto.dylib; sourceTree = "<absolute>"; };
 		F25681D50C57127B009FAEA2 /* PhoneInteraction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PhoneInteraction.h; path = "../Public Headers/PhoneInteraction/PhoneInteraction.h"; sourceTree = SOURCE_ROOT; };
 		F25681D60C57127B009FAEA2 /* UtilityFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UtilityFunctions.h; path = "../Public Headers/PhoneInteraction/UtilityFunctions.h"; sourceTree = SOURCE_ROOT; };
@@ -42,6 +41,7 @@
 		F26F96D70C8866C00024C0DF /* SSHHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHHelper.h; path = "../Public Headers/PhoneInteraction/SSHHelper.h"; sourceTree = SOURCE_ROOT; };
 		F28191220C94BD8200C34484 /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = SOURCE_ROOT; };
 		F28191230C94BD8200C34484 /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
+		F2BCB65C0CE03B6D0020A283 /* libMobDev.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libMobDev.dylib; path = "../Third Party Libraries/libMobDev.dylib"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,9 +50,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2AAC0B105546B7500DB518D /* Carbon.framework in Frameworks */,
-				F2567DC10C56F7DD009FAEA2 /* MobileDevice.framework in Frameworks */,
 				F2567DC70C56F81A009FAEA2 /* libcrypto.dylib in Frameworks */,
 				F210E3C40C8F6CE70029B820 /* libz.dylib in Frameworks */,
+				F2BCB65D0CE03B6D0020A283 /* libMobDev.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,9 +81,9 @@
 		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				F2BCB65C0CE03B6D0020A283 /* libMobDev.dylib */,
 				F210E3C30C8F6CE70029B820 /* libz.dylib */,
 				F2567DC60C56F81A009FAEA2 /* libcrypto.dylib */,
-				F2567DC00C56F7DD009FAEA2 /* MobileDevice.framework */,
 				08FB77AAFE841565C02AAC07 /* Carbon.framework */,
 			);
 			name = "External Frameworks and Libraries";
@@ -178,11 +178,6 @@
 				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
-				);
-				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -192,6 +187,11 @@
 					DEBUG,
 				);
 				INSTALL_PATH = "@executable_path";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../Third Party Libraries\"";
 				PRODUCT_NAME = libPhoneInteraction;
 				SKIP_INSTALL = NO;
 			};
@@ -206,16 +206,16 @@
 				);
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
-				);
-				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = libPhoneInteraction_Prefix.pch;
 				INSTALL_PATH = "@executable_path";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../Third Party Libraries\"";
 				PRODUCT_NAME = libPhoneInteraction;
 				SKIP_INSTALL = NO;
 			};

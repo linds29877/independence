@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <stdio.h>
+#include <mach-o/dyld.h>
 #include <cstdlib>
 #include <iostream>
 
@@ -548,6 +549,42 @@ bool PhoneInteraction::determineiTunesVersion()
 #else
 bool PhoneInteraction::determineiTunesVersion()
 {
+
+	// first, check for an internal version of MobileDevice library
+	CFBundleRef bundle = CFBundleGetMainBundle();
+
+	if (bundle != NULL) {
+		CFURLRef execPath = CFBundleCopyExecutableURL(bundle);
+
+		if (execPath != NULL) {
+			CFURLRef mainPath = CFURLCreateCopyDeletingLastPathComponent(kCFAllocatorDefault, execPath);
+			CFURLRef mobDevPath = CFURLCreateCopyAppendingPathComponent(kCFAllocatorDefault, mainPath, CFSTR("libMobDev.dylib"), false);
+			FSRef mobDevRef;
+
+			CFRelease(execPath);
+			CFRelease(mainPath);
+
+			if (CFURLGetFSRef(mobDevPath, &mobDevRef)) {
+				FSCatalogInfo mobDevInfo;
+
+				if (FSGetCatalogInfo(&mobDevRef, kFSCatInfoCreateDate, &mobDevInfo, NULL, NULL, NULL) == noErr) {
+					
+					// ok, the library exists in the application bundle -- the version should be 7.4.2
+					if (ConvertCFStringToPIVersion(CFSTR("7.4.2"), &m_iTunesVersion)) {
+						CFRelease(mobDevPath);
+						return true;
+					}
+
+				}
+
+			}
+
+			CFRelease(mobDevPath);
+		}
+
+	}
+
+	// no internal version so we must rely on the version of MobileDevice installed with iTunes
 	CFURLRef appUrl, versionPlistUrl;
 
 	// try searching for iTunes.app using LaunchServices
@@ -636,70 +673,85 @@ void PhoneInteraction::setupPrivateFunctions()
 		return;
 	}
 
-	if ( (m_iTunesVersion.major < 7) || (m_iTunesVersion.major > 7) ) return;
-	
-	if ( (m_iTunesVersion.minor < 3) || (m_iTunesVersion.minor > 4) ) return;
+	if ( m_iTunesVersion.major != 7 ) return;
 
-	if (m_iTunesVersion.minor == 4) {
-        g_sendCommandToDevice = (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10008170);
-        g_sendFileToDevice = (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x100082F0);
-        g_socketForPort = (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10012F90);
-        g_performOperation = (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10014040);
-	}
-	else {
-		g_sendCommandToDevice= (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009290);
-		g_sendFileToDevice= (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009410);
-		g_performOperation= (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x100129C0);
-		g_socketForPort= (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10012830);
+	switch (m_iTunesVersion.minor) {
+		case 5:
+			break;
+		case 4:
+			g_sendCommandToDevice = (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10008170);
+			g_sendFileToDevice = (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x100082F0);
+			g_socketForPort = (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10012F90);
+			g_performOperation = (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10014040);
+			m_privateFunctionsSetup = true;
+			break;
+		case 3:
+			g_sendCommandToDevice= (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009290);
+			g_sendFileToDevice= (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009410);
+			g_performOperation= (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x100129C0);
+			g_socketForPort= (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10012830);
+			m_privateFunctionsSetup = true;
+			break;
+		default:
+			break;
 	}
 
-	m_privateFunctionsSetup = true;
 }
 #elif defined(__APPLE__) && defined(__POWERPC__)
 void PhoneInteraction::setupPrivateFunctions()
 {
 
-	if ( (m_iTunesVersion.major < 7) || (m_iTunesVersion.major > 7) ) return;
+	if ( m_iTunesVersion.major != 7 ) return;
 	
-	if ( (m_iTunesVersion.minor < 3) || (m_iTunesVersion.minor > 4) ) return;
-	
-	if (m_iTunesVersion.minor == 4) {
-		g_performOperation = (t_performOperation)0x3c3a0bc8;
-		g_socketForPort = (t_socketForPort)0x3c3a051c;
-		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a5bb0;
-		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a5d10;
-	}
-	else {
-		g_performOperation = (t_performOperation)0x3c3a0e14;
-		g_socketForPort = (t_socketForPort)0x3c3a0644;
-		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a517c;
-		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a52dc;
+	switch (m_iTunesVersion.minor) {
+		case 5:
+			break;
+		case 4:
+			g_performOperation = (t_performOperation)0x3c3a0bc8;
+			g_socketForPort = (t_socketForPort)0x3c3a051c;
+			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a5bb0;
+			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a5d10;
+			m_privateFunctionsSetup = true;
+			break;
+		case 3:
+			g_performOperation = (t_performOperation)0x3c3a0e14;
+			g_socketForPort = (t_socketForPort)0x3c3a0644;
+			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a517c;
+			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a52dc;
+			m_privateFunctionsSetup = true;
+			break;
+		default:
+			break;
 	}
 
-	m_privateFunctionsSetup = true;
 }
 #elif defined(__APPLE__)
 void PhoneInteraction::setupPrivateFunctions()
 {
 
-	if ( (m_iTunesVersion.major < 7) || (m_iTunesVersion.major > 7) ) return;
+	if ( m_iTunesVersion.major != 7 ) return;
 
-	if ( (m_iTunesVersion.minor < 3) || (m_iTunesVersion.minor > 4) ) return;
-
-	if (m_iTunesVersion.minor == 4) {
-		g_performOperation = (t_performOperation)0x3c3a0599;
-		g_socketForPort = (t_socketForPort)0x3c39ffa3;
-		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a597f;
-		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a5bcb;
+	switch (m_iTunesVersion.minor) {
+		case 5:
+			break;
+		case 4:
+			g_performOperation = (t_performOperation)0x3c3a0599;
+			g_socketForPort = (t_socketForPort)0x3c39ffa3;
+			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a597f;
+			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a5bcb;
+			m_privateFunctionsSetup = true;
+			break;
+		case 3:
+			g_performOperation = (t_performOperation)0x3c39fa4b;
+			g_socketForPort = (t_socketForPort)0x3c39f36c;
+			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a3e3b;
+			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a4087;
+			m_privateFunctionsSetup = true;
+			break;
+		default:
+			break;
 	}
-	else {
-		g_performOperation = (t_performOperation)0x3c39fa4b;
-		g_socketForPort = (t_socketForPort)0x3c39f36c;
-		g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a3e3b;
-		g_sendFileToDevice = (t_sendFileToDevice)0x3c3a4087;
-	}
 
-	m_privateFunctionsSetup = true;
 }
 #endif
 
@@ -794,7 +846,7 @@ void PhoneInteraction::connectToPhone()
 	}
 
 	// we only support firmware versions 1.0 to 1.1.1
-	if ( (productVersion.major < 1) || (productVersion.major > 1) ) {
+	if ( productVersion.major != 1 ) {
 		char msg[128];
 		snprintf(msg, 128, "Unsupported version of phone firmware installed.\nDetected version is %d.%d.%d\n",
 				 productVersion.major, productVersion.minor, productVersion.point);
@@ -995,6 +1047,80 @@ bool PhoneInteraction::enableThirdPartyApplications(bool undo)
 			return false;
 		}
 
+		free(buf);
+	}
+
+	return true;
+}
+
+bool PhoneInteraction::enableCustomRingtones(bool undo)
+{
+	char *phoneProdVer = getPhoneProductVersion();
+	
+	if (!strcmp(phoneProdVer, "1.1.1")) {
+		unsigned char *buf;
+		int size;
+		
+		if (!getFileData((void**)&buf, &size, "/System/Library/Frameworks/MeCCA.framework/MeCCA", 0, 0)) {
+			return false;
+		}
+		
+		if (undo) {
+			buf[0x14458] = 0x05;
+			buf[0x1445C] = 0x6C;
+			buf[0x1445D] = 0x10;
+			buf[0x1445E] = 0x9F;
+			buf[0x1445F] = 0xE5;
+			buf[0x14462] = 0x8F;
+			buf[0x14463] = 0xE0;
+			buf[0x14464] = 0x6D;
+			buf[0x14465] = 0x28;
+			buf[0x14466] = 0x03;
+			buf[0x14467] = 0xEB;
+			buf[0x14468] = 0x00;
+			buf[0x1446A] = 0x50;
+			buf[0x1446B] = 0xE3;
+			buf[0x1446C] = 0x01;
+			buf[0x1446D] = 0x30;
+			buf[0x1446E] = 0xA0;
+			buf[0x1446F] = 0x03;
+			buf[0x14470] = 0x00;
+			buf[0x14472] = 0x00;
+			buf[0x14473] = 0x0A;
+			buf[0x14474] = 0x00;
+			buf[0x14477] = 0xE3;
+		}
+		else {
+			buf[0x14458] = 0x06;
+			buf[0x1445C] = 0x03;
+			buf[0x1445D] = 0x30;
+			buf[0x1445E] = 0x43;
+			buf[0x1445F] = 0xE0;
+			buf[0x14462] = 0x50;
+			buf[0x14463] = 0xE5;
+			buf[0x14464] = 0x20;
+			buf[0x14465] = 0x00;
+			buf[0x14466] = 0x51;
+			buf[0x14467] = 0xE3;
+			buf[0x14468] = 0x02;
+			buf[0x1446A] = 0x00;
+			buf[0x1446B] = 0x0A;
+			buf[0x1446C] = 0x03;
+			buf[0x1446D] = 0x10;
+			buf[0x1446E] = 0x90;
+			buf[0x1446F] = 0xE5;
+			buf[0x14470] = 0x72;
+			buf[0x14472] = 0x51;
+			buf[0x14473] = 0xE3;
+			buf[0x14474] = 0x01;
+			buf[0x14477] = 0x03;
+		}
+		
+		if (!putData(buf, size, "/System/Library/Frameworks/MeCCA.framework/MeCCA", 0, 0)) {
+			free(buf);
+			return false;
+		}
+		
 		free(buf);
 	}
 
@@ -2105,16 +2231,6 @@ bool PhoneInteraction::putRingtoneOnPhone(const char *ringtoneFile, const char *
 	}
 
 	char *value = getPhoneProductVersion();
-
-	if (bInSystemDir) {
-
-		if (!strncmp(value, "1.1", 3)) {
-			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Can't add ringtones to System directory when using firmware version 1.1.1");
-			return false;
-		}
-
-	}
-
 	struct afc_directory *dir;
 	const char *ringtoneConfigDir = NULL;
 	const char *ringtoneDir = NULL;
@@ -2130,8 +2246,15 @@ bool PhoneInteraction::putRingtoneOnPhone(const char *ringtoneFile, const char *
 
 	}
 	else {
-		ringtoneConfigDir = "/private/var/root/Media/iTunes_Control/iTunes";
-		ringtoneDir = "/private/var/root/Media/iTunes_Control/Ringtones";
+
+		if (bInSystemDir) {
+			ringtoneDir = "/Library/Ringtones";
+		}
+		else {
+			ringtoneConfigDir = "/private/var/root/Media/iTunes_Control/iTunes";
+			ringtoneDir = "/private/var/root/Media/iTunes_Control/Ringtones";
+		}
+
 	}
 
 	if (ringtoneDir == NULL) {
@@ -2170,6 +2293,31 @@ bool PhoneInteraction::putRingtoneOnPhone(const char *ringtoneFile, const char *
 
 	}
 	else {
+
+		if (bInSystemDir) {
+			const char *ringtoneExtension = UtilityFunctions::getFileExtension(ringtoneFilename);
+			int len = strlen(ringtoneFilename);
+
+			if (ringtoneExtension != NULL) {
+				len -= strlen(ringtoneExtension) + 1;
+			}
+
+			strncat(ringtonePath, ringtoneFilename, len);
+
+			if (ringtoneFilename[len-1] != ' ') {
+				strcat(ringtonePath, " ");
+			}
+
+			strcat(ringtonePath, ".m4r");
+
+			if (!putFile(ringtoneFile, ringtonePath)) {
+				(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error putting ringtone file on phone.");
+				return false;
+			}
+
+			return true;
+		}
+
 		CFMutableDictionaryRef conglomeratedRingtones = getConglomeratedRingtoneDictionaries();
 		CFDictionaryRef tmpContents = (CFDictionaryRef)CFDictionaryGetValue(conglomeratedRingtones, CFSTR("Ringtones"));
 
@@ -2529,6 +2677,7 @@ bool PhoneInteraction::removeRingtone(const char *ringtoneFilename, bool bInSyst
 		}
 		
 		strcpy(ringtonePath, ringtoneDir);
+		strcat(ringtonePath, "/");
 		strcat(ringtonePath, ringtoneFilename);
 		return removePath(ringtonePath);
 	}
@@ -2538,6 +2687,7 @@ bool PhoneInteraction::removeRingtone(const char *ringtoneFilename, bool bInSyst
 			ringtoneDir = "/Library/Ringtones";
 
 			strcpy(ringtonePath, ringtoneDir);
+			strcat(ringtonePath, "/");
 			strcat(ringtonePath, ringtoneFilename);
 			return removePath(ringtonePath);
 		}
@@ -3713,6 +3863,11 @@ void PhoneInteraction::returnToJail(const char *servicesFile, const char *fstabF
 		return;
 	}
 	
+	if (!enableCustomRingtones(true)) {
+		(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error disabling ringtone customization.");
+		return;
+	}
+	
 	if (AMDeviceEnterRecovery(m_iPhone)) {
 		(*m_notifyFunc)(NOTIFY_JAILRETURN_FAILED, "Error entering recovery mode.");
 		return;
@@ -3739,6 +3894,11 @@ void PhoneInteraction::newJailbreakStageTwo()
 
 	if (!enableThirdPartyApplications()) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error enabling 3rd party application support.");
+		return;
+	}
+
+	if (!enableCustomRingtones()) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error enabling ringtone customization.");
 		return;
 	}
 

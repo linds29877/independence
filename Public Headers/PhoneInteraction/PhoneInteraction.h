@@ -162,6 +162,9 @@ public:
 	// use to enable/disable YouTube
 	bool enableYouTube(bool undo = false);
 
+	// use to enable ringtone customization on firmware 1.1.1
+	bool enableCustomRingtones(bool undo = false);
+
 	// used for notifications from MobileDevice library
 	void recoveryModeStarted(struct am_recovery_device *dev);
 	void recoveryModeFinished(struct am_recovery_device *dev);

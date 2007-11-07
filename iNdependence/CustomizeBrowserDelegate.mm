@@ -122,13 +122,13 @@ static int g_numSystemApps = 19;
 	return NULL;
 }
 
-- (char*)getRingtoneFileExtension:(bool)bWithDot systemDir:(bool)bInSystemDir
+- (char*)getRingtoneFileExtension:(bool)bWithDot systemDir:(bool)bInSystemDir filesOnPhone:(bool)bFilesOnPhone
 {
 	char *value = PhoneInteraction::getInstance()->getPhoneProductVersion();
 	
 	if (!strncmp(value, "1.1", 3)) {
 		
-		if (bInSystemDir) {
+		if (bFilesOnPhone) {
 
 			if (bWithDot) {
 				return ".m4r";
@@ -166,7 +166,7 @@ static int g_numSystemApps = 19;
 		
 		if (PhoneInteraction::getInstance()->directoryFileList(dir, &filenames, &numFiles)) {
 			outputArray = [[[NSMutableArray alloc] initWithCapacity:numFiles] autorelease];
-			char *extension = [self getRingtoneFileExtension:true systemDir:bInSystemDir];
+			char *extension = [self getRingtoneFileExtension:true systemDir:bInSystemDir filesOnPhone:true];
 
 			for (int i = 0; i < numFiles; i++) {
 				char *index = strstr(filenames[i], extension);
@@ -338,14 +338,14 @@ static int g_numSystemApps = 19;
 		const char *path = [self getPhoneDirectory:col1sel col2sel:col2sel];
 		char *value = PhoneInteraction::getInstance()->getPhoneProductVersion();
 
-		if ( ([col1sel isEqualToString:@"Ringtones"]) && !strncmp(value, "1.1", 3) ) {
+		if ([col1sel isEqualToString:@"Ringtones"]) {
 			NSArray *fileList = [self getValidFileList:col1sel col2sel:col2sel];
 			NSString *filename = (NSString*)[fileList objectAtIndex:row];
 			[cell setRepresentedObject:[NSArray arrayWithObjects:filename, nil]];
 			[cell setTitle:filename];
 			[cell setImage:[[NSWorkspace sharedWorkspace] iconForFileType:@"m4a"]];
 		}
-		else if ( ([col1sel isEqualToString:@"Ringtones"]) || ([col1sel isEqualToString:@"Applications"]) ) {
+		else if ([col1sel isEqualToString:@"Applications"]) {
 			NSArray *fileList = [self getValidFileList:col1sel col2sel:col2sel];
 			NSString *filepath = [NSString stringWithUTF8String:path];
 			NSString *filename = (NSString*)[fileList objectAtIndex:row];
@@ -354,22 +354,16 @@ static int g_numSystemApps = 19;
 			[cell setRepresentedObject:[NSArray arrayWithObjects:fullpath, nil]];
 			[cell setTitle:filename];
 
-			if ([col1sel isEqualToString:@"Ringtones"]) {
-				[cell setImage:[[NSWorkspace sharedWorkspace] iconForFileType:[filename pathExtension]]];
-			}
-			else if ([col1sel isEqualToString:@"Applications"]) {
-				NSString *iconpath = [NSString stringWithFormat:@"%@/%@", fullpath, @"icon.png"];
-				NSImage *img = [self loadAndConvertPNG:[iconpath UTF8String]];
+			NSString *iconpath = [NSString stringWithFormat:@"%@/%@", fullpath, @"icon.png"];
+			NSImage *img = [self loadAndConvertPNG:[iconpath UTF8String]];
 	
-				if ( (img != nil) && [img isValid] ) {
-					[img setScalesWhenResized:YES];
-					[img setSize:NSMakeSize(32,32)];
-					[cell setImage:img];
-				}
-				else {
-					[cell setImage:[[NSWorkspace sharedWorkspace] iconForFileType:NSFileTypeForHFSTypeCode(kGenericApplicationIcon)]];
-				}
-
+			if ( (img != nil) && [img isValid] ) {
+				[img setScalesWhenResized:YES];
+				[img setSize:NSMakeSize(32,32)];
+				[cell setImage:img];
+			}
+			else {
+				[cell setImage:[[NSWorkspace sharedWorkspace] iconForFileType:NSFileTypeForHFSTypeCode(kGenericApplicationIcon)]];
 			}
 
 		}
@@ -548,7 +542,7 @@ static int g_numSystemApps = 19;
 		}
 
 		NSString *file;
-		NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension:false systemDir:bInSystemDir] encoding:NSUTF8StringEncoding];
+		NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension:false systemDir:bInSystemDir filesOnPhone:false] encoding:NSUTF8StringEncoding];
 
 		for (int i = 0; i < [files count]; i++) {
 			file = (NSString*)[files objectAtIndex:i];
@@ -598,23 +592,12 @@ static int g_numSystemApps = 19;
 
 - (bool)putRingtone:(bool)bInSystemDir wasCancelled:(bool*)cancelled
 {
-
-	if (bInSystemDir) {
-		char *value = PhoneInteraction::getInstance()->getPhoneProductVersion();
-
-		if (!strncmp(value, "1.1", 3)) {
-			[m_mainWindow displayAlert:@"Error" message:@"Can't add ringtones to System directory when using firmware version 1.1.1"];
-			return false;
-		}
-
-	}
-
 	NSOpenPanel *fileOpener = [NSOpenPanel openPanel];
 	[fileOpener setTitle:@"Choose the ringtone file"];
 	[fileOpener setCanChooseDirectories:NO];
 	[fileOpener setAllowsMultipleSelection:NO];
 
-	NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension:false systemDir:bInSystemDir] encoding:NSUTF8StringEncoding];
+	NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension:false systemDir:bInSystemDir filesOnPhone:false] encoding:NSUTF8StringEncoding];
 	NSArray *fileTypes = [NSArray arrayWithObject:extension];
 
 	if ([fileOpener runModalForTypes:fileTypes] != NSOKButton) {
@@ -727,13 +710,13 @@ static int g_numSystemApps = 19;
 			bUsingFirmware11 = true;
 		}
 
-		if (bUsingFirmware11 && bInSystemDir) {
-			[m_mainWindow displayAlert:@"Error" message:@"Can't add ringtones to System directory when using firmware version 1.1.1"];
+		if (!bInSystemDir && bUsingFirmware11) {
+			[m_mainWindow displayAlert:@"Error" message:@"The firmware version on your phone prevents the addition of custom ringtones to the User folder with anything other than iTunes.\n\nPlease add your custom ringtones to the System folder instead (or use iTunes for purchased ringtones)."];
 			return false;
 		}
-		
+
 		NSString *filename, *ringtoneName;
-		NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension:false systemDir:bInSystemDir] encoding:NSUTF8StringEncoding];
+		NSString *extension = [NSString stringWithCString:[self getRingtoneFileExtension:false systemDir:bInSystemDir filesOnPhone:false] encoding:NSUTF8StringEncoding];
 
 		for (int i = 0; i < [files count]; i++) {
 			filename = [files objectAtIndex:i];
@@ -924,7 +907,33 @@ static int g_numSystemApps = 19;
 	int row = [sender selectedRowInColumn:column];
 
 	if ( (column >= 1) && (row >= 0) ) {
-		[m_addButton setEnabled:YES];
+		char *value = PhoneInteraction::getInstance()->getPhoneProductVersion();
+		
+		if (!strncmp(value, "1.1", 3)) {
+			int selrow = [m_browser selectedRowInColumn:0];
+			NSString *title = (NSString*)[m_col1Items objectAtIndex:selrow];
+
+			if ([title isEqualToString:@"Ringtones"]) {
+				selrow = [m_browser selectedRowInColumn:1];
+				title = (NSString*)[[m_col2Dictionary objectForKey:title] objectAtIndex:selrow];
+
+				if ([title isEqualToString:@"System"]) {
+					[m_addButton setEnabled:YES];
+				}
+				else {
+					[m_addButton setEnabled:NO];
+				}
+
+			}
+			else {
+				[m_addButton setEnabled:YES];
+			}
+
+		}
+		else {
+			[m_addButton setEnabled:YES];
+		}
+
 	}
 	else {
 		[m_addButton setEnabled:NO];
@@ -960,29 +969,26 @@ static int g_numSystemApps = 19;
 	}
 	else if ([col1sel isEqualToString:@"Ringtones"]) {
 		NSString *col2item = (NSString*)[(NSArray*)[m_col2Dictionary objectForKey:col1sel] objectAtIndex:[m_browser selectedRowInColumn:1]];
+		bool bIsSystemDir = false;
 
-		if ([col2item isEqualToString:@"User"]) {
-			char *value = PhoneInteraction::getInstance()->getPhoneProductVersion();
+		if ([col2item isEqualToString:@"System"]) {
+			bIsSystemDir = true;
+		}
 
-			if (!strncmp(value, "1.1", 3)) {
-				NSBrowserCell *cell = (NSBrowserCell*)[m_browser selectedCell];
-				NSArray *files = (NSArray*)[cell representedObject];
-			
-				for (int i = 0; i < [files count]; i++) {
-				
-					if (!PhoneInteraction::getInstance()->removeRingtone([(NSString*)[files objectAtIndex:i] UTF8String], false)) {
-						[m_mainWindow displayAlert:@"Failed" message:@"Error deleting selection"];
-						return;
-					}
-				
-				}
+		NSBrowserCell *cell = (NSBrowserCell*)[m_browser selectedCell];
+		NSArray *files = (NSArray*)[cell representedObject];
 
-				[m_browser validateVisibleColumns];
+		for (int i = 0; i < [files count]; i++) {
+
+			if (!PhoneInteraction::getInstance()->removeRingtone([(NSString*)[files objectAtIndex:i] UTF8String], bIsSystemDir)) {
+				[m_mainWindow displayAlert:@"Failed" message:@"Error deleting selection"];
 				return;
 			}
 
 		}
 
+		[m_browser validateVisibleColumns];
+		return;
 	}
 
 	NSBrowserCell *cell = (NSBrowserCell*)[m_browser selectedCell];
