@@ -102,7 +102,7 @@ v1.3 beta (Creemore) - 10/26/07
 - Documentation has not yet been added for the new 1.1.1 ringtone functionality or anySIM installation
 
 
-v1.3 (Creemore) - 11/07/07
+v1.3 (Creemore)
 
 - Added MeCCA patch to 1.1 jailbreak process to allow for addition of custom ringtones to the System ringtone directory (/Library/Ringtones)
 - Removed the ability to add ringtones to the User ringtone directory as it's too buggy (left the ability to delete them though)
