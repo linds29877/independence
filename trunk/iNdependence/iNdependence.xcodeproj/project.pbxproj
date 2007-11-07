@@ -33,6 +33,7 @@
 		F28657450CCA4CE000A01FCE /* libarmfp.dylib in Resources */ = {isa = PBXBuildFile; fileRef = F28657290CCA4C1000A01FCE /* libarmfp.dylib */; };
 		F28657890CCABBCC00A01FCE /* scp in Resources */ = {isa = PBXBuildFile; fileRef = F28657880CCABBCC00A01FCE /* scp */; };
 		F29BD5000CC35187004A6F30 /* iNdependenceHelp in Resources */ = {isa = PBXBuildFile; fileRef = F29BD4EB0CC35187004A6F30 /* iNdependenceHelp */; };
+		F2BCB66D0CE03BD80020A283 /* libMobDev.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F2BCB66C0CE03BD80020A283 /* libMobDev.dylib */; };
 		F2C1F6B90CCFBD5B003AE395 /* anySIM.app in Resources */ = {isa = PBXBuildFile; fileRef = F2C1F6B80CCFBD5B003AE395 /* anySIM.app */; };
 		F2C1F6F60CCFC345003AE395 /* sleep_button.gif in Resources */ = {isa = PBXBuildFile; fileRef = F2C1F6F50CCFC345003AE395 /* sleep_button.gif */; };
 		F2CB60C10C6186AB005490ED /* MainWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60C00C6186AB005490ED /* MainWindow.mm */; };
@@ -112,6 +113,7 @@
 		F286572E0CCA4C2200A01FCE /* org.thebends.openssh.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = org.thebends.openssh.plist; path = "Other Files/SSH/OpenSSH/org.thebends.openssh.plist"; sourceTree = SOURCE_ROOT; };
 		F28657880CCABBCC00A01FCE /* scp */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = scp; path = "Other Files/SSH/OpenSSH/scp"; sourceTree = SOURCE_ROOT; };
 		F29BD4EC0CC35187004A6F30 /* English */ = {isa = PBXFileReference; lastKnownFileType = folder; name = English; path = English.lproj/iNdependenceHelp; sourceTree = "<group>"; };
+		F2BCB66C0CE03BD80020A283 /* libMobDev.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libMobDev.dylib; path = "../Third Party Libraries/libMobDev.dylib"; sourceTree = SOURCE_ROOT; };
 		F2C1F6B80CCFBD5B003AE395 /* anySIM.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; name = anySIM.app; path = "Other Files/SIM Unlock/anySIM_1.1/anySIM.app"; sourceTree = SOURCE_ROOT; };
 		F2C1F6F50CCFC345003AE395 /* sleep_button.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = sleep_button.gif; path = images/sleep_button.gif; sourceTree = SOURCE_ROOT; };
 		F2CB60C00C6186AB005490ED /* MainWindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MainWindow.mm; sourceTree = SOURCE_ROOT; };
@@ -139,6 +141,7 @@
 			files = (
 				F2CB623B0C61A77C005490ED /* libPhoneInteraction.dylib in Frameworks */,
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
+				F2BCB66D0CE03BD80020A283 /* libMobDev.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -170,6 +173,7 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F2BCB66C0CE03BD80020A283 /* libMobDev.dylib */,
 				F2CB62260C61A753005490ED /* libPhoneInteraction.xcodeproj */,
 				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
 				13E42FB307B3F0F600E4EEF1 /* CoreData.framework */,
@@ -415,7 +419,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cp \"../Public Libraries/$CONFIGURATION/libPhoneInteraction.dylib\" \"$BUILD_DIR/$CONFIGURATION/$PRODUCT_NAME.$WRAPPER_EXTENSION/Contents/MacOS\"\n";
+			shellScript = "cp \"../Public Libraries/$CONFIGURATION/libPhoneInteraction.dylib\" \"$BUILD_DIR/$CONFIGURATION/$PRODUCT_NAME.$WRAPPER_EXTENSION/Contents/MacOS\"\ncp \"../Third Party Libraries/libMobDev.dylib\" \"$BUILD_DIR/$CONFIGURATION/$PRODUCT_NAME.$WRAPPER_EXTENSION/Contents/MacOS\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -486,9 +490,11 @@
 					"$(inherited)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/Other Files/SSH\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/Other Files/SSH\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../Third Party Libraries\"";
 				PREBINDING = NO;
 				PRODUCT_NAME = iNdependence;
 				USER_HEADER_SEARCH_PATHS = "$(inherited) \"../Public Headers\"";
@@ -513,9 +519,11 @@
 					"$(inherited)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/Other Files/SSH\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/Other Files/SSH\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../Third Party Libraries\"";
 				PREBINDING = NO;
 				PRODUCT_NAME = iNdependence;
 				USER_HEADER_SEARCH_PATHS = "$(inherited) \"../Public Headers\"";

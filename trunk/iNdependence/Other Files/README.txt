@@ -1,5 +1,5 @@
  *
- * iNdependence v1.3 beta
+ * iNdependence v1.3
  * Copyright 2007 The Operator
  *
  * This software is free software; you can redistribute it and/or
@@ -21,17 +21,20 @@ Disclaimer: I am not responsible for any damage caused to your phone by this too
 
 -----
 
-Credit to:
+Credits to:
 
   - iZsh for the code based on iASign
-  - geohot, ixtli, nightwatch, warren, ziel for the code based on iPhoneInterface
+  - geohot, ixtli, nightwatch, warren, ziel, and nall for the code based on iPhoneInterface
   - nightwatch for the 1.0.x jailbreak exploit
   - ixtli for jailbreak on PPC
   - nightwatch, netkas, and nervegas for the binkit binaries
   - MHW for the code based on iphone-fixpng
   - anonymous for the fast jailbreak method
   - dinopio for the 1.1.1 jailbreak exploit
+  - Darkmen and toonces for the 1.0, 1.0.1, and 1.0.2 lockdownd patches 
   - roxfan, nervegas, dinopio, and the iTouch dev team for the 1.1.1 lockdownd patch
   - pumpkin for the 1.1.1 SpringBoard patch to enable 3rd party applications
+  - Daeken, Darkmen, guest184, gray, iZsh, leachbj, pytey, roxfan, Sam, uns, zappaz, Zf for anySIM
+  - bgm370 and the iPhone Elite team for the MeCCA patch which enables custom ringtones on 1.1.1
 
-Cheers to the iPhoneDev team!
+Cheers to the iPhone Dev, iPhone Elite, and iTouch Dev teams!

@@ -479,12 +479,14 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[changePasswordButton setEnabled:YES];
 		[jailbreakButton setEnabled:NO];
 
+		/*
 		if (m_phoneInteraction->areRingtonesOutOfSync()) {
 			[syncRingtonesButton setEnabled:YES];
 		}
 		else {
 			[syncRingtonesButton setEnabled:NO];
 		}
+		*/
 
 		if ([self isSSHInstalled]) {
 			[installSSHButton setEnabled:NO];
@@ -531,7 +533,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[changePasswordButton setEnabled:NO];
 		[customizeBrowser setEnabled:NO];
 		[pre111UpgradeButton setEnabled:NO];
-		[syncRingtonesButton setEnabled:NO];
+		//[syncRingtonesButton setEnabled:NO];
 
 		if ([self isConnected] && [self isAFCConnected]) {
 			[jailbreakButton setEnabled:YES];
