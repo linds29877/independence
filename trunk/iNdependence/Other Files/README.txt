@@ -1,5 +1,5 @@
  *
- * iNdependence v1.3
+ * iNdependence v1.3 beta 2
  * Copyright 2007 The Operator
  *
  * This software is free software; you can redistribute it and/or
