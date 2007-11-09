@@ -28,7 +28,7 @@ Before you can run iNdependence for the first time, you must do the following:
 http://rapidshare.com/files/68410680/MobileDevice_7_4_2.framework.zip.html
 
 4) Once you have that, choose the location of the MobileDevice.framework folder using the first file chooser.
-5) If that works, then choose the location where you installed iNdependence on your computer.
+5) If that works, then choose the location where you installed iNdependence on your computer using the second file chooser.
 6) At this point you should see a success message.
 
 If you do not successfully do this, then iNdependence will not run (it will show up in the dock quickly and then disappear).  After you are done, then iNdependence will run without problems no matter what version of iTunes you upgrade to.  You only need to do this once.
