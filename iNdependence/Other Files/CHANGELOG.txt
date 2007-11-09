@@ -102,8 +102,10 @@ v1.3 beta (Creemore) - 10/26/07
 - Documentation has not yet been added for the new 1.1.1 ringtone functionality or anySIM installation
 
 
-v1.3 beta 2 (Creemore)
+v1.3 beta 2 (Creemore) - 11/08/07
 
 - Added MeCCA patch to 1.1.1 jailbreak process to allow for addition of custom ringtones to the System ringtone directory (/Library/Ringtones)
 - Removed the ability to add ringtones to the User ringtone directory as it's too buggy (left in the ability to delete them though)
 - Since the version of the MobileDevice framework which comes with iTunes 7.5 doesn't allow for jailbreak, I've added the ability to include MobileDevice as a dylib directly in the application bundle.  This makes it so that people can upgrade to iTunes 7.5 (or later) and not have to worry about breaking iNdependence.
+- Created "iNdependence MobDev Tool" which allows people to copy the MobileDevice library directly into iNdependence now (removing any dependence on the version of iTunes installed).  This is now required in order to run iNdependence.
+- Updated the documentation a bit.
