@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/sgml/loosedtd.html">
+<html>
+<head>
+	<title>Usage for Phone Firmware 1.1.1</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="keywords" content="using, jailbreak, activation, ringtone, wallpaper">
+	<meta name="description" content="Using iNdependence with 1.1.1">
+	<link media="all" rel="stylesheet" href="../css/topicPage.css" />
+</head>
+<body>
+	<div id="banner">
+		<div id="machelp">
+			<a name="Using"></a>
+				<a href="../iNdependenceHelp.html">iNdependence Help</a>
+			</div>
+		</div>
+		<div id="mainbox">
+			<div id="caticon">
+				<img class="icon" src="../images/iNdependence_icon_large.png" alt="iNdependence Icon" />
+			</div>
+
+			<div id="pagetitle">
+				<h1>Using iNdependence with Firmware 1.1.1</h1>
+			</div>
+
+			<div summary="General information" id="general">
+				<p>
+					iNdependence cannot activate or jailbreak a phone which has the stock version of the 1.1.1 firmware on it.  In order to use the functionality in iNdependence, you must first downgrade to 1.0.2, then perform a special upgrade back to 1.1.1.  Instructions are included below.
+				</p>
+			</div>
+			<div summary="How to downgrade the firmware on your phone" id="downgrade">
+				<h1>To downgrade the firmware on your phone if you are using 1.1.1:</h1>
+				<p>Please note that you can skip this part if you are already using the 1.0.2 firmware.</p>
+			    <p>
+					<ol>
+						<li>First, check the firmware version that's reported in the status line at the bottom of the iNdependence window.  If it doesn't say <i>Firmware 1.1.1</i> then you don't need to downgrade.</li>
+						<li>
+							Download the <a href="http://content.info.apple.com/iPhone/061-3823.20070821.vormd/iPhone1,1_1.0.2_1C28_Restore.ipsw">1.0.2 firmware file</a> from Apple if you don't have it already.
+							<ul>
+								<li>If you downloaded it using Safari, then Safari will have automatically decompressed the file you downloaded to a folder named <i>iPhone1,1_1</i> and removed it.  However, you need to have both the original downloaded file as well as this folder.  To fix this problem, open Finder, navigate to where the folder is, select all of the files contained within the folder (Apple-A), right-click (or Ctrl-click) one of the selected files, and then choose the <i>Create Archive of 5 items</i> menu item to recreate the downloaded file again.  The file created will be named <b>Archive.zip</b>.  Rename it to be called <b>iPhone1,1_1.ipsw</b></li>
+								<li>If you downloaded it using another web browser, and the browser didn't automatically decompress that file to a folder, then change the file extension from <b>.ipsw</b> to <b>.zip</b> and unzip it yourself by right-clicking (or Ctrl-clicking) it, selecting <i>Open With</i> from the menu, and then selecting <i>BOMArchiveHelper</i>.  If you renamed the file to have a <b>.zip</b> file extension, rename the extension back to <b>.ipsw</b></li>
+							</ul>
+						</li>
+						<li>You should now have a folder which has a name starting with <i>iPhone1,1_1</i> that contains all of the firmware files as well as a file with the same name as the folder but with an extension <b>.ipsw</b> added to it.</li>
+						<li>Select the <i>Firmware</i> tab and press the <i>Enter DFU Mode</i> button.</li>
+						<li>You'll be prompted to choose the folder where you unzipped the firmware files (the one discussed in the previous steps).  Ensure that you choose the folder and not the <b>.ipsw</b> file.</li>
+						<li>If you get an error message saying <i>Error entering recovery mode</i> then quit iNdependence, restart it, and try entering DFU mode again (you don't need to do the firmware steps again).</li>
+						<li>After you see the success message, click <i>OK</i> and then quit iNdependence.</li>
+						<li>Launch iTunes.  You should see a message saying that <i>iTunes has detected an iPhone in recovery mode ...</i>.  Press the <i>OK</i> button.</li>
+						<li>Now, hold down the <b>Option</b> key while you click the <i>Restore</i> button in iTunes.</li>
+						<li>You should then be presented with a file chooser dialog.  Select the <b>.ipsw</b> file this time (not the folder).</li>
+						<li>iTunes should then begin to restore the firmware on your phone.</li>
+						<li>If you get an error message from iTunes right at the start saying <i>An unknown error occurred (1)</i>, quit iTunes, restart it, and then attempt to restore again (using the same steps).  If this continues to happen, and the <b>.ipsw</b> file was recreated by you, then it means you didn't create it properly.  Make sure to use the files contained within the firmware folder to create it and not the firmware folder itself.</li>
+						<li>iTunes should now be restoring your firmware files.  This will take a few minutes.</i>
+						<li>You will get a message from iTunes at the end saying that <i>An unknown error occurred (1013)</i>.  This is normal (and is expected).  The restore actually worked fine, but the error is shown because the modem firmware could not be downgraded (which is ok).</li>
+						<li>You should now see a yellow triangle on the screen of your iPhone, and iTunes telling you that you need to restore again.  <b>Don't do this!</b></li>
+						<li>Quit iTunes and then launch iNdependence again.</li>
+						<li>Wait about 30 seconds for iNdependence to kick the phone out of recovery mode and get it back to the main screen with <i>Activate iPhone</i> message on it.</li>
+					</ol>
+				</p>
+				<p>Congratulations!  You've successfully downgraded your phone to firmware 1.0.2.</p>
+			</div>
+
+			<div summary="How to upgrade to 1.1.1 so that you can jailbreak and activate" id="upgrade">
+				<h1>To upgrade to 1.1.1 so that you can activate/jailbreak your phone:</h1>
+				<p><b>Please note that if you have used anySIM 1.0 or other older free SIM unlocking solutions (anything except for anySIM 1.1. and iPhoneSimFree) to SIM unlock your phone, and you upgrade to 1.1.1, it will wipe out the SIM unlock and render the phone and text message part of your phone inoperable.  Everything else will work though.</b>
+				<p>
+					<ol>
+						<li>Check the firmware version that's reported in the status line at the bottom of the iNdependence window.  If it doesn't say 1.0.2 (or lower) then you'll need to downgrade your firmware using the instructions above.</li>
+						<li>Activate your phone using the <a href="usage_1_0_2.html#activation">1.0.2 activation instructions</a>.  Note that for activation, you can just reuse the same firmware folder you used when downgrading (you don't need to download again).  Also make sure to leave your phone jailbroken after activation.</li>
+						<li>Install SSH on your phone using <a href="#ssh">the instructions below</a>.</li>
+						<li>Ensure that your phone is connected to a Wi-Fi network (read the iPhone manual for instructions on how to set up Wi-Fi).  Also ensure that it's IP address does not conflict with any other devices on your Wi-Fi network (sorry, I can't offer network admin help).</li>
+						<li>Get the IP address for your phone by launching the Settings application on the phone, navigating to <i>Wi-Fi</i> and pressing the blue arrow beside the name of the Wi-Fi network that your phone is connected to.</li>
+						<li>Select the <i>Firmware</i> tab and press the <i>Pre 1.1.1 Upgrade</i> button.</li>
+						<li>Enter the IP address of the phone and the root password (see <a href="#ssh">below</a> for the default root password if you didn't change it when you installed SSH).</li>
+						<li>Follow the instructions given in the dialog windows.  If iNdependence gives you a warning about <i>host verification failure</i> and asks to edit your <b>known_hosts</b> file, choose the <i>Yes</i> option (which is now the default).</li>
+						<li>Once you are told to upgrade using iTunes, quit iNdependence, and select the <i>Update</i> button in the iTunes window (not the </i>Restore</i> button).  Note that the button might be labelled <i>Upgrade</i> instead of <i>Update</i>.</li>
+						<li>Wait for iTunes to finish.</li>
+						<li>Quit iTunes and relaunch iNdependence.  In the status bar at the bottom of the iNdependence window you should see <i>Firmware 1.1.1</i>.</li>
+						<li>Congratulations!  You are now ready to activate/jailbreak your phone using the instructions below.</li>
+					</ol>
+				</p>
+				<p>
+					Please note that you should <b>not</b> use iTunes with your phone at this point.  Your phone is in a state that iTunes is not expecting and it will report that you only have 300 MB of disk space if you use it.  Wait until you have completed activation or jailbreak to use your phone with iTunes again.
+				</p>
+			</div>
+
+			<div summary="How to activate your phone" id="activation">
+				<h1>To activate your phone:</h1>
+				<p>
+					<ol>
+						<li>Ensure that you've upgraded to 1.1.1 using the special upgrade method mentioned above.</li>
+						<li>Select the Activation tab and press the <i>Activate Phone</i> button.</li>
+						<li>You should see a message saying <i>Waiting for jail break...</i>.  Please be patient as it will take a while to do this.  It may appear that iNdependence is locked up, but it's not, it's just working very hard.</li>
+						<li>Wait for the success message.  Note that the activation process will also enable YouTube, 3rd party application installation, and custom ringtone installation for you.</li>
+					</ol>
+				</p>
+			</div>
+
+			<div summary="How to jailbreak your phone" id="jailbreak">
+				<h1>To jailbreak your phone:</h1>
+				<p>
+					Note that this will be done automatically if you activate with 1.1.1.
+					<ol>
+						<li>Ensure that you've upgraded to 1.1.1 using the special upgrade method mentioned above.</li>
+						<li>Select the <i>Jailbreak</i> tab and press the <i>Perform Jailbreak</i> button.</li>
+						<li>You should see a message saying <i>Waiting for jail break...</i>.  Please be patient as it will take a while to do this.  It may appear that iNdependence is locked up, but it's not, it's just working very hard.</li>
+						<li>Wait for the success message.  Note that the jailbreak process will enable 3rd party application and custom ringtone installation.</li>
+					</ol>
+				</p>
+			</div>
+
+			<div summary="Installing and configuring SSH" id="ssh">
+				<h1>Installing and Configuring SSH</h1>
+				<p>
+					Installing SSH is a breeze once your phone is jailbroken.  Just choose the <i>SSH</i> tab and press the <i>Install SSH/SCP/SFTP</i> button.  Then follow the instructions.
+				</p>
+				<p>
+					The default accounts on the phone are:<br><br>
+
+					username: root<br>
+					password: dottie<br><br>
+
+					username: mobile<br>
+					password: alpine
+				</p>
+				<p>
+					Remember to change the default passwords after installing SSH using the <i>Change Password</i> button.  I'm not responsible if someone hacks your phone.
+				</p>
+				<p>
+					If you want to later remove SSH, you can do so using the <i>Remove SSH</i> button.  iNdependence will ask you if you want to also remove <b>libarmfp.dylib</b> at that time.  That file is required for 3rd party applications to work correctly, so you may not want to remove it.
+				</p>
+			</div>
+
+			<div summary="Installing ringtones, wallpapers, and applications" id="customization">
+				<h1>Customization</h1>
+				<p>
+					The <i>Customize</i> tab uses a Finder-style interface and allows for drag and drop installation of ringtones, wallpapers, and applications.  You can also use the <i>Add</i> and <i>Delete</i> buttons.
+				</p>
+				<p>
+					Please note that in order to install/remove applications, you'll need to have SSH installed on the phone as you'll be asked for the phone's IP address and root password.
+				</p>
+				<p>
+					To find the phone's IP address, launch the Settings application, navigate to <i>Wi-Fi</i> and press the blue arrow beside the name of the Wi-Fi network that your phone is connected to.
+				</p>
+				<p>
+					Ringtones must be MPEG-4 audio (<b>.m4a</b>) files as the file chooser will only allow you to choose <b>.m4a</b> files.  Also note that you can only put custom ringtones into the System folder when using firmware 1.1.1.
+				</p>
+				<p>
+					Wallpapers must be 2 PNG (<b>.png</b>) files (the main image and the thumbnail image).  The wallpaper image sizes I use are 320x480 for the main image and 75x75 for the thumbnail image.  These seem to work well for me.
+				</p>
+			</div>
+
+			<p>
+				<strong>Have fun!</strong>
+			</p>
+
+		</div>
+	</body>
+</html>
