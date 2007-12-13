@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 
 	}
 
-    g_phoneInteraction = PhoneInteraction::getInstance(updateStatus, phoneNotification);
+    g_phoneInteraction = PhoneInteraction::getInstance(updateStatus, phoneNotification, false);
     CFRunLoopRun();
     return 0;
 }

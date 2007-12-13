@@ -1,6 +1,7 @@
 #import "CustomizeBrowser.h"
 #import "CustomizeBrowserCell.h"
 #import "CustomizeBrowserDelegate.h"
+#include "PhoneInteraction/PhoneInteraction.h"
 
 
 @implementation CustomizeBrowser
@@ -14,6 +15,18 @@
 
 - (NSDragOperation)handleDragEvent:(id <NSDraggingInfo>)sender
 {
+	int selection = [self selectedRowInColumn:0];
+
+	// no drag and drop for ringtones in version 1.1.2
+	if (selection == 0) {
+		char *value = PhoneInteraction::getInstance()->getPhoneProductVersion();
+
+		if (!strcmp(value, "1.1.2")) {
+			return NSDragOperationNone;
+		}
+
+	}
+
 	NSPoint loc = [sender draggingLocation];
 	int selColumn = [self selectedColumn];
 	bool bHandleDrag = false;

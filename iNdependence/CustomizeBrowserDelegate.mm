@@ -903,25 +903,34 @@ static int g_numSystemApps = 19;
 
 - (IBAction)selectionChanged:(id)sender
 {
+	char *value = PhoneInteraction::getInstance()->getPhoneProductVersion();
 	int column = [sender selectedColumn];
 	int row = [sender selectedRowInColumn:column];
+	bool bDisable = false;
 
 	if ( (column >= 1) && (row >= 0) ) {
-		char *value = PhoneInteraction::getInstance()->getPhoneProductVersion();
 		
 		if (!strncmp(value, "1.1", 3)) {
 			int selrow = [m_browser selectedRowInColumn:0];
 			NSString *title = (NSString*)[m_col1Items objectAtIndex:selrow];
 
 			if ([title isEqualToString:@"Ringtones"]) {
-				selrow = [m_browser selectedRowInColumn:1];
-				title = (NSString*)[[m_col2Dictionary objectForKey:title] objectAtIndex:selrow];
 
-				if ([title isEqualToString:@"System"]) {
-					[m_addButton setEnabled:YES];
+				if (!strcmp(value, "1.1.2")) {
+					// no ringtone handling in version 1.1.2
+					bDisable = true;
 				}
 				else {
-					[m_addButton setEnabled:NO];
+					selrow = [m_browser selectedRowInColumn:1];
+					title = (NSString*)[[m_col2Dictionary objectForKey:title] objectAtIndex:selrow];
+
+					if ([title isEqualToString:@"System"]) {
+						[m_addButton setEnabled:YES];
+					}
+					else {
+						[m_addButton setEnabled:NO];
+					}
+
 				}
 
 			}
@@ -939,11 +948,19 @@ static int g_numSystemApps = 19;
 		[m_addButton setEnabled:NO];
 	}
 
-	if ( (column == 2) && (row >= 0) ) {
-		[m_deleteButton setEnabled:YES];
+	if (bDisable) {
+		[m_addButton setEnabled:NO];
+		[m_deleteButton setEnabled:NO];
 	}
 	else {
-		[m_deleteButton setEnabled:NO];
+
+		if ( (column == 2) && (row >= 0) ) {
+			[m_deleteButton setEnabled:YES];
+		}
+		else {
+			[m_deleteButton setEnabled:NO];
+		}
+
 	}
 
 }

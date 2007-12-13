@@ -15,8 +15,7 @@
                 passwordDialogCancel = id; 
                 passwordDialogOk = id; 
                 performJailbreak = id; 
-                post111Upgrade = id; 
-                pre111Upgrade = id; 
+                preFirmwareUpgrade = id; 
                 putPEMOnPhone = id; 
                 removeSSH = id; 
                 removeSimUnlock = id; 
@@ -46,8 +45,7 @@
                 newPasswordDialog = NSWindow; 
                 passwordAgainField = NSSecureTextField; 
                 passwordField = NSSecureTextField; 
-                post111UpgradeButton = NSButton; 
-                pre111UpgradeButton = NSButton; 
+                preFirmwareUpgradeButton = NSButton; 
                 putPEMButton = NSButton; 
                 removeSSHButton = NSButton; 
                 removeSimUnlockButton = NSButton; 

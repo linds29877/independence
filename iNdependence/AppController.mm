@@ -27,6 +27,8 @@
 #include "PhoneInteraction/PhoneInteraction.h"
 #include "PhoneInteraction/SSHHelper.h"
 
+#define PRE_FIRMWARE_UPGRADE_FILE "/private/var/root/Media/disk"
+
 
 enum
 {
@@ -40,8 +42,7 @@ enum
 	MENU_ITEM_REMOVE_SIM_UNLOCK = 19,
 	MENU_ITEM_ENTER_DFU_MODE = 20,
 	MENU_ITEM_REMOVE_SSH = 21,
-	MENU_ITEM_PRE_111 = 22,
-	MENU_ITEM_POST_111 = 23
+	MENU_ITEM_PRE_FIRMWARE_UPGRADE = 22,
 };
 
 extern MainWindow *g_mainWindow;
@@ -127,17 +128,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_appController setReturningToJail:false];
 				[g_appController setJailbroken:g_phoneInteraction->isPhoneJailbroken()];
 				[g_mainWindow updateStatus];
-
-				if ([g_appController isWaitingForActivation]) {
-					[g_appController activateStageThree];
-				}
-				else if ([g_appController isWaitingForDeactivation]) {
-					[g_appController deactivateStageThree];
-				}
-				else {
-					[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
-				}
-
+				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
 			case NOTIFY_DFU_SUCCESS:
 				[g_mainWindow endDisplayWaitingSheet];
@@ -166,17 +157,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_appController setReturningToJail:false];
 				[g_appController setJailbroken:g_phoneInteraction->isPhoneJailbroken()];
 				[g_mainWindow updateStatus];
-
-				if ([g_appController isWaitingForActivation]) {
-					[g_appController activationFailed:msg];
-				}
-				else if ([g_appController isWaitingForDeactivation]) {
-					[g_appController deactivationFailed:msg];
-				}
-				else {
-					[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
-				}
-
+				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
 			case NOTIFY_DFU_FAILED:
 				[g_mainWindow endDisplayWaitingSheet];
@@ -399,14 +380,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 		if ([self isJailbroken]) {
 			[jailbreakButton setEnabled:NO];
-
-			if ([self isUsing10xFirmware]) {
-				[returnToJailButton setEnabled:YES];
-			}
-			else {
-				[returnToJailButton setEnabled:NO];
-			}
-
+			[returnToJailButton setEnabled:YES];
 		}
 		else {
 			[jailbreakButton setEnabled:YES];
@@ -467,43 +441,20 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_jailbroken = jailbroken;
 	
 	if (m_jailbroken) {
-
-		if ([self isUsing10xFirmware]) {
-			[returnToJailButton setEnabled:YES];
-		}
-		else {
-			[returnToJailButton setEnabled:NO];
-		}
-
+		[returnToJailButton setEnabled:YES];
 		[customizeBrowser setEnabled:YES];
 		[changePasswordButton setEnabled:YES];
 		[jailbreakButton setEnabled:NO];
-
-		/*
-		if (m_phoneInteraction->areRingtonesOutOfSync()) {
-			[syncRingtonesButton setEnabled:YES];
-		}
-		else {
-			[syncRingtonesButton setEnabled:NO];
-		}
-		*/
 
 		if ([self isSSHInstalled]) {
 			[installSSHButton setEnabled:NO];
 			[removeSSHButton setEnabled:YES];
 
-			if ([self isUsing10xFirmware]) {
-
-				if (!m_phoneInteraction->fileExists("/private/var/root/Media.iNdependence")) {
-					[pre111UpgradeButton setEnabled:YES];
-				}
-				else {
-					[pre111UpgradeButton setEnabled:NO];
-				}
-
+			if (!m_phoneInteraction->fileExists(PRE_FIRMWARE_UPGRADE_FILE)) {
+				[preFirmwareUpgradeButton setEnabled:YES];
 			}
 			else {
-				[pre111UpgradeButton setEnabled:NO];
+				[preFirmwareUpgradeButton setEnabled:NO];
 			}
 
 			if ([self isanySIMInstalled]) {
@@ -532,8 +483,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[removeSimUnlockButton setEnabled:NO];
 		[changePasswordButton setEnabled:NO];
 		[customizeBrowser setEnabled:NO];
-		[pre111UpgradeButton setEnabled:NO];
-		//[syncRingtonesButton setEnabled:NO];
+		[preFirmwareUpgradeButton setEnabled:NO];
 
 		if ([self isConnected] && [self isAFCConnected]) {
 			[jailbreakButton setEnabled:YES];
@@ -598,7 +548,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (bool)isanySIMInstalled
 {
-	return m_phoneInteraction->applicationExists("anySIM.app");
+	return ( m_phoneInteraction->applicationExists("anySIM_11.app") || m_phoneInteraction->applicationExists("anySIM_12.app") );
 }
 
 - (NSString*)phoneFirmwareVersion
@@ -764,11 +714,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_phoneInteraction->enterDFUMode([firmwarePath UTF8String]);
 }
 
-- (IBAction)pre111Upgrade:(id)sender
+- (IBAction)preFirmwareUpgrade:(id)sender
 {
 
-	if (m_phoneInteraction->fileExists("/var/root/Media.backup")) {
-		[mainWindow displayAlert:@"Already done" message:@"It appears that you have already performed the pre-1.1.1 operation.  If this is not the case, then remove the /var/root/Media.backup directory from your phone using SSH/SFTP and try again."];
+	if (m_phoneInteraction->fileExists(PRE_FIRMWARE_UPGRADE_FILE)) {
+		[mainWindow displayAlert:@"Already done" message:@"It appears that you have already performed the pre-firmware operation.  If this is not the case, then remove the /private/var/root/Media/disk file from your phone using SSH/SFTP and try again."];
 		return;
 	}
 
@@ -783,15 +733,27 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 
-	[mainWindow displayAlert:@"Open iTunes" message:@"Please open iTunes now and ensure that it is connected to your phone.\n\nIf you see the \"Set Up Your iPhone\" screen, then set it up accordingly before you proceed.\n\nOnce you are done and the iPhone is connected to iTunes again, press the OK button to proceed."];
+	NSString *mknodFile = [[NSBundle mainBundle] pathForResource:@"mknod" ofType:@""];
+	
+	if (mknodFile == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding mknod in bundle."];
+		return;
+	}
+	
+	m_phoneInteraction->removePath("/mknod");
 
-	bool done = false, symlinked = false;
+	if (!m_phoneInteraction->putFile([mknodFile UTF8String], "/mknod")) {
+		[mainWindow displayAlert:@"Error" message:@"Error writing /mknod to phone."];
+		return;
+	}
+
+	bool done = false, taskSuccessful = false;
 	int retval;
 	
 	while (!done) {
-		[mainWindow startDisplayWaitingSheet:@"Performing Pre-1.1.1 Upgrade" message:@"Performing pre-1.1.1 operations..." image:nil
+		[mainWindow startDisplayWaitingSheet:@"Performing Pre-Firmware Upgrade" message:@"Performing pre-firmware operations..." image:nil
 								cancelButton:false runModal:false];
-		retval = SSHHelper::symlinkMediaToRoot([ipAddress UTF8String], [password UTF8String]);
+		retval = SSHHelper::mknodDisk([ipAddress UTF8String], [password UTF8String]);
 		[mainWindow endDisplayWaitingSheet];
 
 		if (retval != SSH_HELPER_SUCCESS) {
@@ -825,7 +787,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 					break;
 				default:
-					[mainWindow displayAlert:@"Failed" message:@"Error performing pre-1.1.1 operations."];
+					[mainWindow displayAlert:@"Failed" message:@"Error performing pre-firmware operations."];
 					done = true;
 					break;
 			}
@@ -833,30 +795,34 @@ static void phoneInteractionNotification(int type, const char *msg)
 		}
 		else {
 			done = true;
-			symlinked = true;
+			taskSuccessful = true;
 		}
 
 	}
 
-	if (symlinked) {
-		[pre111UpgradeButton setEnabled:false];
-		[mainWindow displayAlert:@"Success" message:@"Your phone is now ready to be upgraded to 1.1.1.\n\nPlease quit iNdependence, then use iTunes to do this now.\n\nEnsure that you choose 'Update' and not 'Restore' in iTunes."];
+	m_phoneInteraction->removePath("/mknod");
+
+	if (taskSuccessful) {
+		[preFirmwareUpgradeButton setEnabled:false];
+		[mainWindow displayAlert:@"Success" message:@"Your phone is now ready to be upgraded.\n\nPlease quit iNdependence, then use iTunes to do this now.\n\nEnsure that you choose 'Update' and not 'Restore' in iTunes."];
 	}
 
 }
 
 - (IBAction)installSimUnlock:(id)sender
 {
-	NSString *simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM" ofType:@"app"];
-	
-	if (simUnlockApp == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding SIM unlock application in bundle."];
-		return;
+	char *value = m_phoneInteraction->getPhoneBasebandVersion();
+	NSString *simUnlockApp = nil;
+
+	if (!strcmp(value, "04.02.13_G")) {
+		simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM_12" ofType:@"app"];
+	}
+	else {
+		simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM_11" ofType:@"app"];
 	}
 
-	int retval = NSRunAlertPanel(@"Confirm", @"Please note that anySIM only works on phones which have never been SIM unlocked before, or have been reset to a virgin state after a previous SIM unlock.\n\nDo you still want to install it?", @"Yes", @"No", nil);
-
-	if (retval != NSAlertDefaultReturn) {
+	if (simUnlockApp == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error finding SIM unlock application in bundle."];
 		return;
 	}
 
@@ -879,6 +845,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 	NSString *appName = [NSString stringWithFormat:@"%@/%@", @"/Applications", [simUnlockApp lastPathComponent]];
 
 	bool done = false, permsSet = false;
+	int retval;
 	
 	while (!done) {
 		[mainWindow startDisplayWaitingSheet:@"Setting Permissions" message:@"Setting application permissions..." image:nil
@@ -963,8 +930,20 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 
-	if (!m_phoneInteraction->removeApplication("anySIM.app")) {
-		return;
+	if (m_phoneInteraction->applicationExists("anySIM_11.app")) {
+
+		if (!m_phoneInteraction->removeApplication("anySIM_11.app")) {
+			return;
+		}
+
+	}
+
+	if (m_phoneInteraction->applicationExists("anySIM_12.app")) {
+		
+		if (!m_phoneInteraction->removeApplication("anySIM_12.app")) {
+			return;
+		}
+		
 	}
 
 	if ([self isanySIMInstalled]) {
@@ -1046,75 +1025,27 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (void)activateStageTwo:(bool)displaySheet
 {
-	char *value = m_phoneInteraction->getPhoneProductVersion();
-
-	if (!strncmp(value, "1.0", 3) || !strcmp(value, "1.1.1")) {
-		m_waitingForActivation = false;
-		
-		if (!m_phoneInteraction->factoryActivate()) {
-			[mainWindow displayAlert:@"Error" message:@"Error during activation."];
-			return;
-		}
-
-		if (!m_phoneInteraction->enableYouTube()) {
-			[mainWindow displayAlert:@"Error" message:@"Error enabling YouTube."];
-			return;
-		}
-
-		m_waitingForNewActivation = true;
-		g_ignoreJailbreakSuccess = true;
-		
-		if (displaySheet) {
-			[g_mainWindow startDisplayWaitingSheet:nil
-										   message:@"Please press and hold the Sleep/Wake button for 3 seconds, then power off your phone, then press Sleep/Wake again to restart it."
-											 image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
-		}
-		
-	}
-	else {
-		NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation" ofType:@"pem"];
-		
-		if (pemfile == nil) {
-			m_waitingForActivation = false;
-			[mainWindow displayAlert:@"Error" message:@"Error finding necessary files in application bundle."];
-			[mainWindow updateStatus];
-			return;
-		}
-		
-		if (![self doPutPEM:[pemfile UTF8String]]) {
-			m_waitingForActivation = false;
-			[mainWindow displayAlert:@"Error" message:@"Error writing PEM file to phone."];
-			[mainWindow updateStatus];
-			return;
-		}
-
-		if (!m_phoneInteraction->enableYouTube()) {
-			m_waitingForActivation = false;
-			[mainWindow displayAlert:@"Error" message:@"Error enabling YouTube."];
-			[mainWindow updateStatus];
-			return;
-		}
-
-		[self returnToJail:self];
-	}
-
-}
-
-- (void)activateStageThree
-{
 	m_waitingForActivation = false;
-
-	NSString *pemfile_priv = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation_private" ofType:@"pem"];
-	
-	if (pemfile_priv == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding PEM file in application bundle."];
-		[mainWindow updateStatus];
+		
+	if (!m_phoneInteraction->factoryActivate()) {
+		[mainWindow displayAlert:@"Error" message:@"Error during activation."];
 		return;
 	}
-	
-	[mainWindow setStatus:@"Activating..." spinning:true];
-	
-	m_phoneInteraction->activate(NULL, [pemfile_priv UTF8String]);
+
+	if (!m_phoneInteraction->enableYouTube()) {
+		[mainWindow displayAlert:@"Error" message:@"Error enabling YouTube."];
+		return;
+	}
+
+	m_waitingForNewActivation = true;
+	g_ignoreJailbreakSuccess = true;
+		
+	if (displaySheet) {
+		[g_mainWindow startDisplayWaitingSheet:nil
+									   message:@"Please press and hold the Sleep/Wake button for 3 seconds, then power off your phone, then press Sleep/Wake again to restart it."
+										 image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
+	}
+
 }
 
 - (void)activationFailed:(const char*)msg
@@ -1125,62 +1056,22 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (void)deactivateStageTwo
 {
-	char *value = m_phoneInteraction->getPhoneProductVersion();
-	
-	if (!strncmp(value, "1.0", 3) || !strcmp(value, "1.1.1")) {
-		m_waitingForDeactivation = false;
-		
-		if (!m_phoneInteraction->factoryActivate(true)) {
-			[mainWindow displayAlert:@"Error" message:@"Error during deactivation."];
-			return;
-		}
-
-		if (!m_phoneInteraction->enableYouTube(true)) {
-			[mainWindow displayAlert:@"Error" message:@"Error disabling YouTube."];
-			return;
-		}
-
-		m_waitingForNewDeactivation = true;
-		[g_mainWindow startDisplayWaitingSheet:nil
-									   message:@"Please press and hold the Sleep/Wake button for 3 seconds, then power off your phone, then press Sleep/Wake again to restart it."
-										 image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
-	}
-	else {
-		[mainWindow setStatus:@"Restoring original PEM file on phone..." spinning:true];
-
-		NSString *pemfile = [[NSBundle mainBundle] pathForResource:@"iPhoneActivation_original" ofType:@"pem"];
-		
-		if (pemfile == nil) {
-			m_waitingForDeactivation = false;
-			[mainWindow displayAlert:@"Error" message:@"Error finding PEM file in application bundle."];
-			[mainWindow updateStatus];
-			return;
-		}
-		
-		if (![self doPutPEM:[pemfile UTF8String]]) {
-			m_waitingForDeactivation = false;
-			[mainWindow displayAlert:@"Error" message:@"Error writing PEM file to phone."];
-			[mainWindow updateStatus];
-			return;
-		}
-
-		if (!m_phoneInteraction->enableYouTube(true)) {
-			m_waitingForDeactivation = false;
-			[mainWindow displayAlert:@"Error" message:@"Error disabling YouTube."];
-			[mainWindow updateStatus];
-			return;
-		}
-
-		[self returnToJail:self];
-	}
-	
-}
-
-- (void)deactivateStageThree
-{
 	m_waitingForDeactivation = false;
-	[mainWindow setStatus:@"Deactivating..." spinning:true];
-	m_phoneInteraction->deactivate();
+
+	if (!m_phoneInteraction->factoryActivate(true)) {
+		[mainWindow displayAlert:@"Error" message:@"Error during deactivation."];
+		return;
+	}
+
+	if (!m_phoneInteraction->enableYouTube(true)) {
+		[mainWindow displayAlert:@"Error" message:@"Error disabling YouTube."];
+		return;
+	}
+
+	m_waitingForNewDeactivation = true;
+	[g_mainWindow startDisplayWaitingSheet:nil
+								   message:@"Please press and hold the Sleep/Wake button for 3 seconds, then power off your phone, then press Sleep/Wake again to restart it."
+									 image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
 }
 
 - (void)deactivationFailed:(const char*)msg
@@ -1961,7 +1852,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			break;
 		case MENU_ITEM_RETURN_TO_JAIL:
 			
-			if (![self isConnected] || ![self isJailbroken] || [self isUsing10xFirmware]) {
+			if (![self isConnected] || ![self isJailbroken]) {
 				return NO;
 			}
 			
@@ -1989,39 +1880,19 @@ static void phoneInteractionNotification(int type, const char *msg)
 			}
 			
 			break;
-		case MENU_ITEM_PRE_111:
+		case MENU_ITEM_PRE_FIRMWARE_UPGRADE:
 
 			if (![self isConnected] || ![self isJailbroken] || ![self isSSHInstalled] ||
-				![self isUsing10xFirmware] || m_phoneInteraction->fileExists("/var/root/Media.backup")) {
+				m_phoneInteraction->fileExists(PRE_FIRMWARE_UPGRADE_FILE)) {
 				return NO;
 			}
 
-			break;
-		case MENU_ITEM_POST_111:
-			
-			if (![self isConnected] || ![self isJailbroken] || ![self isSSHInstalled] ||
-				[self isUsing10xFirmware] || !m_phoneInteraction->fileExists("/var/root/Media.backup")) {
-				return NO;
-			}
-			
 			break;
 		default:
 			break;
 	}
 	
 	return YES;
-}
-
-- (IBAction)syncRingtones:(id)sender
-{
-
-	if (!m_phoneInteraction->syncRingtones()) {
-		[mainWindow displayAlert:@"Error" message:@"Ringtone sync failed."];
-		return;
-	}
-
-	[mainWindow displayAlert:@"Success" message:@"Ringtones have been restored."];
-	[syncRingtonesButton setEnabled:NO];
 }
 
 @end

@@ -115,7 +115,8 @@ public:
 
 	// singleton pattern for object instantiation
 	static PhoneInteraction* getInstance(void (*statusFunc)(const char*, bool) = NULL,
-										 void (*notifyFunc)(int, const char*) = NULL);
+										 void (*notifyFunc)(int, const char*) = NULL,
+										 bool bUsingPrivateFunctions = true);
 
 	// connection related functions
 	void connectToPhone();
@@ -133,12 +134,11 @@ public:
 	char *getPhoneFirmwareVersion();
 	char *getPhoneProductVersion();
 	char *getPhoneBuildVersion();
+	char *getPhoneBasebandVersion();
 
 	// ringtone related functions
 	char *getUserRingtoneName(const char *filename);
 	bool getUserRingtoneFilenames(const char *ringtoneName, char ***filenames, int *numFiles);
-	bool areRingtonesOutOfSync();
-	bool syncRingtones();
 
 	// activation related functions
 	bool activate(const char* filename, const char* pemfile = NULL);
@@ -156,7 +156,7 @@ public:
 	void returnToJailFinished();
 	bool isPhoneJailbroken();
 
-	// use to enable SpringBoard to recognize 3rd party applications on firmware 1.1.1
+	// use to enable SpringBoard to recognize 3rd party applications on firmware 1.1.x
 	bool enableThirdPartyApplications(bool undo = false);
 
 	// use to enable/disable YouTube
@@ -242,7 +242,8 @@ public:
 private:
 	// private constructor (use getInstance to instantiate)
 	PhoneInteraction(void (*statusFunc)(const char*, bool),
-					 void (*notifyFunc)(int, const char*));
+					 void (*notifyFunc)(int, const char*),
+					 bool bUsingPrivateFunctions);
 
 	// functions used internally
 	void subscribeToNotifications();	
@@ -255,7 +256,7 @@ private:
 	bool removePathRecursive(const char *path);
 	bool writeDataToFile(void *buf, int size, const char *file, int failureMsg = 0, int successMsg = 0);
 	void recoveryModeStarted_dfu(struct am_recovery_device *rdev);
-	CFMutableDictionaryRef getConglomeratedRingtoneDictionaries();
+	CFDictionaryRef getUserRingtoneDictionary();
 
 	// private data members
 	bool m_connected;
@@ -265,6 +266,7 @@ private:
 	bool m_enteringRecoveryMode;
 	bool m_enteringDFUMode;
 	bool m_waitingForRecovery;
+	bool m_usingPrivateFunctions;
 	afc_connection *m_hAFC;
 	void (*m_statusFunc)(const char*, bool);
 	void (*m_notifyFunc)(int, const char*);
@@ -274,6 +276,7 @@ private:
 	char *m_firmwareVersion;
 	char *m_productVersion;
 	char *m_buildVersion;
+	char *m_basebandVersion;
 	char *m_servicesPath;
 
 };
