@@ -13,7 +13,6 @@
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		F207EF8E0CC27BE4002AC0AA /* Services111_mod.plist in Resources */ = {isa = PBXBuildFile; fileRef = F207EF8C0CC27BE4002AC0AA /* Services111_mod.plist */; };
 		F207EF8F0CC27BE4002AC0AA /* Services111.plist in Resources */ = {isa = PBXBuildFile; fileRef = F207EF8D0CC27BE4002AC0AA /* Services111.plist */; };
-		F243AD620CE2E75D00A82889 /* libMobDev.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F243AD610CE2E75D00A82889 /* libMobDev.dylib */; };
 		F25021470C7B354F00B7F437 /* jailbreak.jpg in Resources */ = {isa = PBXBuildFile; fileRef = F25021460C7B354F00B7F437 /* jailbreak.jpg */; };
 		F25021550C7B363F00B7F437 /* fstab in Resources */ = {isa = PBXBuildFile; fileRef = F25021510C7B363F00B7F437 /* fstab */; };
 		F25021560C7B363F00B7F437 /* fstab_mod in Resources */ = {isa = PBXBuildFile; fileRef = F25021520C7B363F00B7F437 /* fstab_mod */; };
@@ -21,6 +20,7 @@
 		F25021580C7B363F00B7F437 /* Services.plist in Resources */ = {isa = PBXBuildFile; fileRef = F25021540C7B363F00B7F437 /* Services.plist */; };
 		F250215B0C7B365600B7F437 /* iPhoneActivation_private.pem in Resources */ = {isa = PBXBuildFile; fileRef = F25021590C7B365600B7F437 /* iPhoneActivation_private.pem */; };
 		F250215C0C7B365600B7F437 /* iPhoneActivation.pem in Resources */ = {isa = PBXBuildFile; fileRef = F250215A0C7B365600B7F437 /* iPhoneActivation.pem */; };
+		F25D50A70CF150DE00812F3F /* mknod in Resources */ = {isa = PBXBuildFile; fileRef = F25D50A60CF150DE00812F3F /* mknod */; };
 		F26A50AB0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = F26A50AA0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm */; };
 		F26A51EA0C80EAEC00A1C30C /* Add.png in Resources */ = {isa = PBXBuildFile; fileRef = F26A51E90C80EAEC00A1C30C /* Add.png */; };
 		F26A51EC0C80EAF100A1C30C /* Delete.png in Resources */ = {isa = PBXBuildFile; fileRef = F26A51EB0C80EAF100A1C30C /* Delete.png */; };
@@ -34,12 +34,14 @@
 		F28657450CCA4CE000A01FCE /* libarmfp.dylib in Resources */ = {isa = PBXBuildFile; fileRef = F28657290CCA4C1000A01FCE /* libarmfp.dylib */; };
 		F28657890CCABBCC00A01FCE /* scp in Resources */ = {isa = PBXBuildFile; fileRef = F28657880CCABBCC00A01FCE /* scp */; };
 		F29BD5000CC35187004A6F30 /* iNdependenceHelp in Resources */ = {isa = PBXBuildFile; fileRef = F29BD4EB0CC35187004A6F30 /* iNdependenceHelp */; };
-		F2C1F6B90CCFBD5B003AE395 /* anySIM.app in Resources */ = {isa = PBXBuildFile; fileRef = F2C1F6B80CCFBD5B003AE395 /* anySIM.app */; };
+		F2C1F6B90CCFBD5B003AE395 /* anySIM_11.app in Resources */ = {isa = PBXBuildFile; fileRef = F2C1F6B80CCFBD5B003AE395 /* anySIM_11.app */; };
 		F2C1F6F60CCFC345003AE395 /* sleep_button.gif in Resources */ = {isa = PBXBuildFile; fileRef = F2C1F6F50CCFC345003AE395 /* sleep_button.gif */; };
 		F2CB60C10C6186AB005490ED /* MainWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60C00C6186AB005490ED /* MainWindow.mm */; };
 		F2CB60CD0C61899F005490ED /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60CC0C61899F005490ED /* AppController.mm */; };
 		F2CB623B0C61A77C005490ED /* libPhoneInteraction.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F2CB622B0C61A753005490ED /* libPhoneInteraction.dylib */; };
 		F2D6EE490CD2B56800E86C41 /* Sync.png in Resources */ = {isa = PBXBuildFile; fileRef = F2D6EE480CD2B56800E86C41 /* Sync.png */; };
+		F2D7DE4C0D11392A00F60A81 /* anySIM_12.app in Resources */ = {isa = PBXBuildFile; fileRef = F2D7DE4B0D11392A00F60A81 /* anySIM_12.app */; };
+		F2ECD7710D0FA51E006D8DC6 /* MobileDevice.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F2ECD7700D0FA51E006D8DC6 /* MobileDevice.framework */; };
 		F2F0C2100C8228FA005F65C6 /* CustomizeBrowserCell.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2F0C20E0C8228FA005F65C6 /* CustomizeBrowserCell.mm */; };
 		F2F0C26A0C822C22005F65C6 /* UserFolder.png in Resources */ = {isa = PBXBuildFile; fileRef = F2F0C2690C822C22005F65C6 /* UserFolder.png */; };
 		F2F0C27D0C822E5B005F65C6 /* RingtoneFolder.png in Resources */ = {isa = PBXBuildFile; fileRef = F2F0C27C0C822E5B005F65C6 /* RingtoneFolder.png */; };
@@ -50,12 +52,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		F2825A410C7DD124006936D6 /* PBXContainerItemProxy */ = {
+		F20742D30CE4A96D00A152B8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F2CB62260C61A753005490ED /* libPhoneInteraction.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = D2AAC09C05546B4700DB518D;
-			remoteInfo = libPhoneInteraction;
+			proxyType = 2;
+			remoteGlobalIDString = F207426F0CE4A4FE00A152B8;
+			remoteInfo = libPhoneInteraction_SysMobDev;
 		};
 		F2CB622A0C61A753005490ED /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -64,20 +66,14 @@
 			remoteGlobalIDString = D2AAC09D05546B4700DB518D;
 			remoteInfo = libPhoneInteraction;
 		};
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		F2F7B3F40CA4908F0097C9EE /* Copy anySIM */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 7;
-			files = (
-			);
-			name = "Copy anySIM";
-			runOnlyForDeploymentPostprocessing = 0;
+		F2ECD76E0D0FA4FA006D8DC6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F2CB62260C61A753005490ED /* libPhoneInteraction.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = F207425E0CE4A4FE00A152B8;
+			remoteInfo = libPhoneInteraction_SysMobDev;
 		};
-/* End PBXCopyFilesBuildPhase section */
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -92,7 +88,6 @@
 		8D1107320486CEB800E47090 /* iNdependence.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iNdependence.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F207EF8C0CC27BE4002AC0AA /* Services111_mod.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services111_mod.plist; path = "Other Files/jailbreak files/Services111_mod.plist"; sourceTree = SOURCE_ROOT; };
 		F207EF8D0CC27BE4002AC0AA /* Services111.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services111.plist; path = "Other Files/jailbreak files/Services111.plist"; sourceTree = SOURCE_ROOT; };
-		F243AD610CE2E75D00A82889 /* libMobDev.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libMobDev.dylib; path = "../Third Party Libraries/libMobDev.dylib"; sourceTree = SOURCE_ROOT; };
 		F25021460C7B354F00B7F437 /* jailbreak.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = jailbreak.jpg; path = images/jailbreak.jpg; sourceTree = SOURCE_ROOT; };
 		F25021510C7B363F00B7F437 /* fstab */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = fstab; path = "Other Files/jailbreak files/fstab"; sourceTree = SOURCE_ROOT; };
 		F25021520C7B363F00B7F437 /* fstab_mod */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = fstab_mod; path = "Other Files/jailbreak files/fstab_mod"; sourceTree = SOURCE_ROOT; };
@@ -100,6 +95,7 @@
 		F25021540C7B363F00B7F437 /* Services.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services.plist; path = "Other Files/jailbreak files/Services.plist"; sourceTree = SOURCE_ROOT; };
 		F25021590C7B365600B7F437 /* iPhoneActivation_private.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = iPhoneActivation_private.pem; path = "Other Files/PEMs/iPhoneActivation_private.pem"; sourceTree = SOURCE_ROOT; };
 		F250215A0C7B365600B7F437 /* iPhoneActivation.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = iPhoneActivation.pem; path = "Other Files/PEMs/iPhoneActivation.pem"; sourceTree = SOURCE_ROOT; };
+		F25D50A60CF150DE00812F3F /* mknod */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = mknod; path = "Other Files/SSH/mknod"; sourceTree = SOURCE_ROOT; };
 		F26A50A90C80BB6D00A1C30C /* CustomizeBrowserDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomizeBrowserDelegate.h; sourceTree = "<group>"; };
 		F26A50AA0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CustomizeBrowserDelegate.mm; sourceTree = "<group>"; };
 		F26A51E90C80EAEC00A1C30C /* Add.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Add.png; path = images/Add.png; sourceTree = "<group>"; };
@@ -114,7 +110,7 @@
 		F286572E0CCA4C2200A01FCE /* org.thebends.openssh.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = org.thebends.openssh.plist; path = "Other Files/SSH/OpenSSH/org.thebends.openssh.plist"; sourceTree = SOURCE_ROOT; };
 		F28657880CCABBCC00A01FCE /* scp */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = scp; path = "Other Files/SSH/OpenSSH/scp"; sourceTree = SOURCE_ROOT; };
 		F29BD4EC0CC35187004A6F30 /* English */ = {isa = PBXFileReference; lastKnownFileType = folder; name = English; path = English.lproj/iNdependenceHelp; sourceTree = "<group>"; };
-		F2C1F6B80CCFBD5B003AE395 /* anySIM.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; name = anySIM.app; path = "Other Files/SIM Unlock/anySIM_1.1/anySIM.app"; sourceTree = SOURCE_ROOT; };
+		F2C1F6B80CCFBD5B003AE395 /* anySIM_11.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; name = anySIM_11.app; path = "Other Files/SIM Unlock/anySIM_1.1/anySIM_11.app"; sourceTree = "<group>"; };
 		F2C1F6F50CCFC345003AE395 /* sleep_button.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = sleep_button.gif; path = images/sleep_button.gif; sourceTree = SOURCE_ROOT; };
 		F2CB60C00C6186AB005490ED /* MainWindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MainWindow.mm; sourceTree = SOURCE_ROOT; };
 		F2CB60C30C6186CA005490ED /* MainWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainWindow.h; sourceTree = SOURCE_ROOT; };
@@ -122,6 +118,8 @@
 		F2CB60CC0C61899F005490ED /* AppController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AppController.mm; sourceTree = "<group>"; };
 		F2CB62260C61A753005490ED /* libPhoneInteraction.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libPhoneInteraction.xcodeproj; path = ../libPhoneInteraction/libPhoneInteraction.xcodeproj; sourceTree = SOURCE_ROOT; };
 		F2D6EE480CD2B56800E86C41 /* Sync.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Sync.png; path = images/Sync.png; sourceTree = SOURCE_ROOT; };
+		F2D7DE4B0D11392A00F60A81 /* anySIM_12.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; name = anySIM_12.app; path = "Other Files/SIM Unlock/anySIM_1.2/anySIM_12.app"; sourceTree = SOURCE_ROOT; };
+		F2ECD7700D0FA51E006D8DC6 /* MobileDevice.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileDevice.framework; path = /System/Library/PrivateFrameworks/MobileDevice.framework; sourceTree = "<absolute>"; };
 		F2F0C20E0C8228FA005F65C6 /* CustomizeBrowserCell.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CustomizeBrowserCell.mm; sourceTree = "<group>"; };
 		F2F0C20F0C8228FA005F65C6 /* CustomizeBrowserCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomizeBrowserCell.h; sourceTree = "<group>"; };
 		F2F0C2690C822C22005F65C6 /* UserFolder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = UserFolder.png; path = images/UserFolder.png; sourceTree = "<group>"; };
@@ -141,7 +139,7 @@
 			files = (
 				F2CB623B0C61A77C005490ED /* libPhoneInteraction.dylib in Frameworks */,
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
-				F243AD620CE2E75D00A82889 /* libMobDev.dylib in Frameworks */,
+				F2ECD7710D0FA51E006D8DC6 /* MobileDevice.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,8 +171,8 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F2ECD7700D0FA51E006D8DC6 /* MobileDevice.framework */,
 				F2CB62260C61A753005490ED /* libPhoneInteraction.xcodeproj */,
-				F243AD610CE2E75D00A82889 /* libMobDev.dylib */,
 				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
 				13E42FB307B3F0F600E4EEF1 /* CoreData.framework */,
 				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
@@ -283,6 +281,7 @@
 		F25021A10C7B407600B7F437 /* SSH */ = {
 			isa = PBXGroup;
 			children = (
+				F25D50A60CF150DE00812F3F /* mknod */,
 				F28657880CCABBCC00A01FCE /* scp */,
 				F286572E0CCA4C2200A01FCE /* org.thebends.openssh.plist */,
 				F28657280CCA4C1000A01FCE /* chmod */,
@@ -299,6 +298,7 @@
 			isa = PBXGroup;
 			children = (
 				F2CB622B0C61A753005490ED /* libPhoneInteraction.dylib */,
+				F20742D40CE4A96D00A152B8 /* libPhoneInteraction.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -306,7 +306,8 @@
 		F2F7B2E90CA480FD0097C9EE /* SIM Unlock */ = {
 			isa = PBXGroup;
 			children = (
-				F2C1F6B80CCFBD5B003AE395 /* anySIM.app */,
+				F2D7DE4B0D11392A00F60A81 /* anySIM_12.app */,
+				F2C1F6B80CCFBD5B003AE395 /* anySIM_11.app */,
 			);
 			name = "SIM Unlock";
 			sourceTree = "<group>";
@@ -322,12 +323,11 @@
 				8D11072C0486CEB800E47090 /* Sources */,
 				8D11072E0486CEB800E47090 /* Frameworks */,
 				F2CB624A0C61A7B6005490ED /* Copy dylibs to Bundle */,
-				F2F7B3F40CA4908F0097C9EE /* Copy anySIM */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				F2825A420C7DD124006936D6 /* PBXTargetDependency */,
+				F2ECD76F0D0FA4FA006D8DC6 /* PBXTargetDependency */,
 			);
 			name = iNdependence;
 			productInstallPath = "$(HOME)/Applications";
@@ -357,6 +357,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		F20742D40CE4A96D00A152B8 /* libPhoneInteraction.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = libPhoneInteraction.dylib;
+			remoteRef = F20742D30CE4A96D00A152B8 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		F2CB622B0C61A753005490ED /* libPhoneInteraction.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
@@ -398,9 +405,11 @@
 				F286572F0CCA4C2200A01FCE /* org.thebends.openssh.plist in Resources */,
 				F28657450CCA4CE000A01FCE /* libarmfp.dylib in Resources */,
 				F28657890CCABBCC00A01FCE /* scp in Resources */,
-				F2C1F6B90CCFBD5B003AE395 /* anySIM.app in Resources */,
+				F2C1F6B90CCFBD5B003AE395 /* anySIM_11.app in Resources */,
+				F2D7DE4C0D11392A00F60A81 /* anySIM_12.app in Resources */,
 				F2C1F6F60CCFC345003AE395 /* sleep_button.gif in Resources */,
 				F2D6EE490CD2B56800E86C41 /* Sync.png in Resources */,
+				F25D50A70CF150DE00812F3F /* mknod in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -419,7 +428,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cp \"../Public Libraries/$CONFIGURATION/libPhoneInteraction.dylib\" \"$BUILD_DIR/$CONFIGURATION/$PRODUCT_NAME.$WRAPPER_EXTENSION/Contents/MacOS\"\ncp \"../Third Party Libraries/libMobDev.dylib\" \"$BUILD_DIR/$CONFIGURATION/$PRODUCT_NAME.$WRAPPER_EXTENSION/Contents/MacOS\"\n";
+			shellScript = "cp \"../Public Libraries/$CONFIGURATION/libPhoneInteraction.dylib\" \"$BUILD_DIR/$CONFIGURATION/$PRODUCT_NAME.$WRAPPER_EXTENSION/Contents/MacOS\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -441,10 +450,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		F2825A420C7DD124006936D6 /* PBXTargetDependency */ = {
+		F2ECD76F0D0FA4FA006D8DC6 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = libPhoneInteraction;
-			targetProxy = F2825A410C7DD124006936D6 /* PBXContainerItemProxy */;
+			name = libPhoneInteraction_SysMobDev;
+			targetProxy = F2ECD76E0D0FA4FA006D8DC6 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -480,6 +489,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -512,6 +526,11 @@
 					i386,
 				);
 				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

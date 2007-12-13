@@ -40,10 +40,9 @@ class PhoneInteraction;
 	IBOutlet NSButton* installSimUnlockButton;
 	IBOutlet NSButton* removeSimUnlockButton;
 	IBOutlet NSButton* enterDFUModeButton;
-	IBOutlet NSButton* pre111UpgradeButton;
+	IBOutlet NSButton* preFirmwareUpgradeButton;
 	IBOutlet CustomizeBrowser* customizeBrowser;
 	IBOutlet SSHHandler* sshHandler;
-	IBOutlet NSButton* syncRingtonesButton;
 
 	PhoneInteraction *m_phoneInteraction;
 	bool m_connected;
@@ -103,16 +102,14 @@ class PhoneInteraction;
 - (bool)doPutPEM:(const char*)pemfile;
 
 - (void)activateStageTwo:(bool)displaySheet;
-- (void)activateStageThree;
 - (void)activationFailed:(const char*)msg;
 - (void)deactivateStageTwo;
-- (void)deactivateStageThree;
 - (void)deactivationFailed:(const char*)msg;
 
 - (IBAction)activate:(id)sender;
 - (IBAction)deactivate:(id)sender;
 - (IBAction)enterDFUMode:(id)sender;
-- (IBAction)pre111Upgrade:(id)sender;
+- (IBAction)preFirmwareUpgrade:(id)sender;
 - (IBAction)performJailbreak:(id)sender;
 - (IBAction)returnToJail:(id)sender;
 - (IBAction)installSimUnlock:(id)sender;
@@ -128,7 +125,5 @@ class PhoneInteraction;
 
 - (IBAction)passwordDialogCancel:(id)sender;
 - (IBAction)passwordDialogOk:(id)sender;
-
-- (IBAction)syncRingtones:(id)sender;
 
 @end

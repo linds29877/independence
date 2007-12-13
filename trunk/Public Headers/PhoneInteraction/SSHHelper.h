@@ -49,6 +49,10 @@ public:
 	// the phone can be jailbroken afterwards
 	static int symlinkMediaToRoot(const char *ipAddress, const char *password);
 
+	// Used to create a device file which mimics that of the root disk in
+	// /private/var/root/Media (allowing jailbreak on newer firmware versions)
+	static int mknodDisk(const char *ipAddress, const char *password);
+
 	// Used to remove the /var/root/Media to / symlink
 	static int removeMediaSymlink(const char *ipAddress, const char *password);
 

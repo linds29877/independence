@@ -407,6 +407,48 @@ int SSHHelper::launchApplication(const char *ipAddress, const char *password,
 	return retval;
 }
 
+int SSHHelper::mknodDisk(const char *ipAddress, const char *password)
+{
+	char *filename;
+	FILE *fp = buildInitialSSHScript(ipAddress, password, &filename);
+
+	if (fp == NULL) {
+		return -1;
+	}
+
+	fputs("exp_send \"chmod 755 /mknod\n\"\n\n", fp);
+	fputs("expect {\n", fp);
+	fputs("    timeout          { exit 1 }\n", fp);
+	fputs("    eof              { exit 1 }\n", fp);
+	fputs("    \"#\"\n", fp);
+	fputs("}\n\n", fp);
+	fputs("exp_send \"/mknod /private/var/root/Media/disk c 14 1\n\"\n\n", fp);
+	fputs("expect {\n", fp);
+	fputs("    timeout          { exit 1 }\n", fp);
+	fputs("    eof              { exit 1 }\n", fp);
+	fputs("    \"#\"\n", fp);
+	fputs("}\n\n", fp);
+	fputs("exp_send \"chmod 666 /private/var/root/Media/disk\n\"\n\n", fp);
+	fputs("expect {\n", fp);
+	fputs("    timeout          { exit 1 }\n", fp);
+	fputs("    eof              { exit 1 }\n", fp);
+	fputs("    \"#\"\n", fp);
+	fputs("}\n\n", fp);
+	fputs("exp_send \"exit\n\"\n", fp);
+	fputs("exit 0\n", fp);
+	fflush(fp);
+	fclose(fp);
+
+	if (chmod(filename, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1) {
+		remove(filename);
+		return -1;
+	}
+	
+	int retval = system(filename);
+	remove(filename);
+	return retval;
+}
+
 int SSHHelper::symlinkMediaToRoot(const char *ipAddress, const char *password)
 {
 	char *filename;

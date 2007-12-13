@@ -408,7 +408,8 @@ void recoveryDisconnectNotificationCallback(am_recovery_device *dev)
 }
 
 PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
-								   void (*notifyFunc)(int, const char*))
+								   void (*notifyFunc)(int, const char*),
+								   bool bUsingPrivateFunctions)
 {
 	m_statusFunc = statusFunc;
 	m_notifyFunc = notifyFunc;
@@ -435,6 +436,7 @@ PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 	m_iTunesVersion.major = 0;
 	m_iTunesVersion.minor = 0;
 	m_iTunesVersion.point = 0;
+	m_usingPrivateFunctions = bUsingPrivateFunctions;
 	m_firmwareVersion = NULL;
 	m_productVersion = NULL;
 	m_buildVersion = NULL;
@@ -467,11 +469,12 @@ PhoneInteraction::~PhoneInteraction()
 }
 
 PhoneInteraction* PhoneInteraction::getInstance(void (*statusFunc)(const char*, bool),
-												void (*notifyFunc)(int, const char*))
+												void (*notifyFunc)(int, const char*),
+												bool bUsingPrivateFunctions)
 {
 
 	if (g_phoneInteraction == NULL) {
-		g_phoneInteraction = new PhoneInteraction(statusFunc, notifyFunc);
+		g_phoneInteraction = new PhoneInteraction(statusFunc, notifyFunc, bUsingPrivateFunctions);
 		g_phoneInteraction->subscribeToNotifications();
 	}
 
@@ -676,8 +679,14 @@ void PhoneInteraction::setupPrivateFunctions()
 	if ( m_iTunesVersion.major != 7 ) return;
 
 	switch (m_iTunesVersion.minor) {
+		// iTunes 7.5 offsets submitted by David Wang
 		case 5:
-			break;
+			g_sendCommandToDevice = (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x10008160);
+			g_sendFileToDevice = (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x100082E0);
+			g_socketForPort = (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x100130D0);
+			g_performOperation = (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x100141C0);
+			m_privateFunctionsSetup = true;
+			break;			
 		case 4:
 			g_sendCommandToDevice = (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10008170);
 			g_sendFileToDevice = (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x100082F0);
@@ -704,7 +713,13 @@ void PhoneInteraction::setupPrivateFunctions()
 	if ( m_iTunesVersion.major != 7 ) return;
 	
 	switch (m_iTunesVersion.minor) {
+		// iTunes 7.5 offsets submitted by David Wang
 		case 5:
+			g_performOperation = (t_performOperation)0x3c3a1884;
+			g_socketForPort = (t_socketForPort)0x3c3a11d8;
+			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a693c;
+			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a6a9c;
+			m_privateFunctionsSetup = true;
 			break;
 		case 4:
 			g_performOperation = (t_performOperation)0x3c3a0bc8;
@@ -732,7 +747,13 @@ void PhoneInteraction::setupPrivateFunctions()
 	if ( m_iTunesVersion.major != 7 ) return;
 
 	switch (m_iTunesVersion.minor) {
+		// iTunes 7.5 offsets submitted by David Wang
 		case 5:
+			g_performOperation = (t_performOperation)0x3c3a02f5;
+			g_socketForPort = (t_socketForPort)0x3c39fcff;
+			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a57a3;
+			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a59ef;
+			m_privateFunctionsSetup = true;
 			break;
 		case 4:
 			g_performOperation = (t_performOperation)0x3c3a0599;
@@ -763,7 +784,7 @@ bool PhoneInteraction::arePrivateFunctionsSetup()
 void PhoneInteraction::subscribeToNotifications()
 {
 
-	if (!arePrivateFunctionsSetup()) {
+	if (!arePrivateFunctionsSetup() && m_usingPrivateFunctions) {
 		char msg[256];
 		snprintf(msg, 256, "Unsupported version of iTunes is installed.\nDetected iTunes version is %d.%d.%d\n",
 				 m_iTunesVersion.major, m_iTunesVersion.minor, m_iTunesVersion.point);
@@ -838,6 +859,26 @@ void PhoneInteraction::connectToPhone()
 		return;
 	}
 
+	if (!readValue("FirmwareVersion", &m_firmwareVersion)) {
+		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get firmware version.");
+		return;
+	}
+	
+	if (!readValue("BuildVersion", &m_buildVersion)) {
+		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get build version.");
+		return;
+	}
+	
+	if (!readValue("BasebandVersion", &m_basebandVersion)) {
+		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get baseband version.");
+		return;
+	}
+	
+#ifdef DEBUG
+	printf("ProductVersion: %s\nFirmwareVersion: %s\nBuildVersion: %s\nBasebandVersion: %s\n", m_productVersion, m_firmwareVersion,
+		   m_buildVersion, m_basebandVersion);
+#endif
+	
 	PIVersion productVersion;
 
 	if (!ConvertCStringToPIVersion(m_productVersion, &productVersion)) {
@@ -845,7 +886,7 @@ void PhoneInteraction::connectToPhone()
 		return;
 	}
 
-	// we only support firmware versions 1.0 to 1.1.1
+	// we only support firmware versions 1.0 to 1.1.2
 	if ( productVersion.major != 1 ) {
 		char msg[128];
 		snprintf(msg, 128, "Unsupported version of phone firmware installed.\nDetected version is %d.%d.%d\n",
@@ -864,7 +905,7 @@ void PhoneInteraction::connectToPhone()
 
 	if (productVersion.minor == 1) {
 
-		if (productVersion.point > 1) {
+		if (productVersion.point > 2) {
 			char msg[128];
 			snprintf(msg, 128, "Unsupported version of phone firmware installed.\nDetected version is %d.%d.%d\n",
 					 productVersion.major, productVersion.minor, productVersion.point);
@@ -874,16 +915,6 @@ void PhoneInteraction::connectToPhone()
 
 	}
 	
-	if (!readValue("FirmwareVersion", &m_firmwareVersion)) {
-		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get firmware version.");
-		return;
-	}
-	
-	if (!readValue("BuildVersion", &m_firmwareVersion)) {
-		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get build version.");
-		return;
-	}
-
 	connectToAFC();
 	setConnected(true);
 	(*m_notifyFunc)(NOTIFY_CONNECTION_SUCCESS, "Connection success!");
@@ -1355,6 +1386,26 @@ bool PhoneInteraction::factoryActivate(bool undo)
 		}
 		
 	}
+	else if (!strcmp(phoneProdVer, "1.1.2")) {
+		
+		if (undo) {
+			buf[0x4B3B] = 0x1A;
+			buf[0xC5C8] = 0x04;
+			buf[0xC5CA] = 0x00;
+			buf[0xC5CB] = 0x1A;
+			buf[0xC5CC] = 0x01;
+			buf[0xC5D4] = 0x88;
+		}
+		else {
+			buf[0x4B3B] = 0xEA;
+			buf[0xC5C8] = 0x00;
+			buf[0xC5CA] = 0xA0;
+			buf[0xC5CB] = 0xE1;
+			buf[0xC5CC] = 0x00;
+			buf[0xC5D4] = 0xEC;
+		}
+		
+	}
 	else {
 		free(buf);
 		return false;
@@ -1618,6 +1669,7 @@ bool PhoneInteraction::isPhoneActivated()
 	}
 
 #ifdef DEBUG
+	printf("ActivationState: ");
 	CFShow(result);
 #endif
 
@@ -1668,6 +1720,11 @@ char *PhoneInteraction::getPhoneProductVersion()
 char *PhoneInteraction::getPhoneBuildVersion()
 {
 	return m_buildVersion;
+}
+
+char *PhoneInteraction::getPhoneBasebandVersion()
+{
+	return m_basebandVersion;
 }
 
 bool PhoneInteraction::putData(void *data, int len, char *dest, int failureMsg, int successMsg)
@@ -1893,15 +1950,10 @@ char *PhoneInteraction::getUserRingtoneName(const char *filename)
 		return (char*)filename;
 	}
 
-	const char *ringtoneConfigFile = "/private/var/root/Media/iTunes_Control/iTunes/Ringtones_PI.plist";
+	const char *ringtoneConfigFile = "/private/var/root/Media/iTunes_Control/iTunes/Ringtones.plist";
 
 	if (!fileExists(ringtoneConfigFile)) {
-		ringtoneConfigFile = "/private/var/root/Media/iTunes_Control/iTunes/Ringtones.plist";
-
-		if (!fileExists(ringtoneConfigFile)) {
-			return NULL;
-		}
-
+		return NULL;
 	}
 
 	// file exists, read it into a dictionary
@@ -1993,12 +2045,12 @@ bool PhoneInteraction::getUserRingtoneFilenames(const char *ringtoneName, char *
 		return true;
 	}
 
-	CFMutableDictionaryRef conglomeratedRingtones = getConglomeratedRingtoneDictionaries();
-	CFDictionaryRef ringtoneList = (CFDictionaryRef)CFDictionaryGetValue(conglomeratedRingtones, CFSTR("Ringtones"));
+	CFDictionaryRef ringtones = getUserRingtoneDictionary();
+	CFDictionaryRef ringtoneList = (CFDictionaryRef)CFDictionaryGetValue(ringtones, CFSTR("Ringtones"));
 	CFStringRef ringtoneNameStr = CFStringCreateWithCString(kCFAllocatorDefault, ringtoneName, kCFStringEncodingUTF8);
 
 	if (ringtoneNameStr == NULL) {
-		CFRelease(conglomeratedRingtones);
+		CFRelease(ringtones);
 		return false;
 	}
 
@@ -2047,12 +2099,12 @@ bool PhoneInteraction::getUserRingtoneFilenames(const char *ringtoneName, char *
 		
 	}
 
-	CFRelease(conglomeratedRingtones);
+	CFRelease(ringtones);
 	CFRelease(ringtoneNameStr);
 	return true;
 }
 
-CFMutableDictionaryRef PhoneInteraction::getConglomeratedRingtoneDictionaries()
+CFDictionaryRef PhoneInteraction::getUserRingtoneDictionary()
 {
 	char *value = getPhoneProductVersion();
 
@@ -2060,22 +2112,18 @@ CFMutableDictionaryRef PhoneInteraction::getConglomeratedRingtoneDictionaries()
 		return NULL;
 	}
 
-	const char *ringtoneConfigDir = "/private/var/root/Media/iTunes_Control/iTunes/";
+	// read in the user ringtone plist file
+	const char *ringtoneConfigFilePath = "/private/var/root/Media/iTunes_Control/iTunes/Ringtones.plist";
 	
-	// read in the iTunes ringtone plist file
-	char iTunesConfigFilePath[PATH_MAX+1];
-	strcpy(iTunesConfigFilePath, ringtoneConfigDir);
-	strcat(iTunesConfigFilePath, "Ringtones.plist");
-	
-	CFDictionaryRef iTunesConfigFileContents = NULL;
-	
-	if (fileExists(iTunesConfigFilePath)) {
-		
+	CFDictionaryRef ringtoneConfigFileContents = NULL;
+
+	if (fileExists(ringtoneConfigFilePath)) {
+
 		// file exists, read it into a dictionary
 		unsigned char *buf;
 		int bufsize;
 		
-		if (!getFileData((void**)&buf, &bufsize, iTunesConfigFilePath, 0, 0)) {
+		if (!getFileData((void**)&buf, &bufsize, ringtoneConfigFilePath, 0, 0)) {
 			return NULL;
 		}
 		
@@ -2087,11 +2135,11 @@ CFMutableDictionaryRef PhoneInteraction::getConglomeratedRingtoneDictionaries()
 			return NULL;
 		}
 		
-		iTunesConfigFileContents = (CFDictionaryRef)CFPropertyListCreateFromXMLData(kCFAllocatorDefault, pData,
-																					kCFPropertyListImmutable,
-																					NULL);
-		
-		if (iTunesConfigFileContents == NULL) {
+		ringtoneConfigFileContents = (CFDictionaryRef)CFPropertyListCreateFromXMLData(kCFAllocatorDefault, pData,
+																					  kCFPropertyListImmutable,
+																					  NULL);
+
+		if (ringtoneConfigFileContents == NULL) {
 			free(buf);
 			CFRelease(pData);
 			return NULL;
@@ -2100,125 +2148,8 @@ CFMutableDictionaryRef PhoneInteraction::getConglomeratedRingtoneDictionaries()
 		free(buf);
 		CFRelease(pData);
 	}
-	
-	// read in our ringtone plist
-	char ourConfigFilePath[PATH_MAX+1];
-	strcpy(ourConfigFilePath, ringtoneConfigDir);
-	strcat(ourConfigFilePath, "Ringtones_PI.plist");
-	
-	CFDictionaryRef ourConfigFileContents = NULL;
-	
-	if (fileExists(ourConfigFilePath)) {
-		
-		// file exists, read it into a dictionary
-		unsigned char *buf;
-		int bufsize;
-		
-		if (!getFileData((void**)&buf, &bufsize, ourConfigFilePath, 0, 0)) {
-			return NULL;
-		}
-		
-		CFDataRef pData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, (const UInt8*)buf,
-													  (CFIndex)bufsize, kCFAllocatorNull);
-		
-		if (pData == NULL) {
-			free(buf);
-			return NULL;
-		}
-		
-		ourConfigFileContents = (CFDictionaryRef)CFPropertyListCreateFromXMLData(kCFAllocatorDefault, pData,
-																				 kCFPropertyListImmutable,
-																				 NULL);
-		
-		if (ourConfigFileContents == NULL) {
-			free(buf);
-			CFRelease(pData);
-			return NULL;
-		}
-		
-		free(buf);
-		CFRelease(pData);
-	}
-	
-	// now conglomerate the two of them into a single mutable dictionary
-	CFMutableDictionaryRef conglomeratedRingtones = NULL;
 
-	if (iTunesConfigFileContents != NULL) {
-		conglomeratedRingtones = CFDictionaryCreateMutableCopy(kCFAllocatorDefault,
-															   0, iTunesConfigFileContents);
-		CFRelease(iTunesConfigFileContents);
-		
-		if (conglomeratedRingtones == NULL) {
-			
-			if (ourConfigFileContents != NULL) {
-				CFRelease(ourConfigFileContents);
-			}
-			
-			return NULL;
-		}
-		
-		if (ourConfigFileContents != NULL) {
-			CFDictionaryRef ourValues = (CFDictionaryRef)CFDictionaryGetValue(ourConfigFileContents,
-																			  CFSTR("Ringtones"));
-			CFDictionaryRef theirValues = (CFDictionaryRef)CFDictionaryGetValue(conglomeratedRingtones,
-																				CFSTR("Ringtones"));
-			
-			if (ourValues != NULL) {
-				
-				if (theirValues != NULL) {
-					CFMutableDictionaryRef conglomeratedContents = CFDictionaryCreateMutableCopy(kCFAllocatorDefault,
-																								 0, theirValues);
-
-					if (conglomeratedContents == NULL) {
-						CFRelease(conglomeratedRingtones);
-						CFRelease(ourConfigFileContents);
-						return NULL;
-					}
-					
-					CFIndex count = CFDictionaryGetCount(ourValues);
-					CFTypeRef keys[count], values[count];
-					
-					CFDictionaryGetKeysAndValues(ourValues, keys, values);
-					
-					for (CFIndex i = 0; i < count; i++) {
-						// just overwrite theirs with ours for now
-						CFDictionarySetValue(conglomeratedContents, keys[i], values[i]);
-					}
-
-					CFDictionarySetValue(conglomeratedRingtones, CFSTR("Ringtones"), conglomeratedContents);
-				}
-				else {
-					CFDictionarySetValue(conglomeratedRingtones, CFSTR("Ringtones"), ourValues);
-				}
-				
-				CFRelease(ourConfigFileContents);
-			}
-			
-		}
-		
-	}
-	else if (ourConfigFileContents != NULL) {
-		conglomeratedRingtones = CFDictionaryCreateMutableCopy(kCFAllocatorDefault,
-															   0, ourConfigFileContents);
-		CFRelease(ourConfigFileContents);
-		
-		if (conglomeratedRingtones == NULL) {
-			return NULL;
-		}
-		
-	}
-	else {
-		conglomeratedRingtones = CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
-														   &kCFTypeDictionaryKeyCallBacks,
-														   &kCFTypeDictionaryValueCallBacks);
-		
-		if (conglomeratedRingtones == NULL) {
-			return NULL;
-		}
-		
-	}
-
-	return conglomeratedRingtones;
+	return ringtoneConfigFileContents;
 }
 
 bool PhoneInteraction::putRingtoneOnPhone(const char *ringtoneFile, const char *ringtoneName,
@@ -2231,8 +2162,13 @@ bool PhoneInteraction::putRingtoneOnPhone(const char *ringtoneFile, const char *
 	}
 
 	char *value = getPhoneProductVersion();
+
+	// easier just to use iTunes in 1.1.2
+	if (!strcmp(value, "1.1.2")) {
+		return false;
+	}
+
 	struct afc_directory *dir;
-	const char *ringtoneConfigDir = NULL;
 	const char *ringtoneDir = NULL;
 
 	if (!strncmp(value, "1.0", 3)) {
@@ -2251,8 +2187,7 @@ bool PhoneInteraction::putRingtoneOnPhone(const char *ringtoneFile, const char *
 			ringtoneDir = "/Library/Ringtones";
 		}
 		else {
-			ringtoneConfigDir = "/private/var/root/Media/iTunes_Control/iTunes";
-			ringtoneDir = "/private/var/root/Media/iTunes_Control/Ringtones";
+			return false;
 		}
 
 	}
@@ -2293,269 +2228,26 @@ bool PhoneInteraction::putRingtoneOnPhone(const char *ringtoneFile, const char *
 
 	}
 	else {
-
-		if (bInSystemDir) {
-			const char *ringtoneExtension = UtilityFunctions::getFileExtension(ringtoneFilename);
-			int len = strlen(ringtoneFilename);
-
-			if (ringtoneExtension != NULL) {
-				len -= strlen(ringtoneExtension) + 1;
-			}
-
-			strncat(ringtonePath, ringtoneFilename, len);
-
-			if (ringtoneFilename[len-1] != ' ') {
-				strcat(ringtonePath, " ");
-			}
-
-			strcat(ringtonePath, ".m4r");
-
-			if (!putFile(ringtoneFile, ringtonePath)) {
-				(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error putting ringtone file on phone.");
-				return false;
-			}
-
-			return true;
+		const char *ringtoneExtension = UtilityFunctions::getFileExtension(ringtoneFilename);
+		int len = strlen(ringtoneFilename);
+		
+		if (ringtoneExtension != NULL) {
+			len -= strlen(ringtoneExtension) + 1;
 		}
-
-		CFMutableDictionaryRef conglomeratedRingtones = getConglomeratedRingtoneDictionaries();
-		CFDictionaryRef tmpContents = (CFDictionaryRef)CFDictionaryGetValue(conglomeratedRingtones, CFSTR("Ringtones"));
-
-		if (tmpContents == NULL) {
-			CFRelease(conglomeratedRingtones);
-			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error getting list of ringtones.");
-			return false;
+		
+		strncat(ringtonePath, ringtoneFilename, len);
+		
+		if (ringtoneFilename[len-1] != ' ') {
+			strcat(ringtonePath, " ");
 		}
-
-		CFMutableDictionaryRef conglomeratedContents = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, tmpContents);
-
-		if (conglomeratedContents == NULL) {
-			CFRelease(conglomeratedRingtones);
-			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error getting list of ringtones.");
-			return false;
-		}
-
-		// grab a list of the existing ringtone files
-		char **fileList;
-		int numFiles;
-
-		if (!directoryFileList(ringtoneDir, &fileList, &numFiles)) {
-			CFRelease(conglomeratedContents);
-			CFRelease(conglomeratedRingtones);
-			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error getting list of files in ringtone directory.");
-			return false;
-		}
-
-		// now generate a unique name for our new ringtone
-		char *basename = UtilityFunctions::generateUniqueRingtoneBasename((const char**)fileList, numFiles);
-
-		for (int i = 0; i < numFiles; i++) {
-			free(fileList[i]);
-		}
-
-		free(fileList);
-
-		if (basename == NULL) {
-			CFRelease(conglomeratedContents);
-			CFRelease(conglomeratedRingtones);
-			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error finding unique filename for ringtone.");
-			return false;
-		}
-
-		// put the main ringtone file
-		const char *fileExtension = UtilityFunctions::getFileExtension(ringtoneFilename);
-
-		if (fileExtension == NULL) {
-			fileExtension = "m4a";
-		}
-
-		strcat(ringtonePath, basename);
-		strcat(ringtonePath, ".");
-		strcat(ringtonePath, fileExtension);
-
+		
+		strcat(ringtonePath, ".m4r");
+		
 		if (!putFile(ringtoneFile, ringtonePath)) {
-			CFRelease(conglomeratedContents);
-			CFRelease(conglomeratedRingtones);
 			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error putting ringtone file on phone.");
 			return false;
 		}
 
-		// now put the empty .m4r version of it
-		char ringtonePath2[PATH_MAX+1];
-		strcpy(ringtonePath2, ringtoneDir);
-		strcat(ringtonePath2, "/");
-		strcat(ringtonePath2, basename);
-		strcat(ringtonePath2, ".m4r");
-		free(basename);
-
-		if (!putData(NULL, 0, ringtonePath2, 0, 0)) {
-			CFRelease(conglomeratedContents);
-			CFRelease(conglomeratedRingtones);
-			removePath(ringtonePath);
-			(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error putting empty ringtone file on phone.");
-			return false;
-		}
-
-		// now create our new dictionaries for the two ringtone files
-		CFMutableDictionaryRef newEntry1, newEntry2;
-		newEntry1 = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
-											  &kCFTypeDictionaryValueCallBacks);
-		
-		if (newEntry1 == NULL) {
-			CFRelease(conglomeratedContents);
-			CFRelease(conglomeratedRingtones);
-			removePath(ringtonePath);
-			removePath(ringtonePath2);
-			return false;
-		}
-
-		CFIndex size = CFDictionaryGetCount(conglomeratedContents);
-		CFTypeRef keys[size], values[size];
-
-		CFDictionaryGetKeysAndValues(conglomeratedContents, keys, values);
-
-		// get a unique GUID
-		UInt64 guid = UtilityFunctions::getUniqueRingtoneGUID((CFDictionaryRef*)values, (int)size);
-
-		if (guid == 0) {
-			CFRelease(newEntry1);
-			CFRelease(conglomeratedContents);
-			CFRelease(conglomeratedRingtones);
-			removePath(ringtonePath);
-			removePath(ringtonePath2);
-			return false;
-		}
-
-		CFStringRef guidStr = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%016qX"), guid);
-
-		if (guidStr == NULL) {
-			CFRelease(newEntry1);
-			CFRelease(conglomeratedContents);
-			CFRelease(conglomeratedRingtones);
-			removePath(ringtonePath);
-			removePath(ringtonePath2);
-			return false;
-		}
-
-		CFStringRef nameStr;
-
-		if (ringtoneName == NULL) {
-			// strip the file extension from the filename to get the ringtone name
-			const char *ptr = UtilityFunctions::getFileExtension(ringtoneFilename);
-			int len;
-
-			if (ptr != NULL) {
-				len = ptr - ringtoneFilename;
-			}
-			else {
-				len = strlen(ringtoneFilename);
-			}
-
-			char name[len+1];
-			strncpy(name, ringtoneFilename, len);
-			name[len] = 0;
-
-			nameStr = CFStringCreateWithCString(kCFAllocatorDefault, name, kCFStringEncodingUTF8);
-		}
-		else {
-			nameStr = CFStringCreateWithCString(kCFAllocatorDefault, ringtoneName, kCFStringEncodingUTF8);
-		}
-
-		if (nameStr == NULL) {
-			CFRelease(guidStr);
-			CFRelease(newEntry1);
-			CFRelease(conglomeratedContents);
-			CFRelease(conglomeratedRingtones);
-			removePath(ringtonePath);
-			removePath(ringtonePath2);
-			return false;
-		}
-
-		CFDictionarySetValue(newEntry1, CFSTR("GUID"), guidStr);
-		CFDictionarySetValue(newEntry1, CFSTR("Name"), nameStr);
-
-		newEntry2 = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
-											  &kCFTypeDictionaryValueCallBacks);
-
-		if (newEntry2 == NULL) {
-			CFRelease(newEntry1);
-			CFRelease(conglomeratedContents);
-			CFRelease(conglomeratedRingtones);
-			removePath(ringtonePath);
-			removePath(ringtonePath2);
-			return false;
-		}
-
-		CFDictionarySetValue(newEntry2, CFSTR("GUID"), guidStr);
-		CFDictionarySetValue(newEntry2, CFSTR("Name"), nameStr);
-
-		// now add our new dictionaries to the ringtone list dictionary
-		const char *entryName = UtilityFunctions::getLastPathElement(ringtonePath);
-		CFStringRef entryNameStr = CFStringCreateWithCString(kCFAllocatorDefault, entryName,
-															 kCFStringEncodingUTF8);
-
-		if (entryNameStr == NULL) {
-			CFRelease(newEntry1);
-			CFRelease(newEntry2);
-			CFRelease(conglomeratedContents);
-			CFRelease(conglomeratedRingtones);
-			removePath(ringtonePath);
-			removePath(ringtonePath2);
-			return false;
-		}
-
-		CFDictionarySetValue(conglomeratedContents, entryNameStr, newEntry1);
-		CFRelease(entryNameStr);
-
-		entryName = UtilityFunctions::getLastPathElement(ringtonePath2);
-		entryNameStr = CFStringCreateWithCString(kCFAllocatorDefault, entryName,
-												 kCFStringEncodingUTF8);
-		
-		if (entryNameStr == NULL) {
-			CFRelease(newEntry2);
-			CFRelease(conglomeratedContents);
-			CFRelease(conglomeratedRingtones);
-			removePath(ringtonePath);
-			removePath(ringtonePath2);
-			return false;
-		}
-
-		CFDictionarySetValue(conglomeratedContents, entryNameStr, newEntry2);
-
-		// finally, add the ringtone list dictionary to the main plist dictionary
-		CFDictionarySetValue(conglomeratedRingtones, CFSTR("Ringtones"), conglomeratedContents);
-
-		// create the XML data from the plist dictionary and write it to the phone
-		CFDataRef pData = CFPropertyListCreateXMLData(kCFAllocatorDefault, (CFPropertyListRef)conglomeratedRingtones);
-
-		if (pData == NULL) {
-			CFRelease(conglomeratedRingtones);
-			removePath(ringtonePath);
-			removePath(ringtonePath2);
-			return false;
-		}
-
-		const UInt8 *pBytes = CFDataGetBytePtr(pData);
-		CFIndex length = CFDataGetLength(pData);
-
-		if (!putData((void*)pBytes, (int)length, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones_PI.plist", 0, 0)) {
-			CFRelease(conglomeratedRingtones);
-			CFRelease(pData);
-			removePath(ringtonePath);
-			removePath(ringtonePath2);
-			return false;
-		}
-
-		if (!putData((void*)pBytes, (int)length, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones.plist", 0, 0)) {
-			CFRelease(conglomeratedRingtones);
-			CFRelease(pData);
-			removePath(ringtonePath);
-			removePath(ringtonePath2);
-			return false;
-		}
-
-		CFRelease(pData);
-		CFRelease(conglomeratedRingtones);
 	}
 
 	(*m_notifyFunc)(NOTIFY_PUTFILE_SUCCESS, "Successfully put ringtone on phone.");
@@ -2662,11 +2354,15 @@ bool PhoneInteraction::putApplicationOnPhone(const char *applicationDir)
 
 bool PhoneInteraction::removeRingtone(const char *ringtoneFilename, bool bInSystemDir)
 {
-	const char *ringtoneConfigDir = NULL;
 	const char *ringtoneDir = NULL;
 	char ringtonePath[PATH_MAX+1];
 	char *value = getPhoneProductVersion();
-	
+
+	// easier just to use iTunes in 1.1.2
+	if (!strcmp(value, "1.1.2")) {
+		return false;
+	}
+
 	if (!strncmp(value, "1.0", 3)) {
 		
 		if (bInSystemDir) {
@@ -2676,142 +2372,22 @@ bool PhoneInteraction::removeRingtone(const char *ringtoneFilename, bool bInSyst
 			ringtoneDir = "/private/var/root/Library/Ringtones";
 		}
 		
-		strcpy(ringtonePath, ringtoneDir);
-		strcat(ringtonePath, "/");
-		strcat(ringtonePath, ringtoneFilename);
-		return removePath(ringtonePath);
 	}
 	else {
 
 		if (bInSystemDir) {
 			ringtoneDir = "/Library/Ringtones";
-
-			strcpy(ringtonePath, ringtoneDir);
-			strcat(ringtonePath, "/");
-			strcat(ringtonePath, ringtoneFilename);
-			return removePath(ringtonePath);
 		}
 		else {
-			ringtoneConfigDir = "/private/var/root/Media/iTunes_Control/iTunes";
-			ringtoneDir = "/private/var/root/Media/iTunes_Control/Ringtones";
-		}
-
-	}
-
-	// remove the files
-	char **filenames;
-	int numFiles;
-
-	if (!getUserRingtoneFilenames(ringtoneFilename, &filenames, &numFiles)) {
-		return false;
-	}
-
-	if (numFiles == 0) {
-		return true;
-	}
-
-	for (int i = 0; i < numFiles; i++) {
-		strcpy(ringtonePath, ringtoneDir);
-		strcat(ringtonePath, "/");
-		strcat(ringtonePath, filenames[i]);
-
-		if (!removePath(ringtonePath)) {
-
-			for (int i = 0; i < numFiles; i++) {
-				free(filenames[i]);
-			}
-			
-			free(filenames);
 			return false;
 		}
 
 	}
 
-	// now remove the plist entries
-	CFMutableDictionaryRef conglomeratedRingtones = getConglomeratedRingtoneDictionaries();
-	CFDictionaryRef tmpContents = (CFDictionaryRef)CFDictionaryGetValue(conglomeratedRingtones, CFSTR("Ringtones"));
-	
-	if (tmpContents == NULL) {
-
-		for (int i = 0; i < numFiles; i++) {
-			free(filenames[i]);
-		}
-		
-		free(filenames);
-		CFRelease(conglomeratedRingtones);
-		(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error getting list of ringtones.");
-		return false;
-	}
-	
-	CFMutableDictionaryRef conglomeratedContents = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, tmpContents);
-	
-	if (conglomeratedContents == NULL) {
-
-		for (int i = 0; i < numFiles; i++) {
-			free(filenames[i]);
-		}
-		
-		free(filenames);
-		CFRelease(conglomeratedRingtones);
-		(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error getting list of ringtones.");
-		return false;
-	}
-
-	CFStringRef fileStr;
-
-	for (int i = 0; i < numFiles; i++) {
-		fileStr = CFStringCreateWithCString(kCFAllocatorDefault, filenames[i], kCFStringEncodingUTF8);
-
-		if (fileStr == NULL) {
-
-			for (int i = 0; i < numFiles; i++) {
-				free(filenames[i]);
-			}
-			
-			free(filenames);
-			CFRelease(conglomeratedContents);
-			CFRelease(conglomeratedRingtones);
-			return false;
-		}
-
-		CFDictionaryRemoveValue(conglomeratedContents, fileStr);
-	}
-
-	for (int i = 0; i < numFiles; i++) {
-		free(filenames[i]);
-	}
-
-	free(filenames);
-
-	// finally, add the ringtone list dictionary to the main plist dictionary
-	CFDictionarySetValue(conglomeratedRingtones, CFSTR("Ringtones"), conglomeratedContents);
-
-	// create the XML data from the plist dictionary and write it to the phone
-	CFDataRef pData = CFPropertyListCreateXMLData(kCFAllocatorDefault, (CFPropertyListRef)conglomeratedRingtones);
-	
-	if (pData == NULL) {
-		CFRelease(conglomeratedRingtones);
-		return false;
-	}
-
-	const UInt8 *pBytes = CFDataGetBytePtr(pData);
-	CFIndex length = CFDataGetLength(pData);
-	
-	if (!putData((void*)pBytes, (int)length, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones_PI.plist", 0, 0)) {
-		CFRelease(pData);
-		CFRelease(conglomeratedRingtones);
-		return false;
-	}
-	
-	if (!putData((void*)pBytes, (int)length, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones.plist", 0, 0)) {
-		CFRelease(pData);
-		CFRelease(conglomeratedRingtones);
-		return false;
-	}
-
-	CFRelease(pData);
-	CFRelease(conglomeratedRingtones);
-	return true;
+	strcpy(ringtonePath, ringtoneDir);
+	strcat(ringtonePath, "/");
+	strcat(ringtonePath, ringtoneFilename);
+	return removePath(ringtonePath);
 }
 
 bool PhoneInteraction::removeWallpaper(const char *wallpaperFilename, bool bInSystemDir)
@@ -2867,8 +2443,8 @@ bool PhoneInteraction::ringtoneExists(const char *ringtoneName, bool bInSystemDi
 		return false;
 	}
 
-	CFMutableDictionaryRef conglomeratedRingtones = getConglomeratedRingtoneDictionaries();
-	CFDictionaryRef contents = (CFDictionaryRef)CFDictionaryGetValue(conglomeratedRingtones, CFSTR("Ringtones"));
+	CFDictionaryRef ringtones = getUserRingtoneDictionary();
+	CFDictionaryRef contents = (CFDictionaryRef)CFDictionaryGetValue(ringtones, CFSTR("Ringtones"));
 	CFIndex count = CFDictionaryGetCount(contents);
 	CFTypeRef keys[count], values[count];
 	CFDictionaryGetKeysAndValues(contents, keys, values);
@@ -2883,7 +2459,7 @@ bool PhoneInteraction::ringtoneExists(const char *ringtoneName, bool bInSystemDi
 			
 			if (CFStringCompare(ringtoneNameStr, valName, 0) == kCFCompareEqualTo) {
 				CFRelease(ringtoneNameStr);
-				CFRelease(conglomeratedRingtones);
+				CFRelease(ringtones);
 				return true;
 			}
 			
@@ -2892,7 +2468,7 @@ bool PhoneInteraction::ringtoneExists(const char *ringtoneName, bool bInSystemDi
 	}
 
 	CFRelease(ringtoneNameStr);
-	CFRelease(conglomeratedRingtones);
+	CFRelease(ringtones);
 	return false;
 }
 
@@ -3638,9 +3214,9 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 		return;
 	}
 
-	// check to ensure they've already performed the hack upgrade to 1.1.1
-	if (!fileExists("/dev/rdisk0s1")) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error, couldn't perform jailbreak.  You need to downgrade to version 1.0.2, then perform the special upgrade to 1.1.1 (see Help documentation for more details).");
+	// check to ensure they've already performed the hack upgrade to 1.1.x
+	if (!fileExists("disk")) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error, couldn't perform jailbreak.  You need to downgrade to version 1.0.2, then perform the special firmware (see Help documentation for more details).");
 		return;
 	}
 
@@ -3652,56 +3228,94 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 
 	afc_file_ref rAFC;
 
-	unsigned long long fstabOffset = 0, offset2 = 0;
-
-	if (AFCFileRefOpen(m_hAFC, "/dev/rdisk0s1", 1, &rAFC)) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't open /dev/rdisk0s1 on phone.");
+	if (AFCFileRefOpen(m_hAFC, "disk", 1, &rAFC)) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't open /private/var/root/Media/disk on phone.");
 		return;
 	}
+
+	unsigned long long fstabOffset = 0, servicesOffset = 0;
 
 	// TODO: A bit of a hack.  Is there any way to determine the disk size?
 	unsigned int disksize = 1024 * 1024 * 300;
 
-	// use an 8 MB memory buffer to read the disk
-	unsigned int bufsize = 8388608;
+	// use a 4 MB memory buffer to read the disk
+	unsigned int bufsize = 1024 * 1024 * 4;
 	unsigned char *buf = (unsigned char*)malloc(bufsize);
-	bool bFound = false;
 	unsigned long long mainoffset = 0;
-	char *searchstr = "/dev/disk0s1 / hfs";
-	unsigned int searchstrlen = strlen(searchstr);
-	int searchoffset = 0;
 
-	while ( !bFound && (mainoffset < disksize) ) {
+	// fstab search string
+	char *searchstr1 = "/dev/disk0s1 / hfs";
+
+	// Services.plist search string
+	char *searchstr2 = "<key>com.apple.afc</key>";
+
+	unsigned int searchstrlen1 = strlen(searchstr1);
+	unsigned int searchstrlen2 = strlen(searchstr2);
+	int searchoffset1 = 0, searchoffset2 = 0;
+
+	while ( !(fstabOffset && servicesOffset) && (mainoffset < disksize) ) {
+
+#ifdef DEBUG
+		printf("Reading from offset %d...\n", mainoffset);
+#endif
 
 		if (AFCFileRefRead(m_hAFC, rAFC, buf, &bufsize)) {
 			AFCFileRefClose(m_hAFC, rAFC);
 			free(buf);
-			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't read from /dev/rdisk0s1.");
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't read from /private/var/root/Media/disk.");
 			return;
 		}
 
-		void *ptr = memchr(buf, searchstr[searchoffset], bufsize);
+		if (!fstabOffset) {
+			void *ptr = memchr(buf, searchstr1[searchoffset1], bufsize);
 
-		while (ptr != NULL) {
-			unsigned long long bufoffset = (unsigned long long)((unsigned int)ptr - (unsigned int)buf);
-			unsigned int bufleft = bufsize - bufoffset;
-			unsigned int searchleft = searchstrlen - searchoffset;
+			while (ptr != NULL) {
+				unsigned long long bufoffset = (unsigned long long)((unsigned int)ptr - (unsigned int)buf);
+				unsigned int bufleft = bufsize - bufoffset;
+				unsigned int searchleft = searchstrlen1 - searchoffset1;
 
-			if (bufleft < searchleft) {
+				if (bufleft < searchleft) {
 
-				if (!memcmp(ptr, searchstr+searchoffset, bufleft)) {
-					searchoffset += bufleft;
+					if (!memcmp(ptr, searchstr1+searchoffset1, bufleft)) {
+						searchoffset1 += bufleft;
+						break;
+					}
+
+				}
+				else if (!memcmp(ptr, searchstr1+searchoffset1, searchleft)) {
+					fstabOffset = mainoffset + bufoffset - searchoffset1;
 					break;
 				}
 
-			}
-			else if (!memcmp(ptr, searchstr+searchoffset, searchleft)) {
-				bFound = true;
-				fstabOffset = mainoffset + bufoffset - searchoffset;
-				break;
+				ptr = memchr(((char*)ptr)+1, searchstr1[searchoffset1], bufsize - (bufoffset+1));
 			}
 
-			ptr = memchr(((char*)ptr)+1, searchstr[searchoffset], bufsize - (bufoffset+1));
+		}
+
+		if (!servicesOffset) {
+			void *ptr = memchr(buf, searchstr2[searchoffset2], bufsize);
+
+			while (ptr != NULL) {
+				unsigned long long bufoffset = (unsigned long long)((unsigned int)ptr - (unsigned int)buf);
+				unsigned int bufleft = bufsize - bufoffset;
+				unsigned int searchleft = searchstrlen2 - searchoffset2;
+
+				if (bufleft < searchleft) {
+					
+					if (!memcmp(ptr, searchstr2+searchoffset2, bufleft)) {
+						searchoffset2 += bufleft;
+						break;
+					}
+					
+				}
+				else if (!memcmp(ptr, searchstr2+searchoffset2, searchleft)) {
+					servicesOffset = mainoffset + bufoffset - searchoffset2;
+					break;
+				}
+				
+				ptr = memchr(((char*)ptr)+1, searchstr2[searchoffset2], bufsize - (bufoffset+1));
+			}
+			
 		}
 
 		mainoffset += bufsize;
@@ -3709,64 +3323,118 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 
 	free(buf);
 
-	if (!bFound) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't find fstab file on /dev/rdisk0s1.");
+	if (!fstabOffset) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't find fstab file on /private/var/root/Media/disk.");
 		return;
 	}
-	
-	// read in a 2048 byte chunk of disk starting at the fstab offset, modify it, then write it back again
-	// (2048 seems to be the magic number when it comes to being able to write back to disk again)
-	bufsize = 2048;
-	buf = (unsigned char*)malloc(bufsize);
-	
-	if (AFCFileRefSeek(m_hAFC, rAFC, fstabOffset, offset2)) {
+	else if (!servicesOffset) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't find Services.plist file on /private/var/root/Media/disk.");
+		return;
+	}
+
+	// disk reads need to be performed on 1k boundaries
+	unsigned long long modulus1 = fstabOffset % 1024;
+	unsigned long long modulus2 = servicesOffset % 1024;
+
+	if ( modulus1 ) {
+		fstabOffset -= modulus1;
+	}
+
+	if ( modulus2 ) {
+		servicesOffset -= modulus2;
+	}
+
+	if (AFCFileRefSeek(m_hAFC, rAFC, fstabOffset, 0)) {
 		AFCFileRefClose(m_hAFC, rAFC);
-		free(buf);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /dev/rdisk0s1.");
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /private/var/root/Media/disk.");
 		return;
 	}
 	
-	if (AFCFileRefRead(m_hAFC, rAFC, buf, &bufsize)) {
+	unsigned int bufsize1 = 4096;
+	unsigned char *buf1 = (unsigned char*)malloc(bufsize1);
+
+	if (AFCFileRefRead(m_hAFC, rAFC, buf1, &bufsize1)) {
 		AFCFileRefClose(m_hAFC, rAFC);
-		free(buf);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't read from /dev/rdisk0s1.");
+		free(buf1);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't read from /private/var/root/Media/disk.");
 		return;
 	}
 	
+	if (AFCFileRefSeek(m_hAFC, rAFC, servicesOffset, 0)) {
+		AFCFileRefClose(m_hAFC, rAFC);
+		free(buf1);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /private/var/root/Media/disk.");
+		return;
+	}
+
+	unsigned int bufsize2 = 4096;
+	unsigned char *buf2 = (unsigned char*)malloc(bufsize2);
+	
+	if (AFCFileRefRead(m_hAFC, rAFC, buf2, &bufsize2)) {
+		AFCFileRefClose(m_hAFC, rAFC);
+		free(buf1);
+		free(buf2);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't read from /private/var/root/Media/disk.");
+		return;
+	}
+
 	if (AFCFileRefClose(m_hAFC, rAFC)) {
-		free(buf);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error closing /dev/rdisk0s1.");
+		free(buf1);
+		free(buf2);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error closing /private/var/root/Media/disk.");
 		return;
 	}
 	
 	// change mount type from ro to rw
-	buf[20] = 'w';
-	
-	if (AFCFileRefOpen(m_hAFC, "/dev/rdisk0s1", 3, &rAFC)) {
-		free(buf);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't open /dev/rdisk0s1 on phone.");
+	buf1[modulus1+20] = 'w';
+
+	// modify AFC service so that it has access to the full filesystem
+	const char *newStr = "<key>com.apple.afc</key><dict><key>AllowUnactivatedService</key><true/><key>Label</key><string>com.apple.afc</string><key>ProgramArguments</key><array><string>/usr/libexec/afcd</string><string>--lockdown</string><string>-d</string><string>/</string></array></dict><key>com.apple.crashreportcopy</key><dict>";
+	memcpy(buf2+modulus2, (void*)newStr, strlen(newStr));
+
+	if (AFCFileRefOpen(m_hAFC, "disk", 3, &rAFC)) {
+		free(buf1);
+		free(buf2);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't open /private/var/root/Media/disk on phone.");
 		return;
 	}
-	
-	if (AFCFileRefSeek(m_hAFC, rAFC, fstabOffset, offset2)) {
+
+	if (AFCFileRefSeek(m_hAFC, rAFC, fstabOffset, 0)) {
 		AFCFileRefClose(m_hAFC, rAFC);
-		free(buf);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /dev/rdisk0s1 for writing.");
+		free(buf1);
+		free(buf2);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /private/var/root/Media/disk for writing.");
 		return;
 	}
 	
-	if (AFCFileRefWrite(m_hAFC, rAFC, buf, bufsize)) {
+	if (AFCFileRefWrite(m_hAFC, rAFC, buf1, bufsize1)) {
 		AFCFileRefClose(m_hAFC, rAFC);
-		free(buf);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error writing modified fstab file to /dev/rdisk0s1.");
+		free(buf1);
+		free(buf2);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error writing modified fstab file to /private/var/root/Media/disk.");
 		return;
 	}
 	
-	free(buf);
+	free(buf1);
+
+	if (AFCFileRefSeek(m_hAFC, rAFC, servicesOffset, 0)) {
+		AFCFileRefClose(m_hAFC, rAFC);
+		free(buf2);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /private/var/root/Media/disk for writing.");
+		return;
+	}
+	
+	if (AFCFileRefWrite(m_hAFC, rAFC, buf2, bufsize2)) {
+		AFCFileRefClose(m_hAFC, rAFC);
+		free(buf2);
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error writing modified fstab file to /private/var/root/Media/disk.");
+		return;
+	}
+	
+	free(buf2);
 
 	if (AFCFileRefClose(m_hAFC, rAFC)) {
-		free(buf);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error closing /dev/rdisk0s1.");
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error closing /private/var/root/Media/disk.");
 		return;
 	}
 
@@ -3902,21 +3570,6 @@ void PhoneInteraction::newJailbreakStageTwo()
 		return;
 	}
 
-	// if we created a symlink from /private/var/root/Media to / during the 1.1.1 upgrade, clean it up 
-	if (fileExists("/private/var/root/Media.iNdependence") && fileExists("/private/var/root/Media")) {
-
-		if (!renamePath("/private/var/root/Media", "/private/var/root/.symlink")) {
-			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error renaming /private/var/root/Media.");
-			return;
-		}
-
-		if (!renamePath("/private/var/root/Media.iNdependence", "/private/var/root/Media")) {
-			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error renaming /private/var/root/Media.iNdependence.");
-			return;
-		}
-
-	}
-
 	(*m_notifyFunc)(NOTIFY_NEW_JAILBREAK_STAGE_TWO_WAIT, "Waiting for reboot...");
 	
 	m_recoveryOccurred = true;
@@ -3952,78 +3605,6 @@ void PhoneInteraction::jailbreakFinished()
 bool PhoneInteraction::isPhoneJailbroken()
 {
 	return m_jailbroken;
-}
-
-bool PhoneInteraction::areRingtonesOutOfSync()
-{
-
-	if (!isConnected()) {
-		return false;
-	}
-
-	unsigned char *buf1, *buf2;
-	int size1, size2;
-
-	if (!getFileData((void**)&buf1, &size1, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones.plist", 0, 0)) {
-		return false;
-	}
-
-	if (!getFileData((void**)&buf2, &size2, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones_PI.plist", 0, 0)) {
-		free(buf1);
-		return false;
-	}
-
-	if (size1 != size2) {
-		free(buf1);
-		free(buf2);
-		return true;
-	}
-
-	if (memcmp(buf1, buf2, size1)) {
-		free(buf1);
-		free(buf2);
-		return true;
-	}
-
-	free(buf1);
-	free(buf2);
-	return false;
-}
-
-bool PhoneInteraction::syncRingtones()
-{
-	CFMutableDictionaryRef dict = getConglomeratedRingtoneDictionaries();
-
-	if (dict == NULL) {
-		return false;
-	}
-
-	// create the XML data from the plist dictionary and write it to the phone
-	CFDataRef pData = CFPropertyListCreateXMLData(kCFAllocatorDefault, (CFPropertyListRef)dict);
-
-	if (pData == NULL) {
-		CFRelease(dict);
-		return false;
-	}
-	
-	const UInt8 *pBytes = CFDataGetBytePtr(pData);
-	CFIndex length = CFDataGetLength(pData);
-	
-	if (!putData((void*)pBytes, (int)length, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones_PI.plist", 0, 0)) {
-		CFRelease(dict);
-		CFRelease(pData);
-		return false;
-	}
-	
-	if (!putData((void*)pBytes, (int)length, "/private/var/root/Media/iTunes_Control/iTunes/Ringtones.plist", 0, 0)) {
-		CFRelease(dict);
-		CFRelease(pData);
-		return false;
-	}
-	
-	CFRelease(pData);
-	CFRelease(dict);
-	return true;
 }
 
 void PhoneInteraction::recoveryModeStarted_dfu(struct am_recovery_device *rdev)
