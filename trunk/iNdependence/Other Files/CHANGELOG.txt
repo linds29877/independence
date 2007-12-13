@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+v1.3 (Velvet Fog)
+
+- Added 1.1.2 compatibility
+- iTunes 7.5 compatibility added
+- Removed previous ringtone syncing code (not needed with 1.1.2)
+
+
 v1.3 beta 2 (Big Rock) - 11/08/07
 
 - Added MeCCA patch to 1.1.1 jailbreak process to allow for addition of custom ringtones to the System ringtone directory (/Library/Ringtones)
