@@ -870,8 +870,14 @@ void PhoneInteraction::connectToPhone()
 	}
 	
 	if (!readValue("BasebandVersion", &m_basebandVersion)) {
-		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get baseband version.");
-		return;
+		// sometimes this fails -- wait for a second and try again
+		sleep(1);
+
+		if (!readValue("BasebandVersion", &m_basebandVersion)) {
+			(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get baseband version.");
+			return;
+		}
+
 	}
 	
 #ifdef DEBUG
