@@ -556,6 +556,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 	return [NSString stringWithCString:m_phoneInteraction->getPhoneProductVersion() encoding:NSUTF8StringEncoding];
 }
 
+- (NSString*)phoneBasebandVersion
+{
+	return [NSString stringWithCString:m_phoneInteraction->getPhoneBasebandVersion() encoding:NSUTF8StringEncoding];
+}
+
 - (bool)isUsing10xFirmware
 {
 	char *value = m_phoneInteraction->getPhoneProductVersion();
