@@ -1,14 +1,14 @@
 Changelog
 ---------
 
-v1.3 (Velvet Fog)
+v1.3 (Velvet Fog) - 12/14/07
 
 - Added 1.1.2 compatibility
 - Added iTunes 7.5 compatibility (no need for for the MobDev tool I created earlier) -- thanks to planetbeing for this
-- Removed previous ringtone syncing code (not needed with 1.1.2)
+- Removed previous ringtone syncing code (not needed with 1.1.2 or MeCCA patched 1.1.1)
 - Added anySIM 1.2 (in addition to 1.1) and baseband version detection so that the correct version of anySIM is installed
 - Put baseband version number in status line
-- Updated the documentation for firmware 1.1.2
+- Updated the documentation for firmware 1.1.2 and SIM unlocking
 
 
 v1.3 beta 2 (Big Rock) - 11/08/07
