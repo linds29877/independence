@@ -68,27 +68,24 @@
 				</p>
 			</div>
 
-			<div summary="How to upgrade to 1.1.1 so that you can jailbreak and activate" id="upgrade">
-				<h1>To upgrade to 1.1.1 so that you can activate/jailbreak your phone:</h1>
-				<p><b>Please note that if you have used anySIM 1.0 or other older free SIM unlocking solutions (anything except for anySIM 1.1. and iPhoneSimFree) to SIM unlock your phone, and you upgrade to 1.1.1, it will wipe out the SIM unlock and render the phone and text message part of your phone inoperable.  Everything else will work though.</b>
+			<div summary="How to upgrade to 1.1.x so that you can jailbreak and activate" id="upgrade">
+				<h1>To upgrade to 1.1.x so that you can activate/jailbreak your phone:</h1>
+				<p><b>Please note that if you have used anySIM 1.0 or other older free SIM unlocking solutions (anything except anySIM 1.1/1.2 and iPhoneSimFree) to SIM unlock your phone, and you upgrade to 1.1.x, it will wipe out the SIM unlock and render the phone and text message part of your phone inoperable.  Everything else will work though.</b>
 				<p>
 					<ol>
-						<li>Check the firmware version that's reported in the status line at the bottom of the iNdependence window.  If it doesn't say 1.0.2 (or lower) then you'll need to downgrade your firmware using the instructions above.</li>
+						<li>Check the firmware version that's reported in the status line at the bottom of the iNdependence window and ensure that you are using firmware 1.0.2 (or lower).</li>
 						<li>Activate your phone using the <a href="#activation">activation instructions above</a>.  Note that you should leave your phone jailbroken after activation.</li>
 						<li>Install SSH on your phone using <a href="#ssh">the instructions below</a>.</li>
 						<li>Ensure that your phone is connected to a Wi-Fi network (read the iPhone manual for instructions on how to set up Wi-Fi).  Also ensure that it's IP address does not conflict with any other devices on your Wi-Fi network (sorry, I can't offer network admin help).</li>
 						<li>Get the IP address for your phone by launching the Settings application on the phone, navigating to <i>Wi-Fi</i> and pressing the blue arrow beside the name of the Wi-Fi network that your phone is connected to.</li>
-						<li>Select the <i>Firmware</i> tab and press the <i>Pre 1.1.1 Upgrade</i> button.</li>
+						<li>Select the <i>Firmware</i> tab and press the <i>Pre Firmware Upgrade</i> button.</li>
 						<li>Enter the IP address of the phone and the root password (see <a href="#ssh">below</a> for the default root password if you didn't change it when you installed SSH).</li>
 						<li>Follow the instructions given in the dialog windows.  If iNdependence gives you a warning about <i>host verification failure</i> and asks to edit your <b>known_hosts</b> file, choose the <i>Yes</i> option (which is now the default).</li>
 						<li>Once you are told to upgrade using iTunes, quit iNdependence, and select the <i>Update</i> button in the iTunes window (not the </i>Restore</i> button).</li>
 						<li>Wait for iTunes to finish.</li>
-						<li>Quit iTunes and relaunch iNdependence.  In the status bar at the bottom of the iNdependence window you should see <i>Firmware 1.1.1</i>.</li>
-						<li>Congratulations!  You are now ready to activate/jailbreak your phone using the <a href="usage_1_1_1.html#activation">1.1.1 instructions</a>.</li>
+						<li>Quit iTunes and relaunch iNdependence.  In the status bar at the bottom of the iNdependence window you should see <i>Firmware 1.1.1</i> or <i>Firmware 1.1.2</i> (depending on which one you upgraded to).</li>
+						<li>Congratulations!  You are now ready to activate/jailbreak your phone using the <a href="usage_1_1_1.html#activation">1.1.x instructions</a>.</li>
 					</ol>
-				</p>
-				<p>
-					Please note that you should <b>not</b> use iTunes with your phone at this point.  Your phone is in a state that iTunes is not expecting and it will report that you only have 300 MB of disk space if you use it.  Wait until you have completed activation or jailbreak to use your phone with iTunes again.
 				</p>
 			</div>
 
@@ -114,11 +111,30 @@
 				</p>
 			</div>
 
+			<div summary="SIM Unlocking" id="simunlock">
+			    <h1>SIM Unlocking</h1>
+				<p>
+				    SIM unlocking allows you to use your phone with any digital cellular service provider (as opposed to being tied to one provider and a long contract).  To do this:
+				</p>
+				<p>
+					<ol>
+						<li>Ensure that SSH is installed and working, your phone is connected to a Wi-Fi network, and your phone is jailbroken.</li>
+						<li>Select the <i>Activation / SIM</i> tab and press the <i>Install anySIM</i> button.  Note that iNdependence will automatically detect the correct version of anySIM to install for your baseband version.</li>
+						<li>You'll be prompted to enter the IP address and root password for your phone</li>
+						<li>You should see a message saying that anySIM has been installed on your phone and you need to run it to complete the SIM unlock process.</li>
+					</ol>
+				</p>
+				<p>
+				    Once you are finished SIM unlocking your phone, you can remove anySIM from it.
+				</p>
+			</div>
+
 			<div summary="Installing ringtones, wallpapers, and applications" id="customization">
 				<h1>Customization</h1>
 				<p>
 					The <i>Customize</i> tab uses a Finder-style interface and allows for drag and drop installation of ringtones, wallpapers, and applications.  You can also use the <i>Add</i> and <i>Delete</i> buttons.
 				</p>
+				<h2>Third Party Applications</h2>
 				<p>
 					Please note that in order to install/remove applications, you'll need to have SSH installed on the phone as you'll be asked for the phone's IP address and root password.
 				</p>
@@ -126,8 +142,13 @@
 					To find the phone's IP address, launch the Settings application, navigate to <i>Wi-Fi</i> and press the blue arrow beside the name of the Wi-Fi network that your phone is connected to.
 				</p>
 				<p>
+				    Once SSH is installed, you can install third party applications by either dragging and dropping the applications from Finder into the System/User folder, or you can press the <i>Add</i> button to select the application from a file chooser.  To remove an application, simply select it and press the <i>Delete</i> button.
+				</p>
+				<h2>Ringtones</h2>
+				<p>
 					Ringtones must be MPEG-4 audio (<b>.m4a</b>) files as the file chooser will only allow you to choose <b>.m4a</b> files.
 				</p>
+				<h2>Wallpapers</h2>
 				<p>
 					Wallpapers must be 2 PNG (<b>.png</b>) files (the main image and the thumbnail image).  The wallpaper image sizes I use are 320x480 for the main image and 75x75 for the thumbnail image.  These seem to work well for me.
 				</p>
