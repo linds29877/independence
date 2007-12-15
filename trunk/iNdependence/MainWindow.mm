@@ -235,8 +235,6 @@ MainWindow *g_mainWindow;
 	else if ([appController isConnected]) {
 		statusStr = [statusStr stringByAppendingFormat:@"Connected to iPhone %C Firmware ", 0x2022];
 		statusStr = [statusStr stringByAppendingString:[appController phoneFirmwareVersion]];
-		statusStr = [statusStr stringByAppendingFormat:@" %C Baseband ", 0x2022];
-		statusStr = [statusStr stringByAppendingString:[appController phoneBasebandVersion]];
 
 		if ([appController isActivated]) {
 			statusStr = [statusStr stringByAppendingFormat:@" %C activated", 0x2022];
@@ -266,6 +264,7 @@ MainWindow *g_mainWindow;
 	}
 
 	[self setStatus:statusStr spinning:waiting];
+	[appController updateInfo];
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)theApp

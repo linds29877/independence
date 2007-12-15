@@ -548,17 +548,12 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (bool)isanySIMInstalled
 {
-	return ( m_phoneInteraction->applicationExists("anySIM_11.app") || m_phoneInteraction->applicationExists("anySIM_12.app") );
+	return m_phoneInteraction->applicationExists("anySIM.app");
 }
 
 - (NSString*)phoneFirmwareVersion
 {
 	return [NSString stringWithCString:m_phoneInteraction->getPhoneProductVersion() encoding:NSUTF8StringEncoding];
-}
-
-- (NSString*)phoneBasebandVersion
-{
-	return [NSString stringWithCString:m_phoneInteraction->getPhoneBasebandVersion() encoding:NSUTF8StringEncoding];
 }
 
 - (bool)isUsing10xFirmware
@@ -818,9 +813,25 @@ static void phoneInteractionNotification(int type, const char *msg)
 {
 	char *value = m_phoneInteraction->getPhoneBasebandVersion();
 	NSString *simUnlockApp = nil;
+	bool bUsingAnysim12With112 = false;
 
 	if (!strcmp(value, "04.02.13_G")) {
-		simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM_12" ofType:@"app"];
+		value = m_phoneInteraction->getPhoneProductVersion();
+
+		if (!strcmp(value, "1.0.2") || !strcmp(value, "1.1.1") || !strcmp(value, "1.1.2")) {
+			simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM_12" ofType:@"app"];
+
+			if (!strcmp(value, "1.1.2")) {
+				bUsingAnysim12With112 = true;
+			}
+
+		}
+		else {
+			NSString *msg = [NSString stringWithFormat:@"anySIM 1.2 is required for SIM unlocking.  However, your firmware version (%s) isn't compatible with anySIM 1.2.\n\nPlease upgrade your phone to firmware version 1.0.2 or higher.", value];
+			[mainWindow displayAlert:@"Error" message:msg];
+			return;
+		}
+
 	}
 	else {
 		simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM_11" ofType:@"app"];
@@ -842,7 +853,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 
-	if (!m_phoneInteraction->putApplicationOnPhone([simUnlockApp UTF8String])) {
+	if (!m_phoneInteraction->putApplicationOnPhone([simUnlockApp UTF8String], "anySIM.app")) {
 		[mainWindow displayAlert:@"Error" message:@"Couldn't put application on phone"];
 		return;
 	}
@@ -917,7 +928,14 @@ static void phoneInteractionNotification(int type, const char *msg)
 	}
 
 	if (permsSet) {
-		[mainWindow displayAlert:@"Success" message:@"The anySIM application should now be installed on your phone.  Simply run it, follow the instructions, and it will complete the SIM unlock process.\n\nAfter you are done, you can remove it from your phone."];
+
+		if (bUsingAnysim12With112) {
+			[mainWindow displayAlert:@"Success" message:@"The anySIM application should now be installed on your phone.\n\nPlease note that you are using anySIM 1.2 in combination with firmware 1.1.2, so you must put your phone in Airplane mode before you run anySIM.  Please put your phone in Airplane mode now, then run anySIM and follow the instructions to complete the SIM unlock process.\n\nAfter you are done, you can turn Airplane mode off again and remove anySIM from your phone."];
+		}
+		else {
+			[mainWindow displayAlert:@"Success" message:@"The anySIM application should now be installed on your phone.  Simply run it, follow the instructions, and it will complete the SIM unlock process.\n\nAfter you are done, you can remove it from your phone."];
+		}
+
 	}
 
 }
@@ -935,20 +953,13 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 
-	if (m_phoneInteraction->applicationExists("anySIM_11.app")) {
+	if (m_phoneInteraction->applicationExists("anySIM.app")) {
 
-		if (!m_phoneInteraction->removeApplication("anySIM_11.app")) {
+		if (!m_phoneInteraction->removeApplication("anySIM.app")) {
+			[mainWindow displayAlert:@"Failed" message:@"Couldn't remove existing version of anySIM from phone."];
 			return;
 		}
 
-	}
-
-	if (m_phoneInteraction->applicationExists("anySIM_12.app")) {
-		
-		if (!m_phoneInteraction->removeApplication("anySIM_12.app")) {
-			return;
-		}
-		
 	}
 
 	if ([self isanySIMInstalled]) {
@@ -1898,6 +1909,46 @@ static void phoneInteractionNotification(int type, const char *msg)
 	}
 	
 	return YES;
+}
+
+- (void)updateInfo
+{
+
+	if (![self isConnected]) {
+		[iTunesVersionField setStringValue:@"-"];
+		[productVersionField setStringValue:@"-"];
+		[basebandVersionField setStringValue:@"-"];
+		[firmwareVersionField setStringValue:@"-"];
+		[buildVersionField setStringValue:@"-"];
+		[activationStateField setStringValue:@"-"];
+		[jailbrokenField setStringValue:@"-"];
+		[sshInstalledField setStringValue:@"-"];
+		return;
+	}
+
+	PIVersion iTunesVersion = m_phoneInteraction->getiTunesVersion();
+	
+	[iTunesVersionField setStringValue:[NSString stringWithFormat:@"%d.%d.%d", iTunesVersion.major, iTunesVersion.minor, iTunesVersion.point]];
+	[productVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneProductVersion() encoding:NSUTF8StringEncoding]];
+	[basebandVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneBasebandVersion() encoding:NSUTF8StringEncoding]];
+	[firmwareVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneFirmwareVersion() encoding:NSUTF8StringEncoding]];
+	[buildVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneBuildVersion() encoding:NSUTF8StringEncoding]];
+	[activationStateField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneActivationState() encoding:NSUTF8StringEncoding]];
+
+	if ([self isJailbroken]) {
+		[jailbrokenField setStringValue:@"Yes"];
+	}
+	else {
+		[jailbrokenField setStringValue:@"No"];
+	}
+
+	if ([self isSSHInstalled]) {
+		[sshInstalledField setStringValue:@"Yes"];
+	}
+	else {
+		[sshInstalledField setStringValue:@"No"];
+	}
+
 }
 
 @end

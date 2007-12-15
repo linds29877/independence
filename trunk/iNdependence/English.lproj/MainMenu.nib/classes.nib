@@ -30,29 +30,30 @@
             OUTLETS = {
                 accountNameField = NSTextField; 
                 activateButton = NSButton; 
-                backupButton = NSButton; 
+                activationStateField = NSTextField; 
+                basebandVersionField = NSTextField; 
+                buildVersionField = NSTextField; 
                 changePasswordButton = NSButton; 
                 customizeBrowser = CustomizeBrowser; 
                 deactivateButton = NSButton; 
                 enterDFUModeButton = NSButton; 
-                iccidTextField = NSTextField; 
-                imeiDialog = NSWindow; 
-                imeiTextField = NSTextField; 
+                firmwareVersionField = NSTextField; 
+                iTunesVersionField = id; 
                 installSSHButton = NSButton; 
                 installSimUnlockButton = NSButton; 
                 jailbreakButton = NSButton; 
+                jailbrokenField = NSTextField; 
                 mainWindow = MainWindow; 
                 newPasswordDialog = NSWindow; 
                 passwordAgainField = NSSecureTextField; 
                 passwordField = NSSecureTextField; 
                 preFirmwareUpgradeButton = NSButton; 
-                putPEMButton = NSButton; 
+                productVersionField = NSTextField; 
                 removeSSHButton = NSButton; 
                 removeSimUnlockButton = NSButton; 
-                restorePEMButton = NSButton; 
                 returnToJailButton = NSButton; 
                 sshHandler = SSHHandler; 
-                syncRingtonesButton = NSButton; 
+                sshInstalledField = NSTextField; 
             }; 
             SUPERCLASS = NSObject; 
         }, 
