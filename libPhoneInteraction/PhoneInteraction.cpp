@@ -453,6 +453,7 @@ PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 	m_productVersion = NULL;
 	m_buildVersion = NULL;
 	m_basebandVersion = NULL;
+	m_serialNumber = NULL;
 	m_activationState = NULL;
 	m_servicesPath = NULL;
 
@@ -938,6 +939,18 @@ void PhoneInteraction::connectToPhone()
 	
 	usleep(100000);
 	
+	if (m_serialNumber != NULL) {
+		free(m_serialNumber);
+		m_serialNumber = NULL;
+	}
+	
+	if (!readValue("SerialNumber", &m_serialNumber)) {
+		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get serial number.");
+		return;
+	}
+	
+	usleep(100000);
+
 	if (m_activationState != NULL) {
 		free(m_activationState);
 		m_activationState = NULL;
@@ -952,10 +965,10 @@ void PhoneInteraction::connectToPhone()
 		}
 		
 	}
-	
+
 #ifdef DEBUG
-	printf("ProductVersion: %s\nFirmwareVersion: %s\nBuildVersion: %s\nBasebandVersion: %s\nActivationState: %s\n",
-		   m_productVersion, m_firmwareVersion, m_buildVersion, m_basebandVersion, m_activationState);
+	printf("ProductVersion: %s\nFirmwareVersion: %s\nBuildVersion: %s\nBasebandVersion: %s\nSerialNumber: %s\nActivationState: %s\n",
+		   m_productVersion, m_firmwareVersion, m_buildVersion, m_basebandVersion, m_serialNumber, m_activationState);
 #endif
 
 	PIVersion productVersion;
@@ -1122,6 +1135,11 @@ void PhoneInteraction::setConnected(bool connected)
 			m_basebandVersion = NULL;
 		}
 
+		if (m_serialNumber != NULL) {
+			free(m_serialNumber);
+			m_serialNumber = NULL;
+		}
+		
 		if (m_activationState != NULL) {
 			free(m_activationState);
 			m_activationState = NULL;
@@ -1852,6 +1870,11 @@ char *PhoneInteraction::getPhoneBuildVersion()
 char *PhoneInteraction::getPhoneBasebandVersion()
 {
 	return m_basebandVersion;
+}
+
+char *PhoneInteraction::getPhoneSerialNumber()
+{
+	return m_serialNumber;
 }
 
 char *PhoneInteraction::getPhoneActivationState()

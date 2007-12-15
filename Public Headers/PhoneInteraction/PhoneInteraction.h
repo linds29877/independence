@@ -135,6 +135,7 @@ public:
 	char *getPhoneProductVersion();
 	char *getPhoneBuildVersion();
 	char *getPhoneBasebandVersion();
+	char *getPhoneSerialNumber();
 	char *getPhoneActivationState();
 	PIVersion getiTunesVersion();
 
@@ -279,6 +280,7 @@ private:
 	char *m_productVersion;
 	char *m_buildVersion;
 	char *m_basebandVersion;
+	char *m_serialNumber;
 	char *m_activationState;
 	char *m_servicesPath;
 

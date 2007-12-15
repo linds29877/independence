@@ -50,6 +50,7 @@ class PhoneInteraction;
 	IBOutlet NSTextField* activationStateField;
 	IBOutlet NSTextField* jailbrokenField;
 	IBOutlet NSTextField* sshInstalledField;
+	IBOutlet NSTextField* serialNumberField;
 	IBOutlet SSHHandler* sshHandler;
 
 	PhoneInteraction *m_phoneInteraction;

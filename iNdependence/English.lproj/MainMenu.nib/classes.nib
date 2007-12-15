@@ -52,6 +52,7 @@
                 removeSSHButton = NSButton; 
                 removeSimUnlockButton = NSButton; 
                 returnToJailButton = NSButton; 
+                serialNumberField = NSTextField; 
                 sshHandler = SSHHandler; 
                 sshInstalledField = NSTextField; 
             }; 
