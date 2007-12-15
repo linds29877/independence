@@ -32,7 +32,7 @@ Credits to:
   - Darkmen and toonces for the 1.0, 1.0.1, and 1.0.2 lockdownd patches 
   - roxfan, nervegas, dinopio, and the iTouch dev team for the 1.1.1 lockdownd patch
   - pumpkin for the 1.1.1 SpringBoard patch to enable 3rd party applications
-  - Daeken, Darkmen, guest184, gray, iZsh, leachbj, pytey, roxfan, Sam, uns, zappaz, Zf for anySIM
+  - Daeken, Darkmen, guest184, gray, iZsh, leachbj, pytey, roxfan, Sam, uns, zappa, Zf, Zibri, Erica, Kroo, darkten, Wheat, Doc, drudge for anySIM
   - bgm370 and the iPhone Elite team for the MeCCA patch which enables custom ringtones on 1.1.1
   - planetbeing for the iTunes 7.5 private function offsets
   - iPhone Elite team for the 1.1.2 jailbreak and for being so open with information.  You're truly a credit to the community.
