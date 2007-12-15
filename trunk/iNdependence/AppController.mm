@@ -1921,6 +1921,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[basebandVersionField setStringValue:@"-"];
 		[firmwareVersionField setStringValue:@"-"];
 		[buildVersionField setStringValue:@"-"];
+		[serialNumberField setStringValue:@"-"];
 		[activationStateField setStringValue:@"-"];
 		[jailbrokenField setStringValue:@"-"];
 		[sshInstalledField setStringValue:@"-"];
@@ -1934,6 +1935,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 	[basebandVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneBasebandVersion() encoding:NSUTF8StringEncoding]];
 	[firmwareVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneFirmwareVersion() encoding:NSUTF8StringEncoding]];
 	[buildVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneBuildVersion() encoding:NSUTF8StringEncoding]];
+	[serialNumberField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneSerialNumber() encoding:NSUTF8StringEncoding]];
 	[activationStateField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneActivationState() encoding:NSUTF8StringEncoding]];
 
 	if ([self isJailbroken]) {
