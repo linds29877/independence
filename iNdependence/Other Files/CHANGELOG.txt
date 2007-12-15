@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+v1.3.1
+
+- Added instructions for upgrading from 1.1.1 to 1.1.2
+- Made UI look proper on Leopard (text should have been black)
+
+
 v1.3 (Velvet Fog) - 12/14/07
 
 - Added 1.1.2 compatibility
