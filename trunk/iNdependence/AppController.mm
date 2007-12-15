@@ -811,6 +811,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (IBAction)installSimUnlock:(id)sender
 {
+	[mainWindow displayAlert:@"Alert" message:@"Please note that anySIM is not able to SIM unlock phones which came with the 1.1.2 firmware out of the box."];
+
 	char *value = m_phoneInteraction->getPhoneBasebandVersion();
 	NSString *simUnlockApp = nil;
 	bool bUsingAnysim12With112 = false;
