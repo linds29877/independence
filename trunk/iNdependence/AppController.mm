@@ -860,15 +860,14 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 
-	NSString *appName = [NSString stringWithFormat:@"%@/%@", @"/Applications", [simUnlockApp lastPathComponent]];
-
+	char *appPath = "/Applications/anySIM.app";
 	bool done = false, permsSet = false;
 	int retval;
 	
 	while (!done) {
 		[mainWindow startDisplayWaitingSheet:@"Setting Permissions" message:@"Setting application permissions..." image:nil
 								cancelButton:false runModal:false];
-		retval = SSHHelper::copyPermissions([simUnlockApp UTF8String], [appName UTF8String], [ipAddress UTF8String],
+		retval = SSHHelper::copyPermissions([simUnlockApp UTF8String], appPath, [ipAddress UTF8String],
 											[password UTF8String]);
 		[mainWindow endDisplayWaitingSheet];
 		
