@@ -42,6 +42,14 @@ class PhoneInteraction;
 	IBOutlet NSButton* enterDFUModeButton;
 	IBOutlet NSButton* preFirmwareUpgradeButton;
 	IBOutlet CustomizeBrowser* customizeBrowser;
+	IBOutlet NSTextField* iTunesVersionField;
+	IBOutlet NSTextField* productVersionField;
+	IBOutlet NSTextField* basebandVersionField;
+	IBOutlet NSTextField* firmwareVersionField;
+	IBOutlet NSTextField* buildVersionField;
+	IBOutlet NSTextField* activationStateField;
+	IBOutlet NSTextField* jailbrokenField;
+	IBOutlet NSTextField* sshInstalledField;
 	IBOutlet SSHHandler* sshHandler;
 
 	PhoneInteraction *m_phoneInteraction;
@@ -98,7 +106,6 @@ class PhoneInteraction;
 
 - (bool)isUsing10xFirmware;
 - (NSString*)phoneFirmwareVersion;
-- (NSString*)phoneBasebandVersion;
 
 - (bool)doPutPEM:(const char*)pemfile;
 
@@ -106,6 +113,8 @@ class PhoneInteraction;
 - (void)activationFailed:(const char*)msg;
 - (void)deactivateStageTwo;
 - (void)deactivationFailed:(const char*)msg;
+
+- (void)updateInfo;
 
 - (IBAction)activate:(id)sender;
 - (IBAction)deactivate:(id)sender;

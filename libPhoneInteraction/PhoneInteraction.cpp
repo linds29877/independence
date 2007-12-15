@@ -23,6 +23,7 @@
 #include <mach-o/dyld.h>
 #include <cstdlib>
 #include <iostream>
+#include <list>
 
 #if defined(WIN32)
 #include <windows.h>
@@ -196,6 +197,17 @@ static t_socketForPort g_socketForPort;
 static t_performOperation g_performOperation;
 static t_sendCommandToDevice g_sendCommandToDevice;
 static t_sendFileToDevice g_sendFileToDevice;
+
+
+static void FreePointerList(std::list<unsigned char*>& list)
+{
+	std::list<unsigned char*>::iterator iter;
+	
+	for (iter = list.begin(); iter != list.end(); iter++) {
+		free(*iter);
+	}
+	
+}
 
 // wrapper functions for private MobileDevice library calls
 
@@ -440,6 +452,8 @@ PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 	m_firmwareVersion = NULL;
 	m_productVersion = NULL;
 	m_buildVersion = NULL;
+	m_basebandVersion = NULL;
+	m_activationState = NULL;
 	m_servicesPath = NULL;
 
 	if (determineiTunesVersion()) {
@@ -854,23 +868,65 @@ void PhoneInteraction::connectToPhone()
 		return;
 	}
 
-	if (!readValue("ProductVersion", &m_productVersion)) {
-		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get product version.");
-		return;
+	if (m_productVersion != NULL) {
+		free(m_productVersion);
+		m_productVersion = NULL;
 	}
 
+	if (!readValue("ProductVersion", &m_productVersion)) {
+		// sometimes this fails -- wait for a second and try again
+		sleep(1);
+
+		if (!readValue("ProductVersion", &m_productVersion)) {
+			(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get product version.");
+			return;
+		}
+		
+	}
+
+	// waiting .1 seconds between reads seems to help stability
+	usleep(100000);
+
+	if (m_firmwareVersion != NULL) {
+		free(m_firmwareVersion);
+		m_firmwareVersion = NULL;
+	}
+	
 	if (!readValue("FirmwareVersion", &m_firmwareVersion)) {
-		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get firmware version.");
-		return;
+		sleep(1);
+		
+		if (!readValue("FirmwareVersion", &m_firmwareVersion)) {
+			(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get firmware version.");
+			return;
+		}
+		
+	}
+	
+	usleep(100000);
+
+	if (m_buildVersion != NULL) {
+		free(m_buildVersion);
+		m_buildVersion = NULL;
 	}
 	
 	if (!readValue("BuildVersion", &m_buildVersion)) {
-		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get build version.");
-		return;
+		sleep(1);
+
+		if (!readValue("BuildVersion", &m_buildVersion)) {
+			(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get build version.");
+			return;
+		}
+		
+	}
+	
+	usleep(100000);
+
+	if (m_basebandVersion != NULL) {
+		free(m_basebandVersion);
+		m_basebandVersion = NULL;
 	}
 	
 	if (!readValue("BasebandVersion", &m_basebandVersion)) {
-		// sometimes this fails -- wait for a second and try again
 		sleep(1);
 
 		if (!readValue("BasebandVersion", &m_basebandVersion)) {
@@ -880,11 +936,28 @@ void PhoneInteraction::connectToPhone()
 
 	}
 	
-#ifdef DEBUG
-	printf("ProductVersion: %s\nFirmwareVersion: %s\nBuildVersion: %s\nBasebandVersion: %s\n", m_productVersion, m_firmwareVersion,
-		   m_buildVersion, m_basebandVersion);
-#endif
+	usleep(100000);
 	
+	if (m_activationState != NULL) {
+		free(m_activationState);
+		m_activationState = NULL;
+	}
+	
+	if (!readValue("ActivationState", &m_activationState)) {
+		sleep(1);
+		
+		if (!readValue("ActivationState", &m_activationState)) {
+			(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get activation state.");
+			return;
+		}
+		
+	}
+	
+#ifdef DEBUG
+	printf("ProductVersion: %s\nFirmwareVersion: %s\nBuildVersion: %s\nBasebandVersion: %s\nActivationState: %s\n",
+		   m_productVersion, m_firmwareVersion, m_buildVersion, m_basebandVersion, m_activationState);
+#endif
+
 	PIVersion productVersion;
 
 	if (!ConvertCStringToPIVersion(m_productVersion, &productVersion)) {
@@ -1028,6 +1101,32 @@ void PhoneInteraction::setConnected(bool connected)
 		(*m_notifyFunc)(NOTIFY_CONNECTED, "Connected");
 	}
 	else {
+
+		if (m_productVersion != NULL) {
+			free(m_productVersion);
+			m_productVersion = NULL;
+		}
+
+		if (m_firmwareVersion != NULL) {
+			free(m_firmwareVersion);
+			m_firmwareVersion = NULL;
+		}
+		
+		if (m_buildVersion != NULL) {
+			free(m_buildVersion);
+			m_buildVersion = NULL;
+		}
+		
+		if (m_basebandVersion != NULL) {
+			free(m_basebandVersion);
+			m_basebandVersion = NULL;
+		}
+
+		if (m_activationState != NULL) {
+			free(m_activationState);
+			m_activationState = NULL;
+		}
+		
 		(*m_notifyFunc)(NOTIFY_DISCONNECTED, "Disconnected");
 	}
 
@@ -1602,6 +1701,19 @@ bool PhoneInteraction::activate(const char* filename, const char *pemfile)
 	}
 	else {
 		CFStringRef result = AMDeviceCopyValue(m_iPhone, 0, CFSTR("ActivationState"));
+
+		if (m_activationState != NULL) {
+			free(m_activationState);
+		}
+
+		CFIndex cflen = CFStringGetLength(result);
+		m_activationState = (char*)malloc(cflen+1);
+
+		if (CFStringGetCString(result, m_activationState, cflen+1, kCFStringEncodingUTF8) == false) {
+			free(m_activationState);
+			m_activationState = NULL;
+		}
+
 		CFMutableStringRef resultStr = CFStringCreateMutable(kCFAllocatorDefault, 0);
 		CFStringAppend(resultStr, CFSTR("Activation succeeded."));
 
@@ -1643,6 +1755,20 @@ bool PhoneInteraction::deactivate()
 	}
 	else {
 		CFStringRef result = AMDeviceCopyValue(m_iPhone, 0, CFSTR("ActivationState"));
+		
+		if (m_activationState != NULL) {
+			free(m_activationState);
+		}
+		
+		CFIndex cflen = CFStringGetLength(result);
+		m_activationState = (char*)malloc(cflen+1);
+		
+		if (CFStringGetCString(result, m_activationState, cflen+1, kCFStringEncodingUTF8) == false) {
+			free(m_activationState);
+			m_activationState = NULL;
+		}
+		
+
 		CFMutableStringRef resultStr = CFStringCreateMutable(kCFAllocatorDefault, 0);
 		CFStringAppend(resultStr, CFSTR("Dectivation succeeded."));
 
@@ -1673,11 +1799,6 @@ bool PhoneInteraction::isPhoneActivated()
 	if (result == NULL) {
 		return false;
 	}
-
-#ifdef DEBUG
-	printf("ActivationState: ");
-	CFShow(result);
-#endif
 
 	if ( (CFStringCompare(result, CFSTR("Activated"), kCFCompareCaseInsensitive) == kCFCompareEqualTo) ||
 		 (CFStringCompare(result, CFSTR("FactoryActivated"), kCFCompareCaseInsensitive) == kCFCompareEqualTo) ) {
@@ -1731,6 +1852,16 @@ char *PhoneInteraction::getPhoneBuildVersion()
 char *PhoneInteraction::getPhoneBasebandVersion()
 {
 	return m_basebandVersion;
+}
+
+char *PhoneInteraction::getPhoneActivationState()
+{
+	return m_activationState;
+}
+
+PIVersion PhoneInteraction::getiTunesVersion()
+{
+	return m_iTunesVersion;
 }
 
 bool PhoneInteraction::putData(void *data, int len, char *dest, int failureMsg, int successMsg)
@@ -2342,14 +2473,26 @@ bool PhoneInteraction::putWallpaperOnPhone(const char *wallpaperFile, const char
 	return true;
 }
 
-bool PhoneInteraction::putApplicationOnPhone(const char *applicationDir)
+bool PhoneInteraction::putApplicationOnPhone(const char *sourceDir, const char *destName)
 {
-	const char *applicationFilename = UtilityFunctions::getLastPathElement(applicationDir);
-	char applicationPath[PATH_MAX+1];
-	strcpy(applicationPath, "/Applications/");
-	strcat(applicationPath, applicationFilename);
+	char destPath[PATH_MAX+1];
+	strcpy(destPath, "/Applications/");
 
-	if (!putFileRecursive(applicationDir, applicationPath)) {
+	if (destName != NULL) {
+		int len = strlen(destName);
+		strcat(destPath, destName);
+
+		if ( (len < 4) || strncmp(destName + len - 4, ".app", 4) ) {
+			strcat(destPath, ".app");
+		}
+
+	}
+	else {
+		const char *appName = UtilityFunctions::getLastPathElement(sourceDir);
+		strcat(destPath, appName);
+	}
+
+	if (!putFileRecursive(sourceDir, destPath)) {
 		(*m_notifyFunc)(NOTIFY_PUTFILE_FAILED, "Error putting application on phone.");
 		return false;
 	}
@@ -3239,7 +3382,10 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 		return;
 	}
 
-	unsigned long long fstabOffset = 0, servicesOffset = 0;
+	// Since we allow people to jailbreak and rejail, the search patterns can occur in
+	// multiple files (eg. memory cache files, etc).  So we need to make sure we modify
+	// all instances we find of them.
+	std::list<unsigned long long> fstabOffsets, servicesOffsets;
 
 	// TODO: A bit of a hack.  Is there any way to determine the disk size?
 	unsigned int disksize = 1024 * 1024 * 300;
@@ -3250,16 +3396,16 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 	unsigned long long mainoffset = 0;
 
 	// fstab search string
-	char *searchstr1 = "/dev/disk0s1 / hfs";
+	char *searchstr1 = "/dev/disk0s1 / hfs ro";
 
 	// Services.plist search string
-	char *searchstr2 = "<key>com.apple.afc</key>";
+	char *searchstr2 = "<key>com.apple.afc</key>\n";
 
 	unsigned int searchstrlen1 = strlen(searchstr1);
 	unsigned int searchstrlen2 = strlen(searchstr2);
 	int searchoffset1 = 0, searchoffset2 = 0;
 
-	while ( !(fstabOffset && servicesOffset) && (mainoffset < disksize) ) {
+	while (mainoffset < disksize) {
 
 #ifdef DEBUG
 		printf("Reading from offset %d...\n", mainoffset);
@@ -3272,56 +3418,54 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 			return;
 		}
 
-		if (!fstabOffset) {
-			void *ptr = memchr(buf, searchstr1[searchoffset1], bufsize);
+		void *ptr = memchr(buf, searchstr1[searchoffset1], bufsize);
 
-			while (ptr != NULL) {
-				unsigned long long bufoffset = (unsigned long long)((unsigned int)ptr - (unsigned int)buf);
-				unsigned int bufleft = bufsize - bufoffset;
-				unsigned int searchleft = searchstrlen1 - searchoffset1;
+		while (ptr != NULL) {
+			unsigned long long bufoffset = (unsigned long long)((unsigned int)ptr - (unsigned int)buf);
+			unsigned int bufleft = bufsize - bufoffset;
+			unsigned int searchleft = searchstrlen1 - searchoffset1;
 
-				if (bufleft < searchleft) {
+			if (bufleft < searchleft) {
 
-					if (!memcmp(ptr, searchstr1+searchoffset1, bufleft)) {
-						searchoffset1 += bufleft;
-						break;
-					}
-
-				}
-				else if (!memcmp(ptr, searchstr1+searchoffset1, searchleft)) {
-					fstabOffset = mainoffset + bufoffset - searchoffset1;
+				if (!memcmp(ptr, searchstr1+searchoffset1, bufleft)) {
+					searchoffset1 += bufleft;
 					break;
 				}
 
-				ptr = memchr(((char*)ptr)+1, searchstr1[searchoffset1], bufsize - (bufoffset+1));
+			}
+			else if (!memcmp(ptr, searchstr1+searchoffset1, searchleft)) {
+				fstabOffsets.push_back(mainoffset + bufoffset - searchoffset1);
+				ptr = (char*)ptr + (searchleft - 1);
+				searchoffset1 = 0;
+				bufoffset += (searchleft - 1);
 			}
 
+			ptr = memchr(((char*)ptr)+1, searchstr1[searchoffset1], bufsize - (bufoffset+1));
 		}
 
-		if (!servicesOffset) {
-			void *ptr = memchr(buf, searchstr2[searchoffset2], bufsize);
+		ptr = memchr(buf, searchstr2[searchoffset2], bufsize);
 
-			while (ptr != NULL) {
-				unsigned long long bufoffset = (unsigned long long)((unsigned int)ptr - (unsigned int)buf);
-				unsigned int bufleft = bufsize - bufoffset;
-				unsigned int searchleft = searchstrlen2 - searchoffset2;
+		while (ptr != NULL) {
+			unsigned long long bufoffset = (unsigned long long)((unsigned int)ptr - (unsigned int)buf);
+			unsigned int bufleft = bufsize - bufoffset;
+			unsigned int searchleft = searchstrlen2 - searchoffset2;
 
-				if (bufleft < searchleft) {
+			if (bufleft < searchleft) {
 					
-					if (!memcmp(ptr, searchstr2+searchoffset2, bufleft)) {
-						searchoffset2 += bufleft;
-						break;
-					}
-					
-				}
-				else if (!memcmp(ptr, searchstr2+searchoffset2, searchleft)) {
-					servicesOffset = mainoffset + bufoffset - searchoffset2;
+				if (!memcmp(ptr, searchstr2+searchoffset2, bufleft)) {
+					searchoffset2 += bufleft;
 					break;
 				}
-				
-				ptr = memchr(((char*)ptr)+1, searchstr2[searchoffset2], bufsize - (bufoffset+1));
+					
 			}
-			
+			else if (!memcmp(ptr, searchstr2+searchoffset2, searchleft)) {
+				servicesOffsets.push_back(mainoffset + bufoffset - searchoffset2);
+				ptr = (char*)ptr + (searchleft - 1);
+				searchoffset2 = 0;
+				bufoffset += (searchleft - 1);
+			}
+				
+			ptr = memchr(((char*)ptr)+1, searchstr2[searchoffset2], bufsize - (bufoffset+1));
 		}
 
 		mainoffset += bufsize;
@@ -3329,115 +3473,138 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 
 	free(buf);
 
-	if (!fstabOffset) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't find fstab file on /private/var/root/Media/disk.");
-		return;
-	}
-	else if (!servicesOffset) {
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't find Services.plist file on /private/var/root/Media/disk.");
+	if (!fstabOffsets.size() && !servicesOffsets.size()) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't find files to modify on /private/var/root/Media/disk.  Perhaps your phone is already jailbroken?");
 		return;
 	}
 
-	// disk reads need to be performed on 1k boundaries
-	unsigned long long modulus1 = fstabOffset % 1024;
-	unsigned long long modulus2 = servicesOffset % 1024;
+	std::list<unsigned long long>::iterator iter;
+	std::list<unsigned char*> fstabBuffers;
+	unsigned long long modulus;
+	unsigned char *tmpBuf;
 
-	if ( modulus1 ) {
-		fstabOffset -= modulus1;
+	bufsize = 4096;
+
+	for (iter = fstabOffsets.begin(); iter != fstabOffsets.end(); iter++) {
+
+		// disk reads need to be performed on 1k boundaries
+		modulus = (*iter) % 1024;
+
+		if ( modulus ) {
+			(*iter) -= modulus;
+		}
+
+		if (AFCFileRefSeek(m_hAFC, rAFC, (*iter), 0)) {
+			AFCFileRefClose(m_hAFC, rAFC);
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /private/var/root/Media/disk.");
+			return;
+		}
+
+		tmpBuf = (unsigned char*)malloc(bufsize);
+
+		if (AFCFileRefRead(m_hAFC, rAFC, tmpBuf, &bufsize)) {
+			AFCFileRefClose(m_hAFC, rAFC);
+			FreePointerList(fstabBuffers);
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't read from /private/var/root/Media/disk.");
+			return;
+		}
+
+		// change mount type from ro to rw
+		tmpBuf[modulus+20] = 'w';
+		fstabBuffers.push_back(tmpBuf);
 	}
 
-	if ( modulus2 ) {
-		servicesOffset -= modulus2;
-	}
+	std::list<unsigned char*> servicesBuffers;
+	const char *newStr = "<key>com.apple.afc</key><dict><key>AllowUnactivatedService</key><true/><key>Label</key><string>com.apple.afc</string><key>ProgramArguments</key><array><string>/usr/libexec/afcd</string><string>--lockdown</string><string>-d</string><string>/</string></array></dict><key>com.apple.crashreportcopy</key><dict>";
+	int newStrLen = strlen(newStr);
 
-	if (AFCFileRefSeek(m_hAFC, rAFC, fstabOffset, 0)) {
-		AFCFileRefClose(m_hAFC, rAFC);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /private/var/root/Media/disk.");
-		return;
-	}
-	
-	unsigned int bufsize1 = 4096;
-	unsigned char *buf1 = (unsigned char*)malloc(bufsize1);
+	for (iter = servicesOffsets.begin(); iter != servicesOffsets.end(); iter++) {
 
-	if (AFCFileRefRead(m_hAFC, rAFC, buf1, &bufsize1)) {
-		AFCFileRefClose(m_hAFC, rAFC);
-		free(buf1);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't read from /private/var/root/Media/disk.");
-		return;
-	}
-	
-	if (AFCFileRefSeek(m_hAFC, rAFC, servicesOffset, 0)) {
-		AFCFileRefClose(m_hAFC, rAFC);
-		free(buf1);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /private/var/root/Media/disk.");
-		return;
-	}
+		// disk reads need to be performed on 1k boundaries
+		modulus = (*iter) % 1024;
+		
+		if ( modulus ) {
+			(*iter) -= modulus;
+		}
+		
+		if (AFCFileRefSeek(m_hAFC, rAFC, (*iter), 0)) {
+			AFCFileRefClose(m_hAFC, rAFC);
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /private/var/root/Media/disk.");
+			return;
+		}
+		
+		tmpBuf = (unsigned char*)malloc(bufsize);
+		
+		if (AFCFileRefRead(m_hAFC, rAFC, tmpBuf, &bufsize)) {
+			AFCFileRefClose(m_hAFC, rAFC);
+			FreePointerList(fstabBuffers);
+			FreePointerList(servicesBuffers);
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't read from /private/var/root/Media/disk.");
+			return;
+		}
 
-	unsigned int bufsize2 = 4096;
-	unsigned char *buf2 = (unsigned char*)malloc(bufsize2);
-	
-	if (AFCFileRefRead(m_hAFC, rAFC, buf2, &bufsize2)) {
-		AFCFileRefClose(m_hAFC, rAFC);
-		free(buf1);
-		free(buf2);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't read from /private/var/root/Media/disk.");
-		return;
+		// modify AFC service so that it has access to the full filesystem
+		memcpy(tmpBuf+modulus, (void*)newStr, newStrLen);
+		servicesBuffers.push_back(tmpBuf);
 	}
 
 	if (AFCFileRefClose(m_hAFC, rAFC)) {
-		free(buf1);
-		free(buf2);
+		FreePointerList(fstabBuffers);
+		FreePointerList(servicesBuffers);
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error closing /private/var/root/Media/disk.");
 		return;
 	}
 	
-	// change mount type from ro to rw
-	buf1[modulus1+20] = 'w';
-
-	// modify AFC service so that it has access to the full filesystem
-	const char *newStr = "<key>com.apple.afc</key><dict><key>AllowUnactivatedService</key><true/><key>Label</key><string>com.apple.afc</string><key>ProgramArguments</key><array><string>/usr/libexec/afcd</string><string>--lockdown</string><string>-d</string><string>/</string></array></dict><key>com.apple.crashreportcopy</key><dict>";
-	memcpy(buf2+modulus2, (void*)newStr, strlen(newStr));
-
 	if (AFCFileRefOpen(m_hAFC, "disk", 3, &rAFC)) {
-		free(buf1);
-		free(buf2);
+		FreePointerList(fstabBuffers);
+		FreePointerList(servicesBuffers);
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't open /private/var/root/Media/disk on phone.");
 		return;
 	}
 
-	if (AFCFileRefSeek(m_hAFC, rAFC, fstabOffset, 0)) {
-		AFCFileRefClose(m_hAFC, rAFC);
-		free(buf1);
-		free(buf2);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /private/var/root/Media/disk for writing.");
-		return;
-	}
-	
-	if (AFCFileRefWrite(m_hAFC, rAFC, buf1, bufsize1)) {
-		AFCFileRefClose(m_hAFC, rAFC);
-		free(buf1);
-		free(buf2);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error writing modified fstab file to /private/var/root/Media/disk.");
-		return;
-	}
-	
-	free(buf1);
+	std::list<unsigned char*>::iterator iter2;
 
-	if (AFCFileRefSeek(m_hAFC, rAFC, servicesOffset, 0)) {
-		AFCFileRefClose(m_hAFC, rAFC);
-		free(buf2);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /private/var/root/Media/disk for writing.");
-		return;
-	}
+	for (iter = fstabOffsets.begin(), iter2 = fstabBuffers.begin(); (iter != fstabOffsets.end()) && (iter2 != fstabBuffers.end()); iter++, iter2++) {
+
+		if (AFCFileRefSeek(m_hAFC, rAFC, (*iter), 0)) {
+			AFCFileRefClose(m_hAFC, rAFC);
+			FreePointerList(fstabBuffers);
+			FreePointerList(servicesBuffers);
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /private/var/root/Media/disk for writing.");
+			return;
+		}
 	
-	if (AFCFileRefWrite(m_hAFC, rAFC, buf2, bufsize2)) {
-		AFCFileRefClose(m_hAFC, rAFC);
-		free(buf2);
-		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error writing modified fstab file to /private/var/root/Media/disk.");
-		return;
+		if (AFCFileRefWrite(m_hAFC, rAFC, (*iter2), bufsize)) {
+			AFCFileRefClose(m_hAFC, rAFC);
+			FreePointerList(fstabBuffers);
+			FreePointerList(servicesBuffers);
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error writing modified fstab file to /private/var/root/Media/disk.");
+			return;
+		}
+
 	}
-	
-	free(buf2);
+
+	FreePointerList(fstabBuffers);
+
+	for (iter = servicesOffsets.begin(), iter2 = servicesBuffers.begin(); (iter != servicesOffsets.end()) && (iter2 != servicesBuffers.end()); iter++, iter2++) {
+
+		if (AFCFileRefSeek(m_hAFC, rAFC, (*iter), 0)) {
+			AFCFileRefClose(m_hAFC, rAFC);
+			FreePointerList(servicesBuffers);
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't seek to correct position in /private/var/root/Media/disk for writing.");
+			return;
+		}
+		
+		if (AFCFileRefWrite(m_hAFC, rAFC, (*iter2), bufsize)) {
+			AFCFileRefClose(m_hAFC, rAFC);
+			FreePointerList(servicesBuffers);
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error writing modified Services.plist file to /private/var/root/Media/disk.");
+			return;
+		}
+		
+	}
+
+	FreePointerList(servicesBuffers);
 
 	if (AFCFileRefClose(m_hAFC, rAFC)) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error closing /private/var/root/Media/disk.");

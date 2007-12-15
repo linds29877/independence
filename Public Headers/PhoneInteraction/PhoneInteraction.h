@@ -135,6 +135,8 @@ public:
 	char *getPhoneProductVersion();
 	char *getPhoneBuildVersion();
 	char *getPhoneBasebandVersion();
+	char *getPhoneActivationState();
+	PIVersion getiTunesVersion();
 
 	// ringtone related functions
 	char *getUserRingtoneName(const char *filename);
@@ -213,7 +215,7 @@ public:
 
 	// This works, but it won't set the file permissions correctly since there doesn't appear
 	// to be any way to do that using the MobileDevice library.  Use SSHHelper to do that.
-	bool putApplicationOnPhone(const char *applicationDir);
+	bool putApplicationOnPhone(const char *sourceDir, const char *destName = NULL);
 
 	bool removeRingtone(const char *ringtoneFilename, bool bInSystemDir = false);
 	bool removeWallpaper(const char *wallpaperFilename, bool bInSystemDir = false);
@@ -277,6 +279,7 @@ private:
 	char *m_productVersion;
 	char *m_buildVersion;
 	char *m_basebandVersion;
+	char *m_activationState;
 	char *m_servicesPath;
 
 };
