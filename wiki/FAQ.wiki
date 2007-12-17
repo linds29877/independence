@@ -1,0 +1,21 @@
+#summary Frequently Asked Questions
+
+=Frequently Asked Questions=
+
+===I have a brand new phone with firmware 1.1.1/1.1.2 installed on it.  How do I jailbreak it?===
+
+In order to jailbreak a 1.1.x phone which is not jailbroken already, you must first downgrade your firmware to version 1.0.2, then jailbreak and activate it, install SSH on it, get it connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.1 or 1.1.2 using iTunes, then jailbreak and activate it again.  Instructions for all of these steps are contained in the iNdependence help files (available from the Help menu when running iNdependence).
+
+===I have a jailbroken 1.1.1 phone and want to upgrade to 1.1.2.  How do I do this so that I am able to jailbreak it on 1.1.2?===
+
+In this case, you do not need to downgrade to 1.0.2.  You can simply install SSH, get it connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.2 via iTunes.  After that, you will be able to jailbreak and activate it.  Again, detailed instructions for this are contained in the iNdependence help files (available from the Help menu when running iNdependence).
+
+===The Pre Firmware Upgrade is failing?  What gives?===
+
+First thing, check to ensure that you can SSH into your phone by opening /Applications/Utilities/Terminal and typing:
+
+ssh root@<your phone's IP address>
+
+and then entering your password if you are prompted to do so.
+
+If that doesn't work, then iNdependence will not be able to do the Pre Firmware Upgrade.  The biggest cause of this problem is a bad Wi-Fi connection between your computer and your phone.
