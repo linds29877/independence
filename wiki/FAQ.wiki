@@ -14,6 +14,8 @@ No, iNdependence does everything itself (doesn't rely on any external applicatio
 
 In order to jailbreak and activate a 1.1.x phone which is not jailbroken already, you must first downgrade your firmware to version 1.0.2, then jailbreak and activate it, install SSH, get it connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.1 or 1.1.2 using iTunes, then jailbreak and activate it again.  Instructions for all of these steps are contained in the iNdependence help files (available from the Help menu when running iNdependence).
 
+Another option if you have a 1.1.2 phone is to downgrade to 1.1.1, use the jailbreakme.com website to jailbreak your phone, install SSH, perform the Pre Firmware Upgrade in iNdependence, then upgrade to 1.1.2.
+
 ===I have a jailbroken 1.1.1 phone and want to upgrade to 1.1.2.  How do I do this so that I am able to jailbreak it again on 1.1.2?===
 
 In this case, you do not need to downgrade to 1.0.2.  You can simply install SSH, get your phone connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.2 via iTunes.  After that, you will be able to jailbreak and activate it.  Again, detailed instructions for this are contained in the iNdependence help files (available from the Help menu when running iNdependence).
