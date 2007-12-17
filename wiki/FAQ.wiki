@@ -1,16 +1,22 @@
 #summary Frequently Asked Questions
 
+===What Versions of Mac OS X/iTunes/iPhone Firmware Is iNdependence Compatible With?===
+
+It's been tested and is known to work on Intel and PPC Macintosh systems running Mac OS 10.4.10, 10.4.11, and 10.5.1 and iTunes 7.3 - 7.5.
+
+It's also been tested and is known to work with iPhone firmware 1.0, 1.0.1, 1.0.2, 1.1.1, and 1.1.2.
+
 ===Do I need any other applications besides iNdependence to jailbreak/activate my phone?===
 
-No, iNdependence does everything itself (doesn't rely on any external applications or special activities on your phone).
+No, iNdependence does everything itself (doesn't rely on any external applications or special activities on your phone).  The only exception to this is for SIM unlocking where the anySIM application is used.
 
 ===I have a brand new phone with firmware 1.1.1/1.1.2 installed on it.  How do I jailbreak/activate it?===
 
-In order to jailbreak and activate a 1.1.x phone which is not jailbroken already, you must first downgrade your firmware to version 1.0.2, then jailbreak and activate it, install SSH on it, get it connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.1 or 1.1.2 using iTunes, then jailbreak and activate it again.  Instructions for all of these steps are contained in the iNdependence help files (available from the Help menu when running iNdependence).
+In order to jailbreak and activate a 1.1.x phone which is not jailbroken already, you must first downgrade your firmware to version 1.0.2, then jailbreak and activate it, install SSH, get it connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.1 or 1.1.2 using iTunes, then jailbreak and activate it again.  Instructions for all of these steps are contained in the iNdependence help files (available from the Help menu when running iNdependence).
 
 ===I have a jailbroken 1.1.1 phone and want to upgrade to 1.1.2.  How do I do this so that I am able to jailbreak it again on 1.1.2?===
 
-In this case, you do not need to downgrade to 1.0.2.  You can simply install SSH, get it connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.2 via iTunes.  After that, you will be able to jailbreak and activate it.  Again, detailed instructions for this are contained in the iNdependence help files (available from the Help menu when running iNdependence).
+In this case, you do not need to downgrade to 1.0.2.  You can simply install SSH, get your phone connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.2 via iTunes.  After that, you will be able to jailbreak and activate it.  Again, detailed instructions for this are contained in the iNdependence help files (available from the Help menu when running iNdependence).
 
 ===The Pre Firmware Upgrade is failing?  What gives?===
 
