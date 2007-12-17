@@ -1,5 +1,9 @@
 #summary Frequently Asked Questions
 
+===Do I need any other applications besides iNdependence to jailbreak/activate my phone?===
+
+No, iNdependence does everything itself (doesn't rely on any external applications or special activities on your phone).
+
 ===I have a brand new phone with firmware 1.1.1/1.1.2 installed on it.  How do I jailbreak/activate it?===
 
 In order to jailbreak and activate a 1.1.x phone which is not jailbroken already, you must first downgrade your firmware to version 1.0.2, then jailbreak and activate it, install SSH on it, get it connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.1 or 1.1.2 using iTunes, then jailbreak and activate it again.  Instructions for all of these steps are contained in the iNdependence help files (available from the Help menu when running iNdependence).
@@ -17,3 +21,9 @@ ssh root@<your phone's IP address>
 and then entering your password if you are prompted to do so.
 
 If that doesn't work, then iNdependence will not be able to do the Pre Firmware Upgrade.  The biggest cause of this problem is a bad Wi-Fi connection between your computer and your phone.
+
+If you can SSH into your phone from your computer, then try typing a few commands on your phone (cd .., cd /, etc) and see what happens.  If you are disconnected at any point, or it locks up, then you may either have a bad Wi-Fi connection between your computer and your phone, or the shell on your phone isn't working properly (the default iPhone shell is notoriously flakey).
+
+In order to replace the shell on your phone, you'll need to use an SFTP program to upload a new shell program to /bin/sh.  Instructions for doing this are beyond the scope of this FAQ.
+
+Also, make sure your phone doesn't go to sleep at any point, otherwise you may lose your SSH connection.  To ensure this, change Settings->General->Auto-Lock to never.
