@@ -43,3 +43,9 @@ To make sure your phone doesn't go to sleep at any point, change Settings->Gener
 If you have a flakey Wi-Fi connection, then I can't really help you with that.  Make sure your phone is fairly close to your computer.
 
 In order to replace the shell on your phone, you'll need to use an SFTP program to upload a new shell program to /bin/sh.  Instructions for doing this are beyond the scope of this FAQ.
+
+=== I'm using firmware 1.1.2, and anySIM is causing problems for my phone.  What do I do?===
+
+There are some known problems with using anySIM on firmware 1.1.2.  Please have a look at the iPhone Elite website for details:
+
+http://code.google.com/p/iphone-elite/
