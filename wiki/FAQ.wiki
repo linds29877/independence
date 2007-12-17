@@ -24,7 +24,6 @@ Before you can upgrade to 1.1.x, you need to revirginize your baseband.  anySIM 
 
 So you need to "virginize" those areas of memory again.  Instructions and programs for doing this can be found on the iPhone Elite website.
 
-http://code.google.com/p/iphone-elite
 http://code.google.com/p/iphone-elite/wiki/RevirginizingTool
 
 ===The Pre Firmware Upgrade is failing?  What gives?===
