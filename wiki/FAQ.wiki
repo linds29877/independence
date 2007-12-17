@@ -18,6 +18,15 @@ In order to jailbreak and activate a 1.1.x phone which is not jailbroken already
 
 In this case, you do not need to downgrade to 1.0.2.  You can simply install SSH, get your phone connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.2 via iTunes.  After that, you will be able to jailbreak and activate it.  Again, detailed instructions for this are contained in the iNdependence help files (available from the Help menu when running iNdependence).
 
+===I previously used anySIM 1.0/iUnlock to SIM unlock my 1.0.x phone.  Now I want to upgrade to 1.1.x and SIM unlock again.  What should I do?===
+
+Before you can upgrade to 1.1.x, you need to revirginize your baseband.  anySIM 1.0 and iUnlock had a problem whereby they would cause certain important parts of your phone's permanent memory to be overwritten.  This causes major problems when you upgrade to 1.1.x and a new baseband is installed.
+
+So you need to "virginize" those areas of memory again.  Instructions and programs for doing this can be found on the iPhone Elite website.
+
+http://code.google.com/p/iphone-elite
+http://code.google.com/p/iphone-elite/wiki/RevirginizingTool
+
 ===The Pre Firmware Upgrade is failing?  What gives?===
 
 First thing, check to ensure that you can SSH into your phone by opening /Applications/Utilities/Terminal and typing:
