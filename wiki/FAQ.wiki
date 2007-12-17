@@ -1,7 +1,5 @@
 #summary Frequently Asked Questions
 
-=Frequently Asked Questions=
-
 ===I have a brand new phone with firmware 1.1.1/1.1.2 installed on it.  How do I jailbreak it?===
 
 In order to jailbreak a 1.1.x phone which is not jailbroken already, you must first downgrade your firmware to version 1.0.2, then jailbreak and activate it, install SSH on it, get it connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.1 or 1.1.2 using iTunes, then jailbreak and activate it again.  Instructions for all of these steps are contained in the iNdependence help files (available from the Help menu when running iNdependence).
