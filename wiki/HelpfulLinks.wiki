@@ -1,7 +1,17 @@
 #summary A list of links into the iPhone development / hacking community
 
   * [http://iphone.fiveforty.net/wiki/index.php/Main_Page The iPhone Dev Wiki] - The site that started it all for me.  Lots of great technical information and history there, but unfortunately spammers have also invaded the site recently, making things difficult for the maintainers.
+
   * [http://hackint0sh.org/forum/forumdisplay.php?f=123 The Hackint0sh iPhone Forums] - Started up around the same time as the iPhone Dev Wiki, so again, a wealth of information and helpful people there.
+
   * [http://code.google.com/p/iphone-elite/ iPhone Elite Dev Team] - The elite iPhone hackers.  These guys know what they're doing and are open with information.  A true credit to the dev community.
+
   * [http://iphonejtag.blogspot.com/ Geohot's Blog] - On the same tip, Geohot is the first person to have a SIM unlocked iPhone (outside of Apple).  Knows the iPhone hardware as well as the Apple engineers.  Though his software skills are still in question... (hey, I cleaned up bits of the fake IPSF server code for my own use, so I've seen his code) ;)
+
   * [http://www.touchdev.net/wiki/Main_Page The Touchdev Wiki] - Same structure as the iPhone Dev Wiki, but for the iPod Touch (or iTouch).
+
+  * [http://code.google.com/p/iphone-dev/ iPhone Toolchain Project Page] - Essential for iPhone application developers.
+
+  * [http://code.google.com/p/devteam-anysim/ anySIM Project Page] - The source code for anySIM.  Interesting to me, maybe to you too?
+
+  * [http://www.tuaw.com/bloggers/erica-sadun/ Erica Sadun's Blog] - Erica is one of the first major iPhone application developers and continues to produce interesting apps for the iPhone.  Not to mention she has a loyal following amongst the sexually frustrated, male-dominated crowd of would-be iPhone hackers.
