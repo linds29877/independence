@@ -10,7 +10,7 @@
 
   * [http://www.touchdev.net/wiki/Main_Page The Touchdev Wiki] - Same structure as the iPhone Dev Wiki, but for the iPod Touch (or iTouch).
 
-  * [http://code.google.com/p/iphone-dev/ iPhone Toolchain Project Page] - Essential for iPhone application developers.
+  * [http://code.google.com/p/iphone-dev/ iPhone Toolchain Project Page] - Essential for iPhone application developers.  Just make sure to release a standalone version of your killer iPhone app, ok? ;)
 
   * [http://code.google.com/p/devteam-anysim/ anySIM Project Page] - The source code for anySIM.  Interesting to me, maybe to you too?
 
