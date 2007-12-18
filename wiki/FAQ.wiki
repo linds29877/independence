@@ -52,3 +52,11 @@ In order to replace the shell on your phone, you'll need to use an SFTP program 
 There are some known problems with using anySIM on firmware 1.1.2.  Please have a look at the iPhone Elite website for details:
 
 http://code.google.com/p/iphone-elite/
+
+===I upgraded to 1.1.2 and now my phone/SMS program is crashing when I use it.  Why?===
+
+You are likely using your phone in a country for which it's unable to find the phone number formatting data.  Have a read through this page for details:
+
+http://code.google.com/p/iphone-elite/wiki/fix_crashing_phone_sms_apps
+
+The easiest option is to use the iWorld application to fix the problem, but I can't seem to find a standalone version of it anywhere.  The only other option is to patch the necessary files on your phone yourself.
