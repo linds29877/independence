@@ -9,7 +9,7 @@ It's also been tested and is known to work with iPhone firmware 1.0, 1.0.1, 1.0.
 
 ===Do I need any other applications besides iNdependence to jailbreak/activate my phone?===
 
-No, iNdependence does everything itself (doesn't rely on any external applications or special activities on your phone).  The only exception to this is for SIM unlocking where the anySIM application is used.
+No, iNdependence does everything itself (doesn't rely on any external applications or special activities on your phone).  The only exception to this is for SIM unlocking where the anySIM application is used.  As well, it uses OpenSSH to communicate with the phone for some operations.
 
 ===I have a brand new phone with firmware 1.1.1/1.1.2 installed on it.  How do I jailbreak/activate it?===
 
