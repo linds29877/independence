@@ -14,6 +14,6 @@
 
   * [http://code.google.com/p/devteam-anysim/ anySIM Project Page] - The source code for anySIM.  Interesting to me, maybe to you too?
 
-  * [http://iphone.natetrue.com/ Nate True's iPhone Utils and Info] - Nate did a lot of the early iPhone hacking and maintained iBrickr for a while (kinda like iNdependence for Windows with a fancier interface -- I was never much of a UI designer).  Still a useful site for files and technical info.
+  * [http://iphone.natetrue.com/ Nate True's iPhone Utils and Info] - Nate did a lot of the early iPhone hacking and maintained iBrickr for a while (kinda like iNdependence for Windows with a fancier interface -- I've never been much of a UI tweaker -- I enjoy the technical details more).  Still a useful site for files and technical info.
 
   * [http://www.tuaw.com/bloggers/erica-sadun/ Erica Sadun's Blog] - Erica is one of the first major iPhone application developers and continues to produce interesting apps for the iPhone.  Not to mention she has a loyal following amongst the sexually frustrated, male-dominated crowd of would-be iPhone hackers.
