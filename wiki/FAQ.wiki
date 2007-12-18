@@ -1,4 +1,5 @@
 #summary Frequently Asked Questions
+#labels Featured
 
 ===What Versions of Mac OS X/iTunes/iPhone Firmware Is iNdependence Compatible With?===
 
