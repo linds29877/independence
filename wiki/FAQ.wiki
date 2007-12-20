@@ -17,6 +17,10 @@ In order to jailbreak and activate a 1.1.x phone which is not jailbroken already
 
 Another option if you have a 1.1.2 phone is to downgrade to 1.1.1, use the jailbreakme.com website to jailbreak your phone, install SSH, perform the Pre Firmware Upgrade in iNdependence, then upgrade to 1.1.2.
 
+===Are you sure that iNdependence can jailbreak a phone which comes with 1.1.2 out of the box (OTB)?===
+
+While I haven't done this myself, I have received reports from a number of people who have had success jailbreaking 1.1.2 OTB phones with iNdependence.
+
 ===I have a jailbroken 1.1.1 phone and want to upgrade to 1.1.2.  How do I do this so that I am able to jailbreak it again on 1.1.2?===
 
 In this case, you do not need to downgrade to 1.0.2.  You can simply install SSH, get your phone connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.2 via iTunes.  After that, you will be able to jailbreak and activate it.  Again, detailed instructions for this are contained in the iNdependence help files (available from the Help menu when running iNdependence).
