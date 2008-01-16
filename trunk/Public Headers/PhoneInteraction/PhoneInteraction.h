@@ -119,9 +119,13 @@ public:
 										 bool bUsingPrivateFunctions = true);
 
 	// connection related functions
+	// NOTE: these are used internally and are not intended to be used by external apps.
+	// Use the notifyFunc callback function you passed in getInstance() to receive notification
+	// of when the phone is connected and disconnected.
 	void connectToPhone();
 	void disconnectFromPhone();
 	void setConnected(bool connected);
+
 	bool isConnected();
 
 	// AFC connection related functions
