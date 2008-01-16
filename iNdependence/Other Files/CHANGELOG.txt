@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+v1.3.2
+
+- Added iTunes 7.6 compatibility
+
+
 v1.3.1 (Hacker-Pschorr) - 12/15/07
 
 - Added instructions for upgrading from 1.1.1 to 1.1.2
