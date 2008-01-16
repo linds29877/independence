@@ -1,0 +1,135 @@
+Changelog
+---------
+
+v1.3.2 beta - 01/16/08
+
+- Added iTunes 7.6 compatibility
+
+
+v1.3.1 (Hacker-Pschorr) - 12/15/07
+
+- Added instructions for upgrading from 1.1.1 to 1.1.2
+- Made UI look proper on Leopard (all text should have been black)
+- Fixed a major bug in setting the correct file permissions for anySIM
+- Added more credits for anySIM
+- Added serial number to Info tab
+
+
+v1.3 (Velvet Fog) - 12/14/07
+
+- Added 1.1.2 compatibility
+- Added iTunes 7.5 compatibility (no need for for the MobDev tool I created earlier) -- thanks to planetbeing for this
+- Removed previous ringtone syncing code (not needed with 1.1.2 or MeCCA patched 1.1.1)
+- Added anySIM 1.2 (in addition to 1.1) and baseband version detection so that the correct version of anySIM is installed
+- Updated the documentation for firmware 1.1.2 and SIM unlocking
+- Added Info tab which contains detailed status information
+
+
+v1.3 beta 2 (Big Rock) - 11/08/07
+
+- Added MeCCA patch to 1.1.1 jailbreak process to allow for addition of custom ringtones to the System ringtone directory (/Library/Ringtones)
+- Removed the ability to add ringtones to the User ringtone directory as it's too buggy (left in the ability to delete them though)
+- Since the version of the MobileDevice framework which comes with iTunes 7.5 doesn't allow for jailbreak, I've added the ability to include MobileDevice as a dylib directly in the application bundle.  This makes it so that people can upgrade to iTunes 7.5 (or later) and not have to worry about breaking iNdependence.
+- Created "iNdependence MobDev Tool" which allows people to copy the MobileDevice library directly into iNdependence now (removing any dependence on the version of iTunes installed).  This is now required in order to run iNdependence.
+- Updated the documentation a bit.
+
+
+v1.3 beta (Creemore) - 10/26/07
+
+- Added anySIM 1.1 installation/removal to allow for SIM unlocking (finally!)
+- Included warning when installing anySIM about needing a virgin phone
+- Changed all reboot instructions to indicate that only the Sleep button needs to be held down to turn phone off
+- Added confirmation and warning about deleting libarmfp.dylib when uninstalling SSH.  This should solve the conflict between Installer.app and iNdependence
+- Got Windows build working again (still out of date functionally though)
+- Got ringtone customization working on firmware 1.1.1 (lots of new code for this so it could be a bit buggy still)
+- Added 'Sync Ringtones' button to restore ringtones after iTunes clobbers them when it syncs
+- Documentation has not yet been added for the new 1.1.1 ringtone functionality or anySIM installation
+
+
+v1.2.5 (Brooklyn) - 10/21/07
+
+- Put in factory activation (lockdownd patch) for all known firmware versions (1.0, 1.0.1, 1.0.2, 1.1.1)
+- Due to the above change, activation will not return your phone to jail anymore (something requested by many people)
+- Increased the SSH timeout to 300 seconds (5 minutes)
+- Fixed YouTube enabling for all known firmware versions
+- Switched from Dropbear to OpenSSH in hopes that this will finally solve the SSH timeout problems people are having
+- Many documentation updates dealing with all the problems one can face when downgrading to 1.0.2 and doing the special upgrade to 1.1.1.  I walked through this entire process myself again to ensure that the documentation is perfectly accurate and clear about all the steps.
+- Updated the documentation about SIM unlocking and upgrading to 1.1.1 to be clear about the difference between anySIM 1.0 and anySIM 1.1
+- Added dialog during SSH removal which asks whether user wants to also remove libarmfp.dylib at that time.  The reason is because removing this file could cause any installed 3rd party applications to become inoperable.
+- Ringtone customization on 1.1.1 still doesn't work in this release
+
+
+v1.2.4 (Dogfish Head) - 10/18/07
+
+- Made it so that iTunes version detection can find iTunes even if it's not in the default location (/Applications/iTunes.app)
+- Fixed a spelling error in the afc2 process label in the modified Services.plist file
+- Fixed a problem with setting the permissions on applications that have a space in the name
+- Fixed ringtone file selection for customization (works now)
+- Fixed bug where, if you perform the "Pre-1.1.1 Upgrade" step and SSH fails, it will still give you a success message at the end (after the SSH failure message)
+- Made 'Yes' the default button in the host verification failed dialog window since people don't seem to be reading it and are just using the default button (which chooses 'No' and makes SSH fail)
+- Added better SSH handling for application removal and restarting SpringBoard
+- Made the documentation more clear with regard to the firmware downgrade
+- Made the SSH timeout 120 seconds (rather than 60 seconds) in hopes that this solves the SSH problems people are having during the Pre-1.1.1 Upgrade step
+
+
+v1.2.3 (De Koninck) - 10/16/07
+
+- Fixed bug with SFTP failing on pre-1.1.1 upgrade step under some circumstances
+- Numerous documentation bugfixes
+- Added SpringBoard patch to enable 3rd party applications
+- Integrated the post-1.1.1 upgrade step into jailbreak to make things easier
+- Made the search for fstab on /dev/rdisk0s1 more robust
+- Fixed bug where, after jailbreak, the status bar would continue to report phone as being in recovery mode
+- Fixed the Customize tab
+
+
+v1.2.2 (Coopers) - 10/15/07
+
+- Fixed up problems with the wait dialog/sheet being too small on occasion
+- Got everything working on firmware version 1.1.1
+- Added firmware version detection so that iNdependence cannot be used with unsupported firmware versions
+- Added firmware tab which contains functions related to upgrading and downgrading the phone's firmware (mainly between 1.0.2 and 1.1.1)
+- Numerous bugfixes for the status bar (and probably some new bugs too)
+
+
+v1.2.1 (Aventinus) - 09/13/07
+
+- Added YouTube fix to activation process
+- Fixed bug where Activation/Deactivation buttons are enabled when no phone is connected
+- Put detected iTunes version number in unsupported version error message
+- Made it so that iNdependence will terminate if it can't initialize properly (eg. bad iTunes version)
+- Fixed iTunes version detection on international (ie. non North American localized) computers
+- Added handling for case where SSH is connecting to the phone for the first time (doesn't know about IP address)
+- Also added handling for case where SSH fails because there is an invalid entry in ~/.ssh/known_hosts.  iNdependence will offer to remove the invalid entry.
+- Added wait dialog when removing applications (restarting Springboard)
+- Fixed bug where, after removing SSH, the install/remove SSH buttons weren't being updated properly
+- Added better wallpaper filename handling
+
+
+v1.2 (Éphémère) - 09/11/07
+
+- Added better iTunes version checking so that iNdependence will fail if an unsupported version of iTunes is installed (thus avoiding the nasty problems seen with the iTunes 7.4 update)
+- Put in new fast jailbreak method (thanks to anonymous)
+- Made Activation/Deactivation all-in-one steps (no more fiddling with activation files)
+- Removed PEM and activation file related buttons/menus
+- Created a Windows command-line version of iNdependence (has everything except SSH and Customization)
+- Made it so that if iNdependence detects a phone in restore mode, it will attempt to unbrick it
+
+
+v1.1.1 - 09/06/07
+
+- Fixes problems with jailbreak when iTunes 7.4 is installed
+
+
+v1.1 - 09/06/07
+
+- Added ability to add/remove applications to/from the phone.  This includes setting the correct permissions and restarting Springboard
+- Added Finder-like interface for adding ringtones, wallpapers, and applications.  Uses buttons or drag and drop.  Shows preview images for wallpaper files and application icons.
+- Added "Restore PEM File" button which allows users to restore the original PEM file back onto their phone (useful when trying to undo all modifications for a firmware update)
+- Added "Remove SSH" button for same reason
+- Jailbreak has been verified to work on Windows via a command-line application.  In the process of adding some missing CF functionality so that activation will work too.  It's getting closer... :)
+
+
+v1.0 - 08/23/07
+
+- Initial release for Mac (universal binary)
