@@ -728,8 +728,15 @@ void PhoneInteraction::setupPrivateFunctions()
 	if ( m_iTunesVersion.major != 7 ) return;
 	
 	switch (m_iTunesVersion.minor) {
-		// iTunes 7.5 offsets submitted by David Wang
+		case 6:
+			g_performOperation = (t_performOperation)0x3c3a2124;
+			g_socketForPort = (t_socketForPort)0x3c3a1530;
+			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a72cc;
+			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a742c;
+			m_privateFunctionsSetup = true;
+			break;
 		case 5:
+			// iTunes 7.5 offsets submitted by David Wang
 			g_performOperation = (t_performOperation)0x3c3a1884;
 			g_socketForPort = (t_socketForPort)0x3c3a11d8;
 			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a693c;
@@ -762,8 +769,15 @@ void PhoneInteraction::setupPrivateFunctions()
 	if ( m_iTunesVersion.major != 7 ) return;
 
 	switch (m_iTunesVersion.minor) {
-		// iTunes 7.5 offsets submitted by David Wang
+		case 6:
+			g_performOperation = (t_performOperation)0x3c3a1cc5;
+			g_socketForPort = (t_socketForPort)0x3c3a122b;
+			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a71dd;
+			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a7302;
+			m_privateFunctionsSetup = true;
+			break;
 		case 5:
+			// iTunes 7.5 offsets submitted by David Wang
 			g_performOperation = (t_performOperation)0x3c3a02f5;
 			g_socketForPort = (t_socketForPort)0x3c39fcff;
 			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a57a3;
