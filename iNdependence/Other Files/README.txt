@@ -1,6 +1,6 @@
  *
- * iNdependence v1.3.2 beta
- * Copyright 2007 The Operator
+ * iNdependence v1.3.2
+ * Copyright 2007-2008 The Operator
  *
  * This software is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public
@@ -36,5 +36,6 @@ Credits to:
   - bgm370 and the iPhone Elite team for the MeCCA patch which enables custom ringtones on 1.1.1
   - planetbeing for the iTunes 7.5 private function offsets
   - iPhone Elite team for the 1.1.2 jailbreak and for being so open with information.  You're truly a credit to the community.
+  - Christian Terrazas for the icon/banner
 
 Cheers to the iPhone Dev, iPhone Elite, and iTouch Dev teams!

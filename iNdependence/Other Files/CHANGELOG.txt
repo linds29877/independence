@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+v1.3.2
+
+- Changed copyright dates for 2008
+
+
 v1.3.2 beta - 01/16/08
 
 - Added iTunes 7.6 compatibility
