@@ -8,6 +8,8 @@
 
   * [http://iphonejtag.blogspot.com/ Geohot's Blog] - On the same tip, Geohot is the first person to have a SIM unlocked iPhone (outside of Apple).  Knows the iPhone hardware as well as the Apple engineers.  Though his software skills are still in question... (hey, I cleaned up bits of the fake IPSF server code for my own use, so I've seen his code) ;)
 
+  * [http://zibree.blogspot.com/ Zibri's Blog] - Zibri has been a controversial figure ever since he came on the scene.  Assuredly has a flair for the dramatic, but I'll leave it to you to decide whether his controversial statements have merit.  Regardless, he's involved and contributes useful information, so just as with music, you don't necessarily have to like the artist to appreciate their music.
+
   * [http://www.touchdev.net/wiki/Main_Page The Touchdev Wiki] - Same structure as the iPhone Dev Wiki, but for the iPod Touch (or iTouch).
 
   * [http://code.google.com/p/iphone-dev/ iPhone Toolchain Project Page] - Essential for iPhone application developers.  Just make sure to release a standalone version of your killer iPhone app, ok? ;)
