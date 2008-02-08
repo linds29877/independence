@@ -732,7 +732,7 @@ void PhoneInteraction::connectToPhone()
 		return;
 	}
 
-	// we only support firmware versions 1.0 to 1.1.2
+	// we only support firmware versions 1.0 to 1.1.3
 	if ( productVersion.major != 1 ) {
 		char msg[128];
 		snprintf(msg, 128, "Unsupported version of phone firmware installed.\nDetected version is %d.%d.%d\n",
@@ -751,7 +751,7 @@ void PhoneInteraction::connectToPhone()
 
 	if (productVersion.minor == 1) {
 
-		if (productVersion.point > 2) {
+		if (productVersion.point > 3) {
 			char msg[128];
 			snprintf(msg, 128, "Unsupported version of phone firmware installed.\nDetected version is %d.%d.%d\n",
 					 productVersion.major, productVersion.minor, productVersion.point);
