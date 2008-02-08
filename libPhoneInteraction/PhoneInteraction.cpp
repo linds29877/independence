@@ -49,22 +49,9 @@
 
 using namespace std;
 
-typedef unsigned int (*t_AMRUSBInterfaceReadPipe)(unsigned int readwrite_pipe, unsigned
-												  int read_pipe, void *data, unsigned int *len) __attribute__ ((regparm(2)));
-typedef unsigned int (*t_AMRUSBInterfaceWritePipe)(unsigned int readwrite_pipe, unsigned
-												   int write_pipe, void *data, unsigned int len) __attribute__ ((regparm(2)));
-typedef unsigned int (*t_performOperation)(struct am_restore_device *rdev,
-                                           CFDictionaryRef op) __attribute__ ((regparm(2)));
-typedef unsigned int (*t_sendFileToDevice)(struct am_recovery_device *rdev,
-										   CFStringRef file) __attribute__ ((regparm(2)));
-typedef int (*t_socketForPort)(struct am_restore_device *rdev, unsigned int port) __attribute__ ((regparm(2)));
-typedef unsigned int (*t_sendCommandToDevice)(struct am_recovery_device *rdev,
-                                              CFStringRef cmd) __attribute__ ((regparm(2)));
-
-
-static PhoneInteraction *g_phoneInteraction = NULL;
-
 #if defined (__APPLE__)
+// List of symbolic links on the phone.  Used when dumping the phone filesystem so that
+// we can recreate it on the local (computer) filesystem.
 static char *g_symlinks[] =
 {
 	"etc",
@@ -191,14 +178,7 @@ static char *g_symlinkOriginals[] =
 static int g_numSymlinks = 58;
 #endif
 
-static int g_recoveryAttempts = 0;
-
-static t_socketForPort g_socketForPort;
-static t_performOperation g_performOperation;
-static t_sendCommandToDevice g_sendCommandToDevice;
-static t_sendFileToDevice g_sendFileToDevice;
-
-
+// utility function for freeing a list of pointers
 static void FreePointerList(std::list<unsigned char*>& list)
 {
 	std::list<unsigned char*>::iterator iter;
@@ -209,215 +189,41 @@ static void FreePointerList(std::list<unsigned char*>& list)
 	
 }
 
-// wrapper functions for private MobileDevice library calls
-
-int PI_socketForPort(am_restore_device *rdev, unsigned int portnum)
-{
-	int retval = 0;
-
-#if defined (WIN32)
-	asm("push %1\n\t"
-		"push %3\n\t"
-		"call *%0\n\t"
-		"movl %%eax, %2"
-		:
-		:"m"(g_socketForPort), "g"(portnum), "m"(retval), "m"(rdev)
-		:);
-#elif defined (__APPLE__)
-    retval = g_socketForPort(rdev, portnum);
-#else
-	retval = 1;
-	printf("socketForPort not implemented on your platform\n");
-#endif
-
-	return retval;
-}
-
-int PI_performOperation(am_restore_device *rdev, CFDictionaryRef cfdr)
-{
-	int retval = 0;
-
-#if defined (WIN32)
-	asm("movl %2, %%esi\n\t"
-		"movl %3, %%ebx\n\t"
-		"call *%0\n\t"
-		"movl %%eax, %1"
-		:
-		:"m"(g_performOperation), "m"(retval), "m"(rdev), "m"(cfdr)
-		:);
-#elif defined (__APPLE__)
-	retval = g_performOperation(rdev, cfdr);
-#else
-	retval = 1;
-	printf("performOperation not implemented on your platform\n");
-#endif
-
-	return retval;      
-}
-
-int PI_sendCommandToDevice(am_recovery_device *rdev, CFStringRef cfs)
-{
-	int retval = 0;
-
-#if defined (WIN32)
-	asm("movl %3, %%esi\n\t"
-		"push %1\n\t"
-		"call *%0\n\tmovl %%eax, %2"
-		:
-		:"m"(g_sendCommandToDevice),  "m"(cfs), "m"(retval), "m"(rdev)
-		:);
-#elif defined (__APPLE__)
-	retval = g_sendCommandToDevice(rdev, cfs);
-#else
-	retval = 1;
-	printf("sendCommandToDevice not implemented on your platform\n");
-#endif
-
-    return retval;
-}
-
-int PI_sendFileToDevice(am_recovery_device *rdev, CFStringRef filename)
-{
-	int retval = 0;
-
-#if defined (WIN32)
-	asm("movl %3, %%ecx\n\t"
-		"push %1\n\t"
-		"call *%0\n\t"
-		"movl %%eax, %2"
-		:
-		:"m"(g_sendFileToDevice),  "m"(filename), "m"(retval), "m"(rdev)
-		:);
-#elif defined (__APPLE__)
-	retval = g_sendFileToDevice(rdev, filename);
-#else
-	retval = 1;
-	printf("sendFileToDevice not implemented on your platform\n");
-#endif
-
-	return retval;
-}
-
-void deviceNotificationCallback(am_device_notification_callback_info *info)
-{
-#ifdef DEBUG
-	CFShow(CFSTR("deviceNotificationCallback"));
-#endif
-	g_phoneInteraction->m_iPhone = info->dev;
-
-	if (info->msg == ADNCI_MSG_CONNECTED) {
-
-		if (g_phoneInteraction->m_switchingToRestoreMode) {
-			g_phoneInteraction->m_switchingToRestoreMode = false;
-			g_phoneInteraction->restoreModeStarted();
-		}
-		else {
-			g_phoneInteraction->connectToPhone();
-
-			if (g_phoneInteraction->m_recoveryOccurred) {
-				g_phoneInteraction->m_recoveryOccurred = false;
-
-				if (g_phoneInteraction->m_finishingJailbreak) {
-					g_phoneInteraction->jailbreakFinished();
-				}
-				else if (g_phoneInteraction->m_returningToJail) {
-					g_phoneInteraction->returnToJailFinished();
-				}
-
-			}
-			else if (g_phoneInteraction->m_performingNewJailbreak) {
-				g_phoneInteraction->newJailbreakStageTwo();
-			}
-
-		}
-
-	}
-	else if (info->msg == ADNCI_MSG_DISCONNECTED) {
-
-		if (g_phoneInteraction->m_inRestoreMode) {
-			g_phoneInteraction->restoreModeFinished();
-		}
-		else {
-			g_phoneInteraction->setConnected(false);
-			g_phoneInteraction->setConnectedToAFC(false);
-		}
-
-	}
-#ifdef DEBUG
-	else {
-		char msg[25];
-		snprintf(msg, 25, "info->msg = %d\n", info->msg);
-		CFStringRef cfsr = CFStringCreateWithCString(kCFAllocatorDefault, msg, kCFStringEncodingUTF8);
-
-		if (cfsr) {
-			CFShow(cfsr);
-			CFRelease(cfsr);
-		}
-
-	}
-#endif
-
-}
-
-void dfuConnectNotificationCallback(am_recovery_device *dev)
-{
-#ifdef DEBUG
-	CFShow(CFSTR("dfuConnectNotificationCallback"));
-#endif
-	g_phoneInteraction->dfuModeStarted(dev);
-}
-
-void dfuDisconnectNotificationCallback(am_recovery_device *dev)
-{
-#ifdef DEBUG
-	CFShow(CFSTR("dfuDisconnectNotificationCallback"));
-#endif
-	g_phoneInteraction->dfuModeFinished(dev);
-}
-
-void recoveryProgressCallback(unsigned int progress_number, unsigned int opcode)
-{
-#ifdef DEBUG
-	CFShow(CFSTR("recoveryProgressCallback"));
-#endif
-
-	if (opcode == 9) {
-		PI_sendCommandToDevice(g_phoneInteraction->m_recoveryDevice, CFSTR("setenv boot-args rd=md0 -progress"));
-
-		// alternative boot args for restore mode boot spew
-		//PI_sendCommandToDevice(g_phoneInteraction->m_recoveryDevice, CFSTR("setenv boot-args rd=md0 -v"));
-	}
-	else {
-#ifdef DEBUG
-		char msg[50];
-		snprintf(msg, 50, "Progress number: %d, opcode: %d\n", progress_number, opcode);
-		CFStringRef cfsr = CFStringCreateWithCString(kCFAllocatorDefault, msg, kCFStringEncodingUTF8);
-		
-		if (cfsr) {
-			CFShow(cfsr);
-			CFRelease(cfsr);
-		}
-#endif
-
-	}
-
-}
-
-void recoveryConnectNotificationCallback(am_recovery_device *dev)
-{
-#ifdef DEBUG
-	CFShow(CFSTR("recoveryConnectNotificationCallback"));
-#endif
-	g_phoneInteraction->recoveryModeStarted(dev);
-}
-
-void recoveryDisconnectNotificationCallback(am_recovery_device *dev)
-{
-#ifdef DEBUG
-	CFShow(CFSTR("recoveryDisconnectNotificationCallback"));
-#endif
-	g_phoneInteraction->recoveryModeFinished(dev);
-}
+// Initialize the static member variables
+PhoneInteraction *PhoneInteraction::m_phoneInteraction = NULL;
+am_device *PhoneInteraction::m_iPhone = NULL;
+void (*PhoneInteraction::m_statusFunc)(const char*, bool) = NULL;
+void (*PhoneInteraction::m_notifyFunc)(int, const char*) = NULL;
+am_recovery_device *PhoneInteraction::m_recoveryDevice = NULL;
+struct am_restore_device *PhoneInteraction::m_restoreDevice = NULL;
+am_recovery_device *PhoneInteraction::m_dfuDevice = NULL;
+afc_connection *PhoneInteraction::m_hAFC = NULL;
+char *PhoneInteraction::m_firmwarePath = NULL;
+char *PhoneInteraction::m_servicesPath = NULL;
+char *PhoneInteraction::m_firmwareVersion = NULL;
+char *PhoneInteraction::m_productVersion = NULL;
+char *PhoneInteraction::m_buildVersion = NULL;
+char *PhoneInteraction::m_basebandVersion = NULL;
+char *PhoneInteraction::m_serialNumber = NULL;
+char *PhoneInteraction::m_activationState = NULL;
+MobDevInternals *PhoneInteraction::m_mobDevInternals = NULL;
+bool PhoneInteraction::m_connected = false;
+bool PhoneInteraction::m_afcConnected = false;
+bool PhoneInteraction::m_inRecoveryMode = false;
+bool PhoneInteraction::m_inRestoreMode = false;
+bool PhoneInteraction::m_inDFUMode = false;
+bool PhoneInteraction::m_switchingToRestoreMode = false;
+bool PhoneInteraction::m_jailbroken = false;
+bool PhoneInteraction::m_finishingJailbreak = false;
+bool PhoneInteraction::m_returningToJail = false;
+bool PhoneInteraction::m_waitingForRecovery = false;
+bool PhoneInteraction::m_enteringRecoveryMode = false;
+bool PhoneInteraction::m_enteringDFUMode = false;
+bool PhoneInteraction::m_recoveryOccurred = false;
+bool PhoneInteraction::m_performingNewJailbreak = false;
+bool PhoneInteraction::m_usingPrivateFunctions = false;
+PIVersion PhoneInteraction::m_iTunesVersion = { 0, 0, 0 };
+int PhoneInteraction::m_recoveryAttempts = 0;
 
 PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 								   void (*notifyFunc)(int, const char*),
@@ -425,40 +231,10 @@ PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 {
 	m_statusFunc = statusFunc;
 	m_notifyFunc = notifyFunc;
-	m_iPhone = NULL;
-	m_recoveryDevice = NULL;
-	m_connected = false;
-	m_afcConnected = false;
-	m_inRecoveryMode = false;
-	m_switchingToRestoreMode = false;
-	m_inRestoreMode = false;
-	m_jailbroken = false;
-	m_finishingJailbreak = false;
-	m_returningToJail = false;
-	m_hAFC = NULL;
-	m_firmwarePath = NULL;
-	m_waitingForRecovery = false;
-	m_enteringDFUMode = false;
-	m_enteringRecoveryMode = false;
-	m_inDFUMode = false;
-	m_dfuDevice = NULL;
-	m_privateFunctionsSetup = false;
-	m_recoveryOccurred = false;
-	m_performingNewJailbreak = false;
-	m_iTunesVersion.major = 0;
-	m_iTunesVersion.minor = 0;
-	m_iTunesVersion.point = 0;
 	m_usingPrivateFunctions = bUsingPrivateFunctions;
-	m_firmwareVersion = NULL;
-	m_productVersion = NULL;
-	m_buildVersion = NULL;
-	m_basebandVersion = NULL;
-	m_serialNumber = NULL;
-	m_activationState = NULL;
-	m_servicesPath = NULL;
 
 	if (determineiTunesVersion()) {
-		setupPrivateFunctions();
+		m_mobDevInternals = new MobDevInternals(m_iTunesVersion);
 	}
 
 #ifdef DEBUG
@@ -481,6 +257,11 @@ PhoneInteraction::~PhoneInteraction()
 		m_firmwarePath = NULL;
 	}
 
+	if (m_mobDevInternals) {
+		delete m_mobDevInternals;
+		m_mobDevInternals = NULL;
+	}
+
 }
 
 PhoneInteraction* PhoneInteraction::getInstance(void (*statusFunc)(const char*, bool),
@@ -488,12 +269,12 @@ PhoneInteraction* PhoneInteraction::getInstance(void (*statusFunc)(const char*, 
 												bool bUsingPrivateFunctions)
 {
 
-	if (g_phoneInteraction == NULL) {
-		g_phoneInteraction = new PhoneInteraction(statusFunc, notifyFunc, bUsingPrivateFunctions);
-		g_phoneInteraction->subscribeToNotifications();
+	if (m_phoneInteraction == NULL) {
+		m_phoneInteraction = new PhoneInteraction(statusFunc, notifyFunc, bUsingPrivateFunctions);
+		m_phoneInteraction->subscribeToNotifications();
 	}
 
-	return g_phoneInteraction;
+	return m_phoneInteraction;
 }
 
 #if defined(WIN32)
@@ -567,40 +348,6 @@ bool PhoneInteraction::determineiTunesVersion()
 #else
 bool PhoneInteraction::determineiTunesVersion()
 {
-
-	// first, check for an internal version of MobileDevice library
-	CFBundleRef bundle = CFBundleGetMainBundle();
-
-	if (bundle != NULL) {
-		CFURLRef execPath = CFBundleCopyExecutableURL(bundle);
-
-		if (execPath != NULL) {
-			CFURLRef mainPath = CFURLCreateCopyDeletingLastPathComponent(kCFAllocatorDefault, execPath);
-			CFURLRef mobDevPath = CFURLCreateCopyAppendingPathComponent(kCFAllocatorDefault, mainPath, CFSTR("libMobDev.dylib"), false);
-			FSRef mobDevRef;
-
-			CFRelease(execPath);
-			CFRelease(mainPath);
-
-			if (CFURLGetFSRef(mobDevPath, &mobDevRef)) {
-				FSCatalogInfo mobDevInfo;
-
-				if (FSGetCatalogInfo(&mobDevRef, kFSCatInfoCreateDate, &mobDevInfo, NULL, NULL, NULL) == noErr) {
-					
-					// ok, the library exists in the application bundle -- the version should be 7.4.2
-					if (ConvertCFStringToPIVersion(CFSTR("7.4.2"), &m_iTunesVersion)) {
-						CFRelease(mobDevPath);
-						return true;
-					}
-
-				}
-
-			}
-
-			CFRelease(mobDevPath);
-		}
-
-	}
 
 	// no internal version so we must rely on the version of MobileDevice installed with iTunes
 	CFURLRef appUrl, versionPlistUrl;
@@ -681,139 +428,132 @@ bool PhoneInteraction::determineiTunesVersion()
 }
 #endif
 
-#if defined(WIN32)
-void PhoneInteraction::setupPrivateFunctions()
+void PhoneInteraction::deviceNotificationCallback(am_device_notification_callback_info *info)
 {
-	HMODULE hGetProcIDDLL = GetModuleHandle("iTunesMobileDevice.dll");
-
-	if (!hGetProcIDDLL) {
-		(*m_notifyFunc)(NOTIFY_WIN32_INITIALIZATION_FAILED, "Error obtaining handle to iTunesMobileDevice.dll");
-		return;
-	}
-
-	if ( m_iTunesVersion.major != 7 ) return;
-
-	switch (m_iTunesVersion.minor) {
-		// iTunes 7.5 offsets submitted by David Wang
-		case 5:
-			g_sendCommandToDevice = (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x10008160);
-			g_sendFileToDevice = (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x100082E0);
-			g_socketForPort = (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x100130D0);
-			g_performOperation = (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x100141C0);
-			m_privateFunctionsSetup = true;
-			break;			
-		case 4:
-			g_sendCommandToDevice = (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10008170);
-			g_sendFileToDevice = (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x100082F0);
-			g_socketForPort = (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10012F90);
-			g_performOperation = (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10014040);
-			m_privateFunctionsSetup = true;
-			break;
-		case 3:
-			g_sendCommandToDevice= (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009290);
-			g_sendFileToDevice= (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009410);
-			g_performOperation= (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x100129C0);
-			g_socketForPort= (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10012830);
-			m_privateFunctionsSetup = true;
-			break;
-		default:
-			break;
-	}
-
-}
-#elif defined(__APPLE__) && defined(__POWERPC__)
-void PhoneInteraction::setupPrivateFunctions()
-{
-
-	if ( m_iTunesVersion.major != 7 ) return;
-	
-	switch (m_iTunesVersion.minor) {
-		case 6:
-			g_performOperation = (t_performOperation)0x3c3a2124;
-			g_socketForPort = (t_socketForPort)0x3c3a1530;
-			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a72cc;
-			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a742c;
-			m_privateFunctionsSetup = true;
-			break;
-		case 5:
-			// iTunes 7.5 offsets submitted by David Wang
-			g_performOperation = (t_performOperation)0x3c3a1884;
-			g_socketForPort = (t_socketForPort)0x3c3a11d8;
-			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a693c;
-			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a6a9c;
-			m_privateFunctionsSetup = true;
-			break;
-		case 4:
-			g_performOperation = (t_performOperation)0x3c3a0bc8;
-			g_socketForPort = (t_socketForPort)0x3c3a051c;
-			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a5bb0;
-			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a5d10;
-			m_privateFunctionsSetup = true;
-			break;
-		case 3:
-			g_performOperation = (t_performOperation)0x3c3a0e14;
-			g_socketForPort = (t_socketForPort)0x3c3a0644;
-			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a517c;
-			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a52dc;
-			m_privateFunctionsSetup = true;
-			break;
-		default:
-			break;
-	}
-
-}
-#elif defined(__APPLE__)
-void PhoneInteraction::setupPrivateFunctions()
-{
-
-	if ( m_iTunesVersion.major != 7 ) return;
-
-	switch (m_iTunesVersion.minor) {
-		case 6:
-			g_performOperation = (t_performOperation)0x3c3a1cc5;
-			g_socketForPort = (t_socketForPort)0x3c3a122b;
-			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a71dd;
-			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a7302;
-			m_privateFunctionsSetup = true;
-			break;
-		case 5:
-			// iTunes 7.5 offsets submitted by David Wang
-			g_performOperation = (t_performOperation)0x3c3a02f5;
-			g_socketForPort = (t_socketForPort)0x3c39fcff;
-			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a57a3;
-			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a59ef;
-			m_privateFunctionsSetup = true;
-			break;
-		case 4:
-			g_performOperation = (t_performOperation)0x3c3a0599;
-			g_socketForPort = (t_socketForPort)0x3c39ffa3;
-			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a597f;
-			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a5bcb;
-			m_privateFunctionsSetup = true;
-			break;
-		case 3:
-			g_performOperation = (t_performOperation)0x3c39fa4b;
-			g_socketForPort = (t_socketForPort)0x3c39f36c;
-			g_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a3e3b;
-			g_sendFileToDevice = (t_sendFileToDevice)0x3c3a4087;
-			m_privateFunctionsSetup = true;
-			break;
-		default:
-			break;
-	}
-
-}
+#ifdef DEBUG
+	CFShow(CFSTR("deviceNotificationCallback"));
 #endif
 
-bool PhoneInteraction::arePrivateFunctionsSetup()
+	m_iPhone = info->dev;
+	
+	if (info->msg == ADNCI_MSG_CONNECTED) {
+		
+		if (m_switchingToRestoreMode) {
+			m_switchingToRestoreMode = false;
+			m_phoneInteraction->restoreModeStarted();
+		}
+		else {
+			m_phoneInteraction->connectToPhone();
+
+			if (m_recoveryOccurred) {
+				m_recoveryOccurred = false;
+
+				if (m_finishingJailbreak) {
+					m_phoneInteraction->jailbreakFinished();
+				}
+				else if (m_returningToJail) {
+					m_phoneInteraction->returnToJailFinished();
+				}
+				
+			}
+			else if (m_performingNewJailbreak) {
+				m_phoneInteraction->newJailbreakStageTwo();
+			}
+			
+		}
+		
+	}
+	else if (info->msg == ADNCI_MSG_DISCONNECTED) {
+		
+		if (m_inRestoreMode) {
+			m_phoneInteraction->restoreModeFinished();
+		}
+		else {
+			m_phoneInteraction->setConnected(false);
+			m_phoneInteraction->setConnectedToAFC(false);
+		}
+		
+	}
+#ifdef DEBUG
+	else {
+		char msg[25];
+		snprintf(msg, 25, "info->msg = %d\n", info->msg);
+		CFStringRef cfsr = CFStringCreateWithCString(kCFAllocatorDefault, msg, kCFStringEncodingUTF8);
+		
+		if (cfsr) {
+			CFShow(cfsr);
+			CFRelease(cfsr);
+		}
+		
+	}
+#endif
+	
+}
+
+void PhoneInteraction::dfuConnectNotificationCallback(am_recovery_device *dev)
 {
-	return m_privateFunctionsSetup;
+#ifdef DEBUG
+	CFShow(CFSTR("dfuConnectNotificationCallback"));
+#endif
+	m_phoneInteraction->dfuModeStarted(dev);
+}
+
+void PhoneInteraction::dfuDisconnectNotificationCallback(am_recovery_device *dev)
+{
+#ifdef DEBUG
+	CFShow(CFSTR("dfuDisconnectNotificationCallback"));
+#endif
+	m_phoneInteraction->dfuModeFinished(dev);
+}
+
+void PhoneInteraction::recoveryProgressCallback(unsigned int progress_number, unsigned int opcode)
+{
+#ifdef DEBUG
+	CFShow(CFSTR("recoveryProgressCallback"));
+#endif
+	
+	if (opcode == 9) {
+		m_mobDevInternals->sendCommandToDevice(m_phoneInteraction->m_recoveryDevice, CFSTR("setenv boot-args rd=md0 -progress"));
+
+		// alternative boot args for restore mode boot spew
+		//m_mobDevInternals->sendCommandToDevice(m_phoneInteraction->m_recoveryDevice, CFSTR("setenv boot-args rd=md0 -v"));
+	}
+	else {
+#ifdef DEBUG
+		char msg[50];
+		snprintf(msg, 50, "Progress number: %d, opcode: %d\n", progress_number, opcode);
+		CFStringRef cfsr = CFStringCreateWithCString(kCFAllocatorDefault, msg, kCFStringEncodingUTF8);
+		
+		if (cfsr) {
+			CFShow(cfsr);
+			CFRelease(cfsr);
+		}
+#endif
+		
+	}
+	
+}
+
+void PhoneInteraction::recoveryConnectNotificationCallback(am_recovery_device *dev)
+{
+#ifdef DEBUG
+	CFShow(CFSTR("recoveryConnectNotificationCallback"));
+#endif
+	m_phoneInteraction->recoveryModeStarted(dev);
+}
+
+void PhoneInteraction::recoveryDisconnectNotificationCallback(am_recovery_device *dev)
+{
+#ifdef DEBUG
+	CFShow(CFSTR("recoveryDisconnectNotificationCallback"));
+#endif
+	m_phoneInteraction->recoveryModeFinished(dev);
 }
 
 void PhoneInteraction::subscribeToNotifications()
 {
 
-	if (!arePrivateFunctionsSetup() && m_usingPrivateFunctions) {
+	if ( (!m_mobDevInternals || !m_mobDevInternals->IsInitialized()) && m_usingPrivateFunctions ) {
 		char msg[256];
 		snprintf(msg, 256, "Unsupported version of iTunes is installed.\nDetected iTunes version is %d.%d.%d\n",
 				 m_iTunesVersion.major, m_iTunesVersion.minor, m_iTunesVersion.point);
@@ -3848,13 +3588,13 @@ void PhoneInteraction::recoveryModeStarted_dfu(struct am_recovery_device *rdev)
 	}
 	
 	// send DFU file
-	if (PI_sendFileToDevice(rdev, cfDFU)) {
+	if (m_mobDevInternals->sendFileToDevice(rdev, cfDFU)) {
 		(*m_notifyFunc)(NOTIFY_DFU_FAILED, "Error sending DFU file to device.");
 		return;
 	}
 	
 	// load ramdisk
-	if (PI_sendCommandToDevice(rdev, CFSTR("go"))) {
+	if (m_mobDevInternals->sendCommandToDevice(rdev, CFSTR("go"))) {
 		(*m_notifyFunc)(NOTIFY_DFU_FAILED, "Error sending go command to device.");
 		return;
 	}
@@ -3888,7 +3628,7 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	else if ( !m_waitingForRecovery ) {
 
 		// try once to save them from recovery mode
-		if (g_recoveryAttempts++ == 0) {
+		if (m_recoveryAttempts++ == 0) {
 			exitRecoveryMode(rdev);
 		}
 
@@ -4004,13 +3744,13 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	}
 
 	// send ramdisk file
-	if (PI_sendFileToDevice(rdev, cfRamdisk)) {
+	if (m_mobDevInternals->sendFileToDevice(rdev, cfRamdisk)) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error sending ramdisk file to device.");
 		return;
 	}
 
 	// load ramdisk
-	if (PI_sendCommandToDevice(rdev, CFSTR("ramdisk"))) {
+	if (m_mobDevInternals->sendCommandToDevice(rdev, CFSTR("ramdisk"))) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error sending ramdisk command to device.");
 		return;
 	}
@@ -4024,7 +3764,7 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	}
 
 	// send kernel cache file
-	if (PI_sendFileToDevice(rdev, cfKernCache)) {
+	if (m_mobDevInternals->sendFileToDevice(rdev, cfKernCache)) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error sending kernel cache file to device.");
 		return;
 	}
@@ -4032,14 +3772,14 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	// set boot args
 	//
 	// alternative boot args for restore mode boot spew
-	if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -v"))) {
-	//if (PI_sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -progress"))) {
+	if (m_mobDevInternals->sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -v"))) {
+	//if (m_mobDevInternals->sendCommandToDevice(rdev, CFSTR("setenv boot-args rd=md0 -progress"))) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error setting boot args.");
 		return;
 	}
 
 	// turn off autoboot
-	if (PI_sendCommandToDevice(rdev, CFSTR("setenv auto-boot false"))) {
+	if (m_mobDevInternals->sendCommandToDevice(rdev, CFSTR("setenv auto-boot false"))) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error turning off auto-boot.");
 		return;
 	}
@@ -4047,7 +3787,7 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	m_switchingToRestoreMode = true;
 
 	// boot kernel cache to get to restore mode
-	if (PI_sendCommandToDevice(rdev, CFSTR("bootx"))) {
+	if (m_mobDevInternals->sendCommandToDevice(rdev, CFSTR("bootx"))) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error rebooting device.");
 		return;
 	}
@@ -4085,7 +3825,7 @@ void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 {
 
 	// set device to auto boot
-	if (PI_sendCommandToDevice(dev, CFSTR("setenv auto-boot true"))) {
+	if (m_mobDevInternals->sendCommandToDevice(dev, CFSTR("setenv auto-boot true"))) {
 
 		if (m_finishingJailbreak) {
 			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error turning on auto-boot.");
@@ -4099,7 +3839,7 @@ void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 
 	// clear boot args (not needed)
 	/*
-	if (PI_sendCommandToDevice(dev, CFSTR("setenv boot-args"))) {
+	if (m_mobDevInternals->sendCommandToDevice(dev, CFSTR("setenv boot-args"))) {
 		
 		if (m_finishingJailbreak) {
 			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error setting boot args.");
@@ -4113,7 +3853,7 @@ void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 	 */
 
 	// save the environment
-	if (PI_sendCommandToDevice(dev, CFSTR("saveenv"))) {
+	if (m_mobDevInternals->sendCommandToDevice(dev, CFSTR("saveenv"))) {
 
 		if (m_finishingJailbreak) {
 			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error saving environment.");
@@ -4125,7 +3865,7 @@ void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 	}
 
 	// reboot into normal mode
-	if (PI_sendCommandToDevice(dev, CFSTR("fsboot"))) {
+	if (m_mobDevInternals->sendCommandToDevice(dev, CFSTR("fsboot"))) {
 
 		if (m_finishingJailbreak) {
 			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error trying to reboot into normal mode.");
@@ -4145,7 +3885,7 @@ void PhoneInteraction::restoreModeStarted()
 	(*m_notifyFunc)(NOTIFY_RESTORE_CONNECTED, "Restore mode started");
 
     m_restoreDevice = AMRestoreModeDeviceCreate(0, AMDeviceGetConnectionID(m_iPhone), 0);
-    m_restoreDevice->port = PI_socketForPort(m_restoreDevice, 0xf27e);
+    m_restoreDevice->port = m_mobDevInternals->socketForPort(m_restoreDevice, 0xf27e);
 
 	sleep(5);
 
@@ -4160,7 +3900,7 @@ void PhoneInteraction::restoreModeStarted()
 	// fs checks
 	CFDictionarySetValue(request, CFSTR("Operation"), CFSTR("FilesystemCheck"));
 	CFDictionarySetValue(request, CFSTR("DeviceName"), CFSTR("/dev/disk0s1"));
-	PI_performOperation(m_restoreDevice, request);
+	m_mobDevInternals->performOperation(m_restoreDevice, request);
 	sleep(3);
 
 	request = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
@@ -4172,7 +3912,7 @@ void PhoneInteraction::restoreModeStarted()
 
 	CFDictionarySetValue(request, CFSTR("Operation"), CFSTR("FilesystemCheck"));
 	CFDictionarySetValue(request, CFSTR("DeviceName"), CFSTR("/dev/disk0s2"));
-	PI_performOperation(m_restoreDevice, request);
+	m_mobDevInternals->performOperation(m_restoreDevice, request);
 	sleep(3);
 
 	// mount disks
@@ -4186,7 +3926,7 @@ void PhoneInteraction::restoreModeStarted()
 	CFDictionarySetValue(request, CFSTR("Operation"), CFSTR("Mount"));
 	CFDictionarySetValue(request, CFSTR("DeviceName"), CFSTR("/dev/disk0s1"));
 	CFDictionarySetValue(request, CFSTR("MountPoint"), CFSTR("/mnt1"));
-	PI_performOperation(m_restoreDevice, request);
+	m_mobDevInternals->performOperation(m_restoreDevice, request);
 
 	request = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
 										&kCFTypeDictionaryValueCallBacks);
@@ -4198,7 +3938,7 @@ void PhoneInteraction::restoreModeStarted()
 	CFDictionarySetValue(request, CFSTR("Operation"), CFSTR("Mount"));
 	CFDictionarySetValue(request, CFSTR("DeviceName"), CFSTR("/dev/disk0s2"));
 	CFDictionarySetValue(request, CFSTR("MountPoint"), CFSTR("/mnt2"));
-	PI_performOperation(m_restoreDevice, request);
+	m_mobDevInternals->performOperation(m_restoreDevice, request);
 
 	// copy edited files to main fs
 	request = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
@@ -4211,7 +3951,7 @@ void PhoneInteraction::restoreModeStarted()
 	CFDictionarySetValue(request, CFSTR("Operation"), CFSTR("Ditto"));
 	CFDictionarySetValue(request, CFSTR("SourcePath"), CFSTR("/mnt2/root/Media/fstab"));
 	CFDictionarySetValue(request, CFSTR("DestinationPath"), CFSTR("/mnt1/etc/fstab"));
-	PI_performOperation(m_restoreDevice, request);
+	m_mobDevInternals->performOperation(m_restoreDevice, request);
 
 	request = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
 										&kCFTypeDictionaryValueCallBacks);
@@ -4223,7 +3963,7 @@ void PhoneInteraction::restoreModeStarted()
 	CFDictionarySetValue(request, CFSTR("Operation"), CFSTR("Ditto"));
 	CFDictionarySetValue(request, CFSTR("SourcePath"), CFSTR("/mnt2/root/Media/Services.plist"));
 	CFDictionarySetValue(request, CFSTR("DestinationPath"), CFSTR("/mnt1/System/Library/Lockdown/Services.plist"));
-	PI_performOperation(m_restoreDevice, request);
+	m_mobDevInternals->performOperation(m_restoreDevice, request);
 
 	// clean up
 	request = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
@@ -4235,7 +3975,7 @@ void PhoneInteraction::restoreModeStarted()
 
 	CFDictionarySetValue(request, CFSTR("Operation"), CFSTR("RemovePath"));
 	CFDictionarySetValue(request, CFSTR("Path"), CFSTR("/mnt2/root/Media/fstab"));
-	PI_performOperation(m_restoreDevice, request);
+	m_mobDevInternals->performOperation(m_restoreDevice, request);
 
 	request = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
 										&kCFTypeDictionaryValueCallBacks);
@@ -4246,7 +3986,7 @@ void PhoneInteraction::restoreModeStarted()
 
 	CFDictionarySetValue(request, CFSTR("Operation"), CFSTR("RemovePath"));
 	CFDictionarySetValue(request, CFSTR("Path"), CFSTR("/mnt2/root/Media/Services.plist"));
-	PI_performOperation(m_restoreDevice, request);
+	m_mobDevInternals->performOperation(m_restoreDevice, request);
 
 	// unmount disks
 	request = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
@@ -4258,7 +3998,7 @@ void PhoneInteraction::restoreModeStarted()
 
 	CFDictionarySetValue(request, CFSTR("Operation"), CFSTR("Unmount"));
 	CFDictionarySetValue(request, CFSTR("MountPoint"), CFSTR("/mnt2"));
-	PI_performOperation(m_restoreDevice, request);
+	m_mobDevInternals->performOperation(m_restoreDevice, request);
 
 	request = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
 										&kCFTypeDictionaryValueCallBacks);
@@ -4269,7 +4009,7 @@ void PhoneInteraction::restoreModeStarted()
 
 	CFDictionarySetValue(request, CFSTR("Operation"), CFSTR("Unmount"));
 	CFDictionarySetValue(request, CFSTR("MountPoint"), CFSTR("/mnt1"));
-	PI_performOperation(m_restoreDevice, request);
+	m_mobDevInternals->performOperation(m_restoreDevice, request);
 
 	// reboot
 	request = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
@@ -4280,7 +4020,7 @@ void PhoneInteraction::restoreModeStarted()
 	}
 
 	CFDictionarySetValue(request, CFSTR("Operation"), CFSTR("Goodbye"));
-	PI_performOperation(m_restoreDevice, request);
+	m_mobDevInternals->performOperation(m_restoreDevice, request);
 
 	m_finishingJailbreak = true;
 }

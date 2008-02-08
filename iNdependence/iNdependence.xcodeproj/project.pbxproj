@@ -21,6 +21,7 @@
 		F250215B0C7B365600B7F437 /* iPhoneActivation_private.pem in Resources */ = {isa = PBXBuildFile; fileRef = F25021590C7B365600B7F437 /* iPhoneActivation_private.pem */; };
 		F250215C0C7B365600B7F437 /* iPhoneActivation.pem in Resources */ = {isa = PBXBuildFile; fileRef = F250215A0C7B365600B7F437 /* iPhoneActivation.pem */; };
 		F25D50A70CF150DE00812F3F /* mknod in Resources */ = {isa = PBXBuildFile; fileRef = F25D50A60CF150DE00812F3F /* mknod */; };
+		F25D90A00D5C26C10067EA34 /* libPhoneInteraction.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F20742D40CE4A96D00A152B8 /* libPhoneInteraction.dylib */; };
 		F26A50AB0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = F26A50AA0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm */; };
 		F26A51EA0C80EAEC00A1C30C /* Add.png in Resources */ = {isa = PBXBuildFile; fileRef = F26A51E90C80EAEC00A1C30C /* Add.png */; };
 		F26A51EC0C80EAF100A1C30C /* Delete.png in Resources */ = {isa = PBXBuildFile; fileRef = F26A51EB0C80EAF100A1C30C /* Delete.png */; };
@@ -38,7 +39,6 @@
 		F2C1F6F60CCFC345003AE395 /* sleep_button.gif in Resources */ = {isa = PBXBuildFile; fileRef = F2C1F6F50CCFC345003AE395 /* sleep_button.gif */; };
 		F2CB60C10C6186AB005490ED /* MainWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60C00C6186AB005490ED /* MainWindow.mm */; };
 		F2CB60CD0C61899F005490ED /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = F2CB60CC0C61899F005490ED /* AppController.mm */; };
-		F2CB623B0C61A77C005490ED /* libPhoneInteraction.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F2CB622B0C61A753005490ED /* libPhoneInteraction.dylib */; };
 		F2D6EE490CD2B56800E86C41 /* Sync.png in Resources */ = {isa = PBXBuildFile; fileRef = F2D6EE480CD2B56800E86C41 /* Sync.png */; };
 		F2D7DE4C0D11392A00F60A81 /* anySIM_12.app in Resources */ = {isa = PBXBuildFile; fileRef = F2D7DE4B0D11392A00F60A81 /* anySIM_12.app */; };
 		F2ECD7710D0FA51E006D8DC6 /* MobileDevice.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F2ECD7700D0FA51E006D8DC6 /* MobileDevice.framework */; };
@@ -58,13 +58,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = F207426F0CE4A4FE00A152B8;
 			remoteInfo = libPhoneInteraction_SysMobDev;
-		};
-		F2CB622A0C61A753005490ED /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F2CB62260C61A753005490ED /* libPhoneInteraction.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = D2AAC09D05546B4700DB518D;
-			remoteInfo = libPhoneInteraction;
 		};
 		F2ECD76E0D0FA4FA006D8DC6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -137,9 +130,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F2CB623B0C61A77C005490ED /* libPhoneInteraction.dylib in Frameworks */,
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				F2ECD7710D0FA51E006D8DC6 /* MobileDevice.framework in Frameworks */,
+				F25D90A00D5C26C10067EA34 /* libPhoneInteraction.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -297,7 +290,6 @@
 		F2CB62270C61A753005490ED /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F2CB622B0C61A753005490ED /* libPhoneInteraction.dylib */,
 				F20742D40CE4A96D00A152B8 /* libPhoneInteraction.dylib */,
 			);
 			name = Products;
@@ -341,6 +333,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "iNdependence" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 29B97314FDCFA39411CA2CEA /* iNdependence */;
 			projectDirPath = "";
@@ -350,6 +343,7 @@
 					ProjectRef = F2CB62260C61A753005490ED /* libPhoneInteraction.xcodeproj */;
 				},
 			);
+			projectRoot = "";
 			targets = (
 				8D1107260486CEB800E47090 /* iNdependence */,
 			);
@@ -362,13 +356,6 @@
 			fileType = "compiled.mach-o.dylib";
 			path = libPhoneInteraction.dylib;
 			remoteRef = F20742D30CE4A96D00A152B8 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		F2CB622B0C61A753005490ED /* libPhoneInteraction.dylib */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.dylib";
-			path = libPhoneInteraction.dylib;
-			remoteRef = F2CB622A0C61A753005490ED /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -492,8 +479,10 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
 				);
 				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"";
+				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_2 = "\"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -529,8 +518,10 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
 				);
 				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"";
+				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_2 = "\"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

@@ -25,6 +25,7 @@
 #endif
 
 #include "PIVersion.h"
+#include "MobDevInternals.h"
 
 /* Our own version of afc when in jailbreak mode */
 #define AMSVC_AFC2					CFSTR("com.apple.afc2")
@@ -97,8 +98,7 @@ struct am_device;
 struct afc_connection;
 struct am_recovery_device;
 struct am_restore_device;
-
-typedef int (*cmdsend)(am_recovery_device *, const char *);
+struct am_device_notification_callback_info;
 
 
 /*
@@ -106,6 +106,10 @@ typedef int (*cmdsend)(am_recovery_device *, const char *);
  *
  * It uses the singleton design pattern since an application should only ever
  * need one instance of it.  So use getInstance() to instantiate it.
+ *
+ * Also, an application never connects to the phone directly, it waits for notification
+ * that a phone has been connected before it begins performing operations on the phone.
+ * That's the purpose of the notifyFunc function pointer which is passed in.
  */
 class PhoneInteraction
 {
@@ -118,19 +122,8 @@ public:
 										 void (*notifyFunc)(int, const char*) = NULL,
 										 bool bUsingPrivateFunctions = true);
 
-	// connection related functions
-	// NOTE: these are used internally and are not intended to be used by external apps.
-	// Use the notifyFunc callback function you passed in getInstance() to receive notification
-	// of when the phone is connected and disconnected.
-	void connectToPhone();
-	void disconnectFromPhone();
-	void setConnected(bool connected);
-
+	// used to check connection status (but don't poll -- use notifcation callbacks instead)
 	bool isConnected();
-
-	// AFC connection related functions
-	void connectToAFC();
-	void setConnectedToAFC(bool connected);
 	bool isConnectedToAFC();
 
 	// information functions
@@ -157,13 +150,10 @@ public:
 	void performJailbreak(const char *firmwarePath, const char *modifiedFstabPath,
 						  const char *modifiedServicesPath);
 	void performNewJailbreak(const char *modifiedServicesPath);
-	void newJailbreakStageTwo();
 	void returnToJail(const char *servicesFile, const char *fstabFile);
-	void jailbreakFinished();
-	void returnToJailFinished();
 	bool isPhoneJailbroken();
 
-	// use to enable SpringBoard to recognize 3rd party applications on firmware 1.1.x
+	// use to enable SpringBoard to recognize 3rd party applications on firmware 1.1.1/1.1.2
 	bool enableThirdPartyApplications(bool undo = false);
 
 	// use to enable/disable YouTube
@@ -171,17 +161,6 @@ public:
 
 	// use to enable ringtone customization on firmware 1.1.1
 	bool enableCustomRingtones(bool undo = false);
-
-	// used for notifications from MobileDevice library
-	void recoveryModeStarted(struct am_recovery_device *dev);
-	void recoveryModeFinished(struct am_recovery_device *dev);
-	void exitRecoveryMode(am_recovery_device *dev);
-
-	void restoreModeStarted();
-	void restoreModeFinished();
-
-	void dfuModeStarted(am_recovery_device *dev);
-	void dfuModeFinished(am_recovery_device *dev);
 
 	// used to switch phone modes
 	void enterDFUMode(const char *firmwarePath);
@@ -233,19 +212,6 @@ public:
 	bool getActivationFile(const char *dest);
 	bool copyPhoneFilesystem(const char *dirpath, const char *dest, bool ignoreUserFiles);
 
-	// public data members
-	bool m_switchingToRestoreMode;
-	bool m_inRestoreMode;
-	bool m_inDFUMode;
-	bool m_returningToJail;
-	bool m_finishingJailbreak;
-	bool m_performingNewJailbreak;
-	bool m_recoveryOccurred;
-	am_recovery_device *m_recoveryDevice;
-	struct am_restore_device *m_restoreDevice;
-	am_recovery_device *m_dfuDevice;
-	am_device *m_iPhone;
-
 private:
 	// private constructor (use getInstance to instantiate)
 	PhoneInteraction(void (*statusFunc)(const char*, bool),
@@ -255,8 +221,6 @@ private:
 	// functions used internally
 	void subscribeToNotifications();	
 	bool determineiTunesVersion();
-	void setupPrivateFunctions();
-	bool arePrivateFunctionsSetup();
 	bool copyFilesystemRecursive(afc_connection *conn, const char *phoneBasepath,
 								 const char *dirpath, const char *dest,
 								 const char *basepath, bool ignoreUserFiles);
@@ -265,27 +229,69 @@ private:
 	void recoveryModeStarted_dfu(struct am_recovery_device *rdev);
 	CFDictionaryRef getUserRingtoneDictionary();
 
-	// private data members
-	bool m_connected;
-	bool m_afcConnected;
-	bool m_inRecoveryMode;
-	bool m_jailbroken;
-	bool m_enteringRecoveryMode;
-	bool m_enteringDFUMode;
-	bool m_waitingForRecovery;
-	bool m_usingPrivateFunctions;
-	afc_connection *m_hAFC;
-	void (*m_statusFunc)(const char*, bool);
-	void (*m_notifyFunc)(int, const char*);
-	char *m_firmwarePath;
-	bool m_privateFunctionsSetup;
-	PIVersion m_iTunesVersion;
-	char *m_firmwareVersion;
-	char *m_productVersion;
-	char *m_buildVersion;
-	char *m_basebandVersion;
-	char *m_serialNumber;
-	char *m_activationState;
-	char *m_servicesPath;
+	void connectToPhone();
+	void disconnectFromPhone();
+	void setConnected(bool connected);
+	
+	void connectToAFC();
+	void setConnectedToAFC(bool connected);
+
+	void newJailbreakStageTwo();
+	void jailbreakFinished();
+	void returnToJailFinished();
+
+	// callback functions
+	static void deviceNotificationCallback(am_device_notification_callback_info *info);
+	static void dfuConnectNotificationCallback(am_recovery_device *dev);
+	static void dfuDisconnectNotificationCallback(am_recovery_device *dev);
+	static void recoveryProgressCallback(unsigned int progress_number, unsigned int opcode);
+	static void recoveryConnectNotificationCallback(am_recovery_device *dev);
+	static void recoveryDisconnectNotificationCallback(am_recovery_device *dev);
+
+	void recoveryModeStarted(struct am_recovery_device *dev);
+	void recoveryModeFinished(struct am_recovery_device *dev);
+	void exitRecoveryMode(am_recovery_device *dev);
+	
+	void restoreModeStarted();
+	void restoreModeFinished();
+	
+	void dfuModeStarted(am_recovery_device *dev);
+	void dfuModeFinished(am_recovery_device *dev);
+	
+	// private data members (all static since this is a singleton class)
+	static PhoneInteraction *m_phoneInteraction;
+	static bool m_switchingToRestoreMode;
+	static bool m_inRestoreMode;
+	static bool m_inDFUMode;
+	static bool m_returningToJail;
+	static bool m_finishingJailbreak;
+	static bool m_performingNewJailbreak;
+	static bool m_recoveryOccurred;
+	static am_recovery_device *m_recoveryDevice;
+	static struct am_restore_device *m_restoreDevice;
+	static am_recovery_device *m_dfuDevice;
+	static am_device *m_iPhone;
+	static bool m_connected;
+	static bool m_afcConnected;
+	static bool m_inRecoveryMode;
+	static bool m_jailbroken;
+	static bool m_enteringRecoveryMode;
+	static bool m_enteringDFUMode;
+	static bool m_waitingForRecovery;
+	static bool m_usingPrivateFunctions;
+	static afc_connection *m_hAFC;
+	static void (*m_statusFunc)(const char*, bool);
+	static void (*m_notifyFunc)(int, const char*);
+	static char *m_firmwarePath;
+	static PIVersion m_iTunesVersion;
+	static char *m_firmwareVersion;
+	static char *m_productVersion;
+	static char *m_buildVersion;
+	static char *m_basebandVersion;
+	static char *m_serialNumber;
+	static char *m_activationState;
+	static char *m_servicesPath;
+	static MobDevInternals *m_mobDevInternals;
+	static int m_recoveryAttempts;
 
 };
