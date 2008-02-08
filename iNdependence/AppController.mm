@@ -1696,7 +1696,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (IBAction)removeSSH:(id)sender
 {
-	int retval = NSRunAlertPanel(@"Failed", @"During SSH installation, a file named libarmfp.dylib was installed.  This is needed by SSH, but is also needed by many 3rd party applications.  Removing it could render many 3rd party applications you have installed inoperable.\n\nWould you like to remove libarmfp.dylib during SSH removal?", @"No", @"Yes", nil);
+	int retval = NSRunAlertPanel(@"Alert", @"During SSH installation, a file named libarmfp.dylib was installed.  This is needed by SSH, but is also needed by many 3rd party applications.  Removing it could render many 3rd party applications you have installed inoperable.\n\nWould you like to remove libarmfp.dylib during SSH removal?", @"No", @"Yes", nil);
 	bool bRemoveLibarmfp = false;
 
 	if (retval == NSAlertAlternateReturn) {

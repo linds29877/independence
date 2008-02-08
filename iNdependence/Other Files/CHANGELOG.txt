@@ -4,6 +4,8 @@ Changelog
 v1.3.2
 
 - Changed copyright dates for 2008
+- Cleaned up libPhoneInteraction a bit so that internally used functions are hidden from application developers.  Also refactored MobileDevice private function code out into a separate class.
+- Changed title of libarmfp.dylib alert dialog from "Failure" to "Alert" to make things clearer
 
 
 v1.3.2 beta - 01/16/08
