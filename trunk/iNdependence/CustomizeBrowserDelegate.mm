@@ -916,8 +916,8 @@ static int g_numSystemApps = 19;
 
 			if ([title isEqualToString:@"Ringtones"]) {
 
-				if (!strcmp(value, "1.1.2")) {
-					// no ringtone handling in version 1.1.2
+				if (!strcmp(value, "1.1.2") || !strcmp(value, "1.1.3")) {
+					// no ringtone handling in version 1.1.2 or 1.1.3
 					bDisable = true;
 				}
 				else {
