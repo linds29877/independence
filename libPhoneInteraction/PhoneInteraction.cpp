@@ -651,8 +651,7 @@ void PhoneInteraction::connectToPhone()
 		sleep(1);
 		
 		if (!readValue("FirmwareVersion", &m_firmwareVersion)) {
-			(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get firmware version.");
-			return;
+			m_firmwareVersion = NULL;
 		}
 		
 	}
@@ -668,8 +667,7 @@ void PhoneInteraction::connectToPhone()
 		sleep(1);
 
 		if (!readValue("BuildVersion", &m_buildVersion)) {
-			(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get build version.");
-			return;
+			m_buildVersion = NULL;
 		}
 		
 	}
@@ -680,17 +678,16 @@ void PhoneInteraction::connectToPhone()
 		free(m_basebandVersion);
 		m_basebandVersion = NULL;
 	}
-	
+
 	if (!readValue("BasebandVersion", &m_basebandVersion)) {
 		sleep(1);
 
 		if (!readValue("BasebandVersion", &m_basebandVersion)) {
-			(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get baseband version.");
-			return;
+			m_basebandVersion = NULL;
 		}
 
 	}
-	
+
 	usleep(100000);
 	
 	if (m_serialNumber != NULL) {
@@ -699,8 +696,7 @@ void PhoneInteraction::connectToPhone()
 	}
 	
 	if (!readValue("SerialNumber", &m_serialNumber)) {
-		(*m_notifyFunc)(NOTIFY_CONNECTION_FAILED, "Connection failed: Couldn't get serial number.");
-		return;
+		m_serialNumber = NULL;
 	}
 	
 	usleep(100000);
@@ -3155,6 +3151,21 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 	afc_file_ref rAFC;
 
 	if (AFCFileRefOpen(m_hAFC, "disk", 1, &rAFC)) {
+		char **dirlist;
+		int numfiles;
+
+		if (directoryFileList("", &dirlist, &numfiles)) {
+			printf("got directory list\n");
+
+			for (int i = 0; i < numfiles; i++) {
+				printf("file %d: %s\n", i, dirlist[i]);
+			}
+
+		}
+		else {
+			printf("couldn't get directory list\n");
+		}
+
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error.  Couldn't open /private/var/root/Media/disk on phone.");
 		return;
 	}

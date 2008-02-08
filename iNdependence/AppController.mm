@@ -553,6 +553,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (NSString*)phoneFirmwareVersion
 {
+
+	if (m_phoneInteraction->getPhoneProductVersion() == NULL) {
+		return @"-";
+	}
+
 	return [NSString stringWithCString:m_phoneInteraction->getPhoneProductVersion() encoding:NSUTF8StringEncoding];
 }
 
@@ -811,13 +816,31 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (IBAction)installSimUnlock:(id)sender
 {
-	[mainWindow displayAlert:@"Alert" message:@"Please note that anySIM is not able to SIM unlock phones which came with the 1.1.2 firmware out of the box."];
-
 	char *value = m_phoneInteraction->getPhoneBasebandVersion();
+
+	if (value == NULL) {
+		[mainWindow displayAlert:@"Error" message:@"Couldn't determine baseband version so anySIM can't be installed."];
+	}
+
+	[mainWindow displayAlert:@"Alert" message:@"Please note that anySIM is not able to SIM unlock phones which came with the 1.1.2 or 1.1.3 firmware out of the box."];
+
 	NSString *simUnlockApp = nil;
 	bool bUsingAnysim12With112 = false;
 
-	if (!strcmp(value, "04.02.13_G")) {
+	if (!strcmp(value, "04.03.13_G")) {
+		value = m_phoneInteraction->getPhoneProductVersion();
+		
+		if (!strcmp(value, "1.1.3")) {
+			simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM_13" ofType:@"app"];
+		}
+		else {
+			NSString *msg = [NSString stringWithFormat:@"anySIM 1.3 is required for SIM unlocking.  However, your firmware version (%s) isn't compatible with anySIM 1.3.\n\nPlease upgrade your phone to firmware version 1.1.3", value];
+			[mainWindow displayAlert:@"Error" message:msg];
+			return;
+		}
+		
+	}
+	else if (!strcmp(value, "04.02.13_G")) {
 		value = m_phoneInteraction->getPhoneProductVersion();
 
 		if (!strcmp(value, "1.0.2") || !strcmp(value, "1.1.1") || !strcmp(value, "1.1.2")) {
@@ -1929,14 +1952,50 @@ static void phoneInteractionNotification(int type, const char *msg)
 	}
 
 	PIVersion iTunesVersion = m_phoneInteraction->getiTunesVersion();
-	
+
 	[iTunesVersionField setStringValue:[NSString stringWithFormat:@"%d.%d.%d", iTunesVersion.major, iTunesVersion.minor, iTunesVersion.point]];
-	[productVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneProductVersion() encoding:NSUTF8StringEncoding]];
-	[basebandVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneBasebandVersion() encoding:NSUTF8StringEncoding]];
-	[firmwareVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneFirmwareVersion() encoding:NSUTF8StringEncoding]];
-	[buildVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneBuildVersion() encoding:NSUTF8StringEncoding]];
-	[serialNumberField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneSerialNumber() encoding:NSUTF8StringEncoding]];
-	[activationStateField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneActivationState() encoding:NSUTF8StringEncoding]];
+
+	if (m_phoneInteraction->getPhoneProductVersion() != NULL) {
+		[productVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneProductVersion() encoding:NSUTF8StringEncoding]];
+	}
+	else {
+		[productVersionField setStringValue:@"-"];
+	}
+
+	if (m_phoneInteraction->getPhoneBasebandVersion() != NULL) {
+		[basebandVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneBasebandVersion() encoding:NSUTF8StringEncoding]];
+	}
+	else {
+		[basebandVersionField setStringValue:@"-"];
+	}
+
+	if (m_phoneInteraction->getPhoneFirmwareVersion() != NULL) {
+		[firmwareVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneFirmwareVersion() encoding:NSUTF8StringEncoding]];
+	}
+	else {
+		[firmwareVersionField setStringValue:@"-"];
+	}
+
+	if (m_phoneInteraction->getPhoneBuildVersion() != NULL) {
+		[buildVersionField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneBuildVersion() encoding:NSUTF8StringEncoding]];
+	}
+	else {
+		[buildVersionField setStringValue:@"-"];
+	}
+
+	if (m_phoneInteraction->getPhoneSerialNumber() != NULL) {
+		[serialNumberField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneSerialNumber() encoding:NSUTF8StringEncoding]];
+	}
+	else {
+		[serialNumberField setStringValue:@"-"];
+	}
+
+	if (m_phoneInteraction->getPhoneActivationState() != NULL) {
+		[activationStateField setStringValue:[NSString stringWithCString:m_phoneInteraction->getPhoneActivationState() encoding:NSUTF8StringEncoding]];
+	}
+	else {
+		[activationStateField setStringValue:@"-"];
+	}
 
 	if ([self isJailbroken]) {
 		[jailbrokenField setStringValue:@"Yes"];
