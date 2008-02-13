@@ -13,6 +13,8 @@
  * See the GNU General Public License version 2 for more details
  *
 
+INSTALLATION: Please copy iNdependence from the disk image to your hard drive.  If you try to run it from the disk image directly, it will fail.
+
 Disclaimer: I am not responsible for any damage caused to your phone by this tool.  Remember that you can always use iTunes to restore your phone to it's original state.
 
 *** The documentation for using iNdependence can be found in the Help menu within the application itself ***
