@@ -199,6 +199,7 @@ struct am_restore_device *PhoneInteraction::m_restoreDevice = NULL;
 am_recovery_device *PhoneInteraction::m_dfuDevice = NULL;
 afc_connection *PhoneInteraction::m_hAFC = NULL;
 char *PhoneInteraction::m_firmwarePath = NULL;
+char *PhoneInteraction::m_ramdiskPath = NULL;
 char *PhoneInteraction::m_servicesPath = NULL;
 char *PhoneInteraction::m_firmwareVersion = NULL;
 char *PhoneInteraction::m_productVersion = NULL;
@@ -220,7 +221,9 @@ bool PhoneInteraction::m_waitingForRecovery = false;
 bool PhoneInteraction::m_enteringRecoveryMode = false;
 bool PhoneInteraction::m_enteringDFUMode = false;
 bool PhoneInteraction::m_recoveryOccurred = false;
-bool PhoneInteraction::m_performingNewJailbreak = false;
+bool PhoneInteraction::m_performing112Jailbreak = false;
+bool PhoneInteraction::m_performing113Jailbreak = false;
+bool PhoneInteraction::m_113JbAndActivate = false;
 bool PhoneInteraction::m_usingPrivateFunctions = false;
 PIVersion PhoneInteraction::m_iTunesVersion = { 0, 0, 0 };
 int PhoneInteraction::m_recoveryAttempts = 0;
@@ -255,6 +258,11 @@ PhoneInteraction::~PhoneInteraction()
 	if (m_firmwarePath != NULL) {
 		free(m_firmwarePath);
 		m_firmwarePath = NULL;
+	}
+
+	if (m_ramdiskPath != NULL) {
+		free(m_ramdiskPath);
+		m_ramdiskPath = NULL;
 	}
 
 	if (m_mobDevInternals) {
@@ -456,8 +464,8 @@ void PhoneInteraction::deviceNotificationCallback(am_device_notification_callbac
 				}
 				
 			}
-			else if (m_performingNewJailbreak) {
-				m_phoneInteraction->newJailbreakStageTwo();
+			else if (m_performing112Jailbreak) {
+				m_phoneInteraction->jailbreak112StageTwo();
 			}
 			
 		}
@@ -1279,6 +1287,48 @@ bool PhoneInteraction::factoryActivate(bool undo)
 		}
 		
 	}
+	else if (!strcmp(phoneProdVer, "1.1.3")) {
+
+		if (undo) {
+			buf[0x83AF] = 0x0A;
+			buf[0xAFA3] = 0x0A;
+			buf[0xC4CF] = 0x1A;
+			buf[0xCDB4] = 0x80;
+			buf[0xCDB5] = 0x28;
+			buf[0xCDC0] = 0x01;
+			buf[0xCE08] = 0x2C;
+			buf[0xCE58] = 0xDC;
+			buf[0xCE59] = 0x27;
+			buf[0xCF24] = 0x3C;
+			buf[0xCF7C] = 0xF4;
+			buf[0xCF7D] = 0x26;
+			buf[0xD000] = 0x70;
+			buf[0xD1A8] = 0x8C;
+			buf[0xD1A9] = 0x24;
+			buf[0xD224] = 0x4C;
+			buf[0xD274] = 0x01;
+		}
+		else {
+			buf[0x83AF] = 0xEA;
+			buf[0xAFA3] = 0xEA;
+			buf[0xC4CF] = 0xEA;
+			buf[0xCDB4] = 0x04;
+			buf[0xCDB5] = 0x29;
+			buf[0xCDC0] = 0x00;
+			buf[0xCE08] = 0xB0;
+			buf[0xCE58] = 0x60;
+			buf[0xCE59] = 0x28;
+			buf[0xCF24] = 0x94;
+			buf[0xCF7C] = 0x3C;
+			buf[0xCF7D] = 0x27;
+			buf[0xD000] = 0xB8;
+			buf[0xD1A8] = 0x10;
+			buf[0xD1A9] = 0x25;
+			buf[0xD224] = 0x94;
+			buf[0xD274] = 0x00;
+		}
+
+	}
 	else {
 		free(buf);
 		return false;
@@ -1288,7 +1338,7 @@ bool PhoneInteraction::factoryActivate(bool undo)
 		free(buf);
 		return false;
 	}
-	
+
 	free(buf);
 	return true;
 }
@@ -3128,7 +3178,7 @@ bool PhoneInteraction::removePathRecursive(const char *path)
 	return true;
 }
 
-void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
+void PhoneInteraction::perform112Jailbreak(const char *modifiedServicesPath)
 {
 
 	if (!isConnected()) {
@@ -3143,7 +3193,7 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 	}
 
 	if (m_statusFunc) {
-		(*m_statusFunc)("Performing new jailbreak...", false);
+		(*m_statusFunc)("Performing 1.1.2 jailbreak...", false);
 	}
 
 	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_WAIT, "Waiting for jail break...");
@@ -3399,7 +3449,7 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 		return;
 	}
 
-	(*m_notifyFunc)(NOTIFY_NEW_JAILBREAK_STAGE_ONE_WAIT, "Waiting for reboot...");
+	(*m_notifyFunc)(NOTIFY_112_JAILBREAK_STAGE_ONE_WAIT, "Waiting for reboot...");
 
 	if (m_servicesPath != NULL) {
 		free(m_servicesPath);
@@ -3408,11 +3458,130 @@ void PhoneInteraction::performNewJailbreak(const char *modifiedServicesPath)
 	m_servicesPath = (char*)malloc(strlen(modifiedServicesPath)+1);
 	strcpy(m_servicesPath, modifiedServicesPath);
 
-	m_performingNewJailbreak = true;
+	m_performing112Jailbreak = true;
 }
 
-void PhoneInteraction::performJailbreak(const char *firmwarePath, const char *modifiedFstabPath,
-										const char *modifiedServicesPath)
+void PhoneInteraction::perform113Jailbreak(bool bActivate, const char *ramdiskFile)
+{
+	
+	if (!isConnected()) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Can't perform a jailbreak when no phone is connected.");
+		return;
+	}
+
+	int len = strlen(ramdiskFile);
+
+	if (len < 1) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Invalid ramdisk file.");
+		return;
+	}
+
+	if (m_ramdiskPath != NULL) {
+		free(m_ramdiskPath);
+	}
+	
+	m_ramdiskPath = (char*)malloc(len+1);
+	strncpy(m_ramdiskPath, ramdiskFile, len);
+	m_ramdiskPath[len] = 0;
+
+	if (AMDeviceEnterRecovery(m_iPhone)) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error entering recovery mode.");
+		return;
+	}
+	
+	m_waitingForRecovery = true;
+	m_performing113Jailbreak = true;
+	m_113JbAndActivate = bActivate;
+
+	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_WAIT, "Waiting for jail break...");
+}
+
+void PhoneInteraction::jailbreak113StageTwo(am_recovery_device *rdev)
+{
+	CFStringRef cfStr = CFStringCreateWithCString(kCFAllocatorDefault, "setenv auto-boot true", kCFStringEncodingUTF8);
+
+	if (cfStr == NULL) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error creating CFString.");
+		return;
+	}
+
+	if (m_mobDevInternals->sendCommandToDevice(rdev, cfStr)) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error turning on auto-boot.");
+		return;
+	}
+
+	cfStr = CFStringCreateWithCString(kCFAllocatorDefault, m_ramdiskPath, kCFStringEncodingUTF8);
+
+	if (cfStr == NULL) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error creating CFString.");
+		return;
+	}
+
+	if (m_mobDevInternals->sendFileToDevice(rdev, cfStr)) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error sending ramdisk to device.");
+		return;
+	}
+
+	if (m_113JbAndActivate) {
+		cfStr = CFStringCreateWithCString(kCFAllocatorDefault, "setenv activate 1", kCFStringEncodingUTF8);
+
+		if (cfStr == NULL) {
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error creating CFString.");
+			return;
+		}
+		
+		if (m_mobDevInternals->sendCommandToDevice(rdev, cfStr)) {
+			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error setting activate enviroment variable.");
+			return;
+		}
+
+	}
+
+	// 0p - Need to find a way which doesn't show text spew on the screen
+	cfStr = CFStringCreateWithCString(kCFAllocatorDefault, "setenv boot-args rd=md0 -s pmd0=0x09CC2000.0x0133D000", kCFStringEncodingUTF8);
+
+	if (cfStr == NULL) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error creating CFString.");
+		return;
+	}
+
+	if (m_mobDevInternals->sendCommandToDevice(rdev, cfStr)) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error setting boot arguments.");
+		return;
+	}
+
+	cfStr = CFStringCreateWithCString(kCFAllocatorDefault, "saveenv", kCFStringEncodingUTF8);
+	
+	if (cfStr == NULL) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error creating CFString.");
+		return;
+	}
+	
+	if (m_mobDevInternals->sendCommandToDevice(rdev, cfStr)) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error saving environment variables.");
+		return;
+	}
+
+	cfStr = CFStringCreateWithCString(kCFAllocatorDefault, "fsboot", kCFStringEncodingUTF8);
+	
+	if (cfStr == NULL) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error creating CFString.");
+		return;
+	}
+	
+	if (m_mobDevInternals->sendCommandToDevice(rdev, cfStr)) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error rebooting phone.");
+		return;
+	}
+
+	m_recoveryOccurred = true;
+	m_finishingJailbreak = true;
+	(*m_notifyFunc)(NOTIFY_113_JAILBREAK_STAGE_TWO_WAIT, "Waiting for reboot...");
+}
+
+void PhoneInteraction::performJailbreak(bool bActivate, const char *modifiedServicesOrRamdiskPath,
+										const char *firmwarePath,
+										const char *modifiedFstabPath)
 {
 
 	if (!isConnected()) {
@@ -3422,8 +3591,12 @@ void PhoneInteraction::performJailbreak(const char *firmwarePath, const char *mo
 
 	char *phoneProdVer = getPhoneProductVersion();
 
-	if (!strncmp(phoneProdVer, "1.1", 3)) {
-		performNewJailbreak(modifiedServicesPath);
+	if (!strncmp(phoneProdVer, "1.1.1", 5) || !strncmp(phoneProdVer, "1.1.2", 5)) {
+		perform112Jailbreak(modifiedServicesOrRamdiskPath);
+		return;
+	}
+	else if (!strncmp(phoneProdVer, "1.1.3", 5)) {
+		perform113Jailbreak(bActivate, modifiedServicesOrRamdiskPath);
 		return;
 	}
 
@@ -3436,7 +3609,7 @@ void PhoneInteraction::performJailbreak(const char *firmwarePath, const char *mo
 		return;
 	}
 
-	if (!putFile(modifiedServicesPath, "Services.plist", 0, 0)) {
+	if (!putFile(modifiedServicesOrRamdiskPath, "Services.plist", 0, 0)) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error writing modified Services.plist to phone.");
 		return;
 	}
@@ -3507,9 +3680,9 @@ void PhoneInteraction::returnToJail(const char *servicesFile, const char *fstabF
 	(*m_notifyFunc)(NOTIFY_JAILRETURN_RECOVERY_WAIT, "Waiting for return to jail...");
 }
 
-void PhoneInteraction::newJailbreakStageTwo()
+void PhoneInteraction::jailbreak112StageTwo()
 {
-	m_performingNewJailbreak = false;
+	m_performing112Jailbreak = false;
 
 	if (!putFile(m_servicesPath, "/System/Library/Lockdown/Services.plist", 0, 0)) {
 		free(m_servicesPath);
@@ -3531,7 +3704,7 @@ void PhoneInteraction::newJailbreakStageTwo()
 		return;
 	}
 
-	(*m_notifyFunc)(NOTIFY_NEW_JAILBREAK_STAGE_TWO_WAIT, "Waiting for reboot...");
+	(*m_notifyFunc)(NOTIFY_112_JAILBREAK_STAGE_TWO_WAIT, "Waiting for reboot...");
 	
 	m_recoveryOccurred = true;
 	m_finishingJailbreak = true;
@@ -3648,9 +3821,14 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 
 	m_waitingForRecovery = false;
 
+	if (m_performing113Jailbreak) {
+		jailbreak113StageTwo(rdev);
+		return;
+	}
+
 #if 1
 
-	// Good way to get into recovery mode as it doesn't require firmware filenames
+	// Good way to get into restore mode as it doesn't require firmware filenames
 
 	CFMutableDictionaryRef restoreOptions = AMRestoreCreateDefaultOptions(kCFAllocatorDefault);
 	

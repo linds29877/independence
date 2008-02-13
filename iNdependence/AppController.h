@@ -106,6 +106,7 @@ class PhoneInteraction;
 - (bool)isWaitingForDeactivation;
 
 - (bool)isUsing10xFirmware;
+- (bool)isUsing113Firmware;
 - (NSString*)phoneFirmwareVersion;
 
 - (bool)doPutPEM:(const char*)pemfile;

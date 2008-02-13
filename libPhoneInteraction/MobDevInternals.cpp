@@ -76,8 +76,14 @@ bool MobDevInternals::SetupPrivateFunctions(const PIVersion& iTunesVersion)
 	}
 
 	switch (iTunesVersion.minor) {
-		// iTunes 7.5 offsets submitted by David Wang
+		case 6:
+			m_sendCommandToDevice = (t_sendCommandToDevice)((char*)hGetProcIDDLL+0x00009290);
+			m_sendFileToDevice = (t_sendFileToDevice)((char*)hGetProcIDDLL+0x00009410);
+			m_socketForPort = (t_socketForPort)((char*)hGetProcIDDLL+0x00012830);
+			m_performOperation = (t_performOperation)((char*)hGetProcIDDLL+0x000129C0);
+			m_privateFunctionsSetup = true;
 		case 5:
+			// iTunes 7.5 offsets submitted by David Wang
 			m_sendCommandToDevice = (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x10008160);
 			m_sendFileToDevice = (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x100082E0);
 			m_socketForPort = (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x100130D0);

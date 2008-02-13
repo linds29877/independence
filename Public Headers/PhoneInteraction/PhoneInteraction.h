@@ -69,8 +69,10 @@ enum
 	NOTIFY_JAILBREAK_SUCCESS,
 	NOTIFY_JAILBREAK_CANCEL,
 	NOTIFY_JAILBREAK_RECOVERY_WAIT,
-	NOTIFY_NEW_JAILBREAK_STAGE_ONE_WAIT,
-	NOTIFY_NEW_JAILBREAK_STAGE_TWO_WAIT,
+	NOTIFY_112_JAILBREAK_STAGE_ONE_WAIT,
+	NOTIFY_112_JAILBREAK_STAGE_TWO_WAIT,
+	NOTIFY_113_JAILBREAK_STAGE_TWO_WAIT,
+	NOTIFY_113_JAILBREAK_STAGE_THREE_WAIT,
 	NOTIFY_RECOVERY_CONNECTED,
 	NOTIFY_RECOVERY_DISCONNECTED,
 	NOTIFY_RESTORE_CONNECTED,
@@ -147,9 +149,9 @@ public:
 	bool isPhoneActivated();
 
 	// jailbreak related functions
-	void performJailbreak(const char *firmwarePath, const char *modifiedFstabPath,
-						  const char *modifiedServicesPath);
-	void performNewJailbreak(const char *modifiedServicesPath);
+	void performJailbreak(bool bActivate = false, const char *modifiedServicesOrRamdiskPath = NULL,
+						  const char *firmwarePath = NULL,
+						  const char *modifiedFstabPath = NULL);
 	void returnToJail(const char *servicesFile, const char *fstabFile);
 	bool isPhoneJailbroken();
 
@@ -236,9 +238,14 @@ private:
 	void connectToAFC();
 	void setConnectedToAFC(bool connected);
 
-	void newJailbreakStageTwo();
+	void perform112Jailbreak(const char *modifiedServicesPath);
+	void perform113Jailbreak(bool bActivate, const char *ramdiskPath);
+
+	void jailbreak112StageTwo();
 	void jailbreakFinished();
 	void returnToJailFinished();
+
+	void jailbreak113StageTwo(am_recovery_device *rdev);
 
 	// callback functions
 	static void deviceNotificationCallback(am_device_notification_callback_info *info);
@@ -265,7 +272,9 @@ private:
 	static bool m_inDFUMode;
 	static bool m_returningToJail;
 	static bool m_finishingJailbreak;
-	static bool m_performingNewJailbreak;
+	static bool m_performing112Jailbreak;
+	static bool m_performing113Jailbreak;
+	static bool m_113JbAndActivate;
 	static bool m_recoveryOccurred;
 	static am_recovery_device *m_recoveryDevice;
 	static struct am_restore_device *m_restoreDevice;
@@ -283,6 +292,7 @@ private:
 	static void (*m_statusFunc)(const char*, bool);
 	static void (*m_notifyFunc)(int, const char*);
 	static char *m_firmwarePath;
+	static char *m_ramdiskPath;
 	static PIVersion m_iTunesVersion;
 	static char *m_firmwareVersion;
 	static char *m_productVersion;
