@@ -74,16 +74,17 @@
 						<li>Launch iNdependence.</li>
 						<li>Select the Jailbreak tab and press the <i>Perform Jailbreak</i> button.</li>
 						<li>You'll be prompted to choose the directory where you unzipped the firmware files.</li>
-						<li>If the screen on the phone hasn't changed to show the Apple logo after 30 seconds, then it means that iNdependence has failed to put the phone into recovery mode (and is frozen).  Force quit iNdependence, relaunch it, and start at step 5 again.</li>
+						<li>If you get an error message saying <i>Error entering recovery mode</i> then quit iNdependence, restart it, and try again.</li>
 						<li>Wait for the success message.</li>
 					</ol>
 				</p>
 			</div>
 
-			<div summary="How to upgrade to 1.1.x so that you can jailbreak and activate" id="upgrade">
-				<h1>To upgrade to 1.1.x so that you can activate/jailbreak your phone:</h1>
-				<p><b>Please note that if you have used anySIM 1.0 or other older free SIM unlocking solutions (anything except anySIM 1.1/1.2 and iPhoneSimFree) to SIM unlock your phone, and you upgrade to 1.1.x, it will wipe out the SIM unlock and render the phone and text message part of your phone inoperable.  Everything else will work though.</b>
-				<p>
+			<div summary="How to upgrade to 1.1.1 or 1.1.2 so that you can jailbreak and activate" id="upgrade">
+				<h1>To upgrade to 1.1.1 or 1.1.2 so that you can activate/jailbreak your phone:</h1>
+				<p><b>Please note that if you have used anySIM 1.0 or other older free SIM unlocking solutions (anything except anySIM 1.1/1.2, gunlock, and iPhoneSimFree) to SIM unlock your phone, and you upgrade to 1.1.x, it will wipe out the SIM unlock and render the phone and text message part of your phone inoperable.  Everything else will work though.</b>
+			        <p>(<b>Update</b>)You only need to do this if you are upgrading to firmware 1.1.1 or 1.1.2.  If you are upgrading to 1.1.3, then you can skip all of this directly upgrade via iTunes.
+			        <p>
 					<ol>
 						<li>Check the firmware version that's reported in the status line at the bottom of the iNdependence window and ensure that you are using firmware 1.0.2 (or lower).</li>
 						<li>Activate your phone using the <a href="#activation">activation instructions above</a>.  Note that you should leave your phone jailbroken after activation.</li>
@@ -93,7 +94,7 @@
 						<li>Select the <i>Firmware</i> tab and press the <i>Pre Firmware Upgrade</i> button.</li>
 						<li>Enter the IP address of the phone and the root password (see <a href="#ssh">below</a> for the default root password if you didn't change it when you installed SSH).</li>
 						<li>Follow the instructions given in the dialog windows.  If iNdependence gives you a warning about <i>host verification failure</i> and asks to edit your <b>known_hosts</b> file, choose the <i>Yes</i> option (which is now the default).</li>
-						<li>Once you are told to upgrade using iTunes, quit iNdependence, and select the <i>Update</i> button in the iTunes window (not the </i>Restore</i> button).</li>
+						<li>Once you are told to upgrade using iTunes, quit iNdependence, and hold down the option key while pressing the <i>Update</i> button in the iTunes window (not the </i>Restore</i> button).  Then select the 1.1.1 or 1.1.2 firmware file when prompted.</li>
 						<li>Wait for iTunes to finish.</li>
 						<li>Quit iTunes and relaunch iNdependence.  In the status bar at the bottom of the iNdependence window you should see <i>Firmware 1.1.1</i> or <i>Firmware 1.1.2</i> (depending on which one you upgraded to).</li>
 						<li>Congratulations!  You are now ready to activate/jailbreak your phone using the <a href="usage_1_1_1.html#activation">1.1.x instructions</a>.</li>
@@ -126,21 +127,10 @@
 			<div summary="SIM Unlocking" id="simunlock">
 			    <h1>SIM Unlocking</h1>
 				<p>
-				    SIM unlocking allows you to use your phone with any digital cellular service provider (as opposed to being tied to one provider and a long contract).  iNdependence itself does not do this, however, it can install a program called anySIM on your phone which does SIM unlocking.  <b>Please note that anySIM is not able to SIM unlock phones which came with firmware 1.1.2 out of the box.</b>
+				    SIM unlocking allows you to use your phone with any digital cellular service provider (as opposed to being tied to one provider and a long contract).</b>
 				</p>
 				<p>
-					To perform a SIM unlock:
-				</p>
-				<p>
-					<ol>
-						<li>Ensure that SSH is installed and working, your phone is connected to a Wi-Fi network, and your phone is jailbroken.</li>
-						<li>Select the <i>Activation / SIM</i> tab and press the <i>Install anySIM</i> button.  Note that iNdependence will automatically detect the correct version of anySIM to install for your baseband version.</li>
-						<li>You'll be prompted to enter the IP address and root password for your phone</li>
-						<li>You should see a message saying that anySIM has been installed on your phone and you need to run it to complete the SIM unlock process.  You may also see a warning about using anySIM 1.2 with firmware 1.1.2.  If you see that warning, please read it carefully and follow the instructions.</li>
-					</ol>
-				</p>
-				<p>
-				    Once you are finished SIM unlocking your phone, you can remove anySIM from it using the <i>Remove anySIM</i> button.
+				    (<b>Update</b>) To perform a SIM unlock, simply select the <i>Activation / SIM</i> tab and press the <i>SIM Unlock Phone</i> button.  It'll take a couple of minutes, so please be patient.
 				</p>
 			</div>
 

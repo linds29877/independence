@@ -20,14 +20,14 @@
 			</div>
 
 			<div id="pagetitle">
-				<h1>Using iNdependence with Firmware 1.1.x</h1>
+				<h1>Using iNdependence with Firmware 1.1.1/1.1.2</h1>
 			</div>
 
 			<div id="index">
 				<h1>Index</h1>
 				<ul>
-					<li><a href="#downgrade">Downgrading a 1.1.x Phone</a></li>
-					<li><a href="#upgrade">Upgrading Your Phone From Firmware 1.0.x to 1.1.x</a></li>
+					<li><a href="#downgrade">Downgrading a 1.1.1/1.1.2 Phone</a></li>
+					<li><a href="#upgrade">Upgrading Your Phone From Firmware 1.0.x to 1.1.1/1.1.2</a></li>
 					<li><a href="#upgrade2">Upgrading Your Phone From Firmware 1.1.1 to 1.1.2</a></li>
 					<li><a href="#activation">Activating Your Phone</a></li>
 					<li><a href="#jailbreak">Jailbreaking Your Phone</a></li>
@@ -39,7 +39,7 @@
 
 			<div summary="General information" id="general">
 				<p>
-					iNdependence cannot activate or jailbreak a phone which has the stock version of the 1.1.1 or 1.1.2 firmware on it.  In order to use the functionality in iNdependence, you must first downgrade to 1.0.2, then perform a special upgrade back to 1.1.1 or 1.1.2.  Instructions are included below.
+				iNdependence currently cannot activate or jailbreak a phone which has the stock version of the 1.1.1 or 1.1.2 firmware on it.  In order to use the functionality in iNdependence, you must first downgrade to 1.0.2, then perform a special upgrade back to 1.1.1 or 1.1.2.  Instructions are included below.
 				</p>
 			</div>
 			<div summary="How to downgrade the firmware on your phone" id="downgrade">
@@ -75,9 +75,10 @@
 				<p>Congratulations!  You've successfully downgraded your phone to firmware 1.0.2.</p>
 			</div>
 
-			<div summary="How to upgrade to 1.1.x so that you can jailbreak and activate" id="upgrade">
-				<h1>To upgrade from 1.0.2 to 1.1.x so that you can activate/jailbreak your phone:</h1>
+			<div summary="How to upgrade to 1.1.1/1.1.2 so that you can jailbreak and activate" id="upgrade">
+				<h1>To upgrade from 1.0.2 to 1.1.1/1.1.2 so that you can activate/jailbreak your phone:</h1>
 				<p><b>Please note that if you have used anySIM 1.0 or other older free SIM unlocking solutions (anything except anySIM 1.1/1.2 and iPhoneSimFree) to SIM unlock your phone, and you upgrade to 1.1.x, it will wipe out the SIM unlock and render the phone and text message part of your phone inoperable.  Everything else will work though.</b>
+			        <p>(<b>Update</b>)You only need to do this if you are upgrading to firmware 1.1.1 or 1.1.2.  If you are upgrading to 1.1.3, then you can skip all of this directly upgrade via iTunes.
 				<p>
 					<ol>
 						<li>Check the firmware version that's reported in the status line at the bottom of the iNdependence window.  If it doesn't say 1.0.2 (or lower) then you'll need to downgrade your firmware using the instructions above.</li>
@@ -121,7 +122,7 @@
 				<p>
 					<ol>
 						<li>Ensure that you've upgraded to 1.1.1 or 1.1.2 using the special upgrade method mentioned above.</li>
-						<li>Select the Activation tab and press the <i>Activate Phone</i> button.</li>
+						<li>Select the Activation tab and press the <i>Activate Phone</i> button.  On occasion, iNdependence will give an error message saying that it failed to enter recovery mode.  If this happens, just quit and restart iNdependence and try it again.</li>
 						<li>You should see a message saying <i>Waiting for jail break...</i>.  Please be patient as it will take a while to do this.  It may appear that iNdependence is locked up, but it's not, it's just working very hard.</li>
 						<li>Wait for the success message.  Note that the activation process will also enable YouTube, 3rd party application installation, and custom ringtone installation for you.</li>
 					</ol>
@@ -134,7 +135,7 @@
 					Note that this will be done automatically if you activate your phone.
 					<ol>
 						<li>Ensure that you've upgraded to 1.1.1 or 1.1.2 using the special upgrade method mentioned above.</li>
-						<li>Select the <i>Jailbreak</i> tab and press the <i>Perform Jailbreak</i> button.</li>
+						<li>Select the <i>Jailbreak</i> tab and press the <i>Perform Jailbreak</i> button.  On occasion, iNdependence will give an error message saying that it failed to enter recovery mode.  If this happens, just quit and restart iNdependence and try it again.</li>
 						<li>You should see a message saying <i>Waiting for jail break...</i>.  Please be patient as it will take a while to do this.  It may appear that iNdependence is locked up, but it's not, it's just working very hard.</li>
 						<li>Wait for the success message.  Note that the jailbreak process will enable 3rd party application and custom ringtone installation.</li>
 					</ol>
@@ -166,21 +167,10 @@
 			<div summary="SIM Unlocking" id="simunlock">
 			    <h1>SIM Unlocking</h1>
 				<p>
-				    SIM unlocking allows you to use your phone with any digital cellular service provider (as opposed to being tied to one provider and a long contract).  iNdependence itself does not do this, however, it can install a program called anySIM on your phone which does SIM unlocking.  <b>Please note that anySIM is not able to SIM unlock phones which came with firmware 1.1.2 out of the box.</b>
+				    SIM unlocking allows you to use your phone with any digital cellular service provider (as opposed to being tied to one provider and a long contract).</b>
 				</p>
 				<p>
-					To perform a SIM unlock:
-				</p>
-				<p>
-					<ol>
-						<li>Ensure that SSH is installed and working, your phone is connected to a Wi-Fi network, and your phone is jailbroken.</li>
-						<li>Select the <i>Activation / SIM</i> tab and press the <i>Install anySIM</i> button.  Note that iNdependence will automatically detect the correct version of anySIM to install for your baseband version.</li>
-						<li>You'll be prompted to enter the IP address and root password for your phone</li>
-						<li>You should see a message saying that anySIM has been installed on your phone and you need to run it to complete the SIM unlock process.  You may also see a warning about using anySIM 1.2 with firmware 1.1.2.  If you see that warning, please read it carefully and follow the instructions.</li>
-					</ol>
-				</p>
-				<p>
-				    Once you are finished SIM unlocking your phone, you can remove anySIM from it using the <i>Remove anySIM</i> button.
+				    (<b>Update</b>) To perform a SIM unlock, simply select the <i>Activation / SIM</i> tab and press the <i>SIM Unlock Phone</i> button.  It'll take a couple of minutes, so please be patient.
 				</p>
 			</div>
 
