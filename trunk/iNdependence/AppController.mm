@@ -42,7 +42,7 @@ enum
 	MENU_ITEM_REMOVE_SIM_UNLOCK = 19,
 	MENU_ITEM_ENTER_DFU_MODE = 20,
 	MENU_ITEM_REMOVE_SSH = 21,
-	MENU_ITEM_PRE_FIRMWARE_UPGRADE = 22,
+	MENU_ITEM_PRE_FIRMWARE_UPGRADE = 22
 };
 
 extern MainWindow *g_mainWindow;
@@ -179,13 +179,13 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_mainWindow updateStatus];
 				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
-			case NOTIFY_NEW_JAILBREAK_STAGE_ONE_WAIT:
+			case NOTIFY_112_JAILBREAK_STAGE_ONE_WAIT:
 				[g_mainWindow endDisplayWaitingSheet];
 				[g_mainWindow startDisplayWaitingSheet:nil
 											   message:@"Please press and hold the Sleep/Wake button for 3 seconds, then power off your phone, then press Sleep/Wake again to restart it."
 												 image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
 				break;
-			case NOTIFY_NEW_JAILBREAK_STAGE_TWO_WAIT:
+			case NOTIFY_112_JAILBREAK_STAGE_TWO_WAIT:
 				[g_mainWindow endDisplayWaitingSheet];
 
 				if ([g_appController isWaitingForActivation]) {
@@ -195,6 +195,12 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_mainWindow startDisplayWaitingSheet:nil
 											   message:@"Please reboot your phone again using the same steps..."
 												 image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
+				break;
+			case NOTIFY_113_JAILBREAK_STAGE_TWO_WAIT:
+				updateStatus(msg, true);
+				break;
+			case NOTIFY_113_JAILBREAK_STAGE_THREE_WAIT:
+				updateStatus(msg, true);
 				break;
 			case NOTIFY_JAILBREAK_RECOVERY_WAIT:
 				[g_mainWindow startDisplayWaitingSheet:nil message:@"Waiting for jail break..." image:[NSImage imageNamed:@"jailbreak"] cancelButton:false runModal:false];
@@ -472,6 +478,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			[removeSSHButton setEnabled:NO];
 			[installSimUnlockButton setEnabled:NO];
 			[removeSimUnlockButton setEnabled:NO];
+			[preFirmwareUpgradeButton setEnabled:NO];
 		}
 
 	}
@@ -572,6 +579,17 @@ static void phoneInteractionNotification(int type, const char *msg)
 	return false;
 }
 
+- (bool)isUsing113Firmware
+{
+	char *value = m_phoneInteraction->getPhoneProductVersion();
+	
+	if (!strncmp(value, "1.1.3", 5)) {
+		return true;
+	}
+	
+	return false;
+}
+
 - (void)setPerformingJailbreak:(bool)bJailbreaking
 {
 	m_performingJailbreak = bJailbreaking;
@@ -641,8 +659,18 @@ static void phoneInteractionNotification(int type, const char *msg)
 		}
 
 		m_performingJailbreak = true;
-		m_phoneInteraction->performJailbreak([firmwarePath UTF8String], [fstabFile UTF8String],
+		m_phoneInteraction->performJailbreak(false, [firmwarePath UTF8String], [fstabFile UTF8String],
 											 [servicesFile UTF8String]);
+	}
+	else if ([self isUsing113Firmware]) {
+		NSString *ramdiskFile = [[NSBundle mainBundle] pathForResource:@"ramit113" ofType:@"dat"];
+
+		if (ramdiskFile == nil) {
+			[mainWindow displayAlert:@"Error" message:@"Error finding ramdisk file."];
+			return;
+		}
+		
+		m_phoneInteraction->performJailbreak(false, [ramdiskFile UTF8String]);
 	}
 	else {
 		NSString *servicesFile = [[NSBundle mainBundle] pathForResource:@"Services111_mod" ofType:@"plist"];
@@ -653,7 +681,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		}
 		
 		m_performingJailbreak = true;
-		m_phoneInteraction->performNewJailbreak([servicesFile UTF8String]);
+		m_phoneInteraction->performJailbreak(false, [servicesFile UTF8String]);
 	}
 
 }
@@ -663,12 +691,19 @@ static void phoneInteractionNotification(int type, const char *msg)
 	[mainWindow setStatus:@"Returning to jail..." spinning:true];
 
 	NSString *servicesFile = nil;
+	NSString *fstabFile = nil;
 
 	if ([self isUsing10xFirmware]) {
 		servicesFile = [[NSBundle mainBundle] pathForResource:@"Services" ofType:@"plist"];
+		fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab" ofType:@""];
+	}
+	else if ([self isUsing113Firmware]) {
+		servicesFile = [[NSBundle mainBundle] pathForResource:@"Services113" ofType:@"plist"];
+		fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab113" ofType:@""];
 	}
 	else {
 		servicesFile = [[NSBundle mainBundle] pathForResource:@"Services111" ofType:@"plist"];
+		fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab" ofType:@""];
 	}
 
 	if (servicesFile == nil) {
@@ -676,8 +711,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[mainWindow updateStatus];
 		return;
 	}
-
-	NSString *fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab" ofType:@""];
 
 	if (fstabFile == nil) {
 		[mainWindow displayAlert:@"Error" message:@"Error finding fstab file."];
@@ -692,7 +725,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 - (IBAction)enterDFUMode:(id)sender
 {
 	NSString *firmwarePath;
-	
+
 	// first things first -- get the path to the unzipped firmware files
 	NSOpenPanel *firmwareOpener = [NSOpenPanel openPanel];
 	[firmwareOpener setTitle:@"Select where you unzipped the firmware files"];
@@ -1066,7 +1099,12 @@ static void phoneInteractionNotification(int type, const char *msg)
 - (void)activateStageTwo:(bool)displaySheet
 {
 	m_waitingForActivation = false;
-		
+
+	if ([self isActivated]) {
+		[mainWindow displayAlert:@"Success" message:@"Successfully activated phone."];
+		return;
+	}
+
 	if (!m_phoneInteraction->factoryActivate()) {
 		[mainWindow displayAlert:@"Error" message:@"Error during activation."];
 		return;
@@ -1125,7 +1163,21 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_waitingForActivation = true;
 	
 	if (!m_phoneInteraction->isPhoneJailbroken()) {
-		[self performJailbreak:sender];
+
+		if ([self isUsing113Firmware]) {
+			NSString *ramdiskFile = [[NSBundle mainBundle] pathForResource:@"ramit113" ofType:@"dat"];
+
+			if (ramdiskFile == nil) {
+				[mainWindow displayAlert:@"Error" message:@"Error finding ramdisk file."];
+				return;
+			}
+
+			m_phoneInteraction->performJailbreak(true, [ramdiskFile UTF8String]);
+		}
+		else {
+			[self performJailbreak:sender];
+		}
+
 		return;
 	}
 	
