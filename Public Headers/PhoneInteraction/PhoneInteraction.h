@@ -72,7 +72,6 @@ enum
 	NOTIFY_112_JAILBREAK_STAGE_ONE_WAIT,
 	NOTIFY_112_JAILBREAK_STAGE_TWO_WAIT,
 	NOTIFY_113_JAILBREAK_STAGE_TWO_WAIT,
-	NOTIFY_113_JAILBREAK_STAGE_THREE_WAIT,
 	NOTIFY_RECOVERY_CONNECTED,
 	NOTIFY_RECOVERY_DISCONNECTED,
 	NOTIFY_RESTORE_CONNECTED,
@@ -92,7 +91,11 @@ enum
 	NOTIFY_FSCOPY_SUCCESS,
 	NOTIFY_WIN32_INITIALIZATION_FAILED,
 	NOTIFY_GET_ACTIVATION_FAILED,
-	NOTIFY_GET_ACTIVATION_SUCCESS
+	NOTIFY_GET_ACTIVATION_SUCCESS,
+	NOTIFY_SIMUNLOCK_FAILED,
+	NOTIFY_SIMUNLOCK_SUCCESS,
+	NOTIFY_SIMUNLOCK_RECOVERY_WAIT,
+	NOTIFY_SIMUNLOCK_STAGE_TWO_WAIT
 };
 
 // data types from MobileDevice.h (can't directly include it here)
@@ -154,6 +157,9 @@ public:
 						  const char *modifiedFstabPath = NULL);
 	void returnToJail(const char *servicesFile, const char *fstabFile);
 	bool isPhoneJailbroken();
+
+	// SIM unlock related functions
+	void performSIMUnlock(const char *ramdiskPath);
 
 	// use to enable SpringBoard to recognize 3rd party applications on firmware 1.1.1/1.1.2
 	bool enableThirdPartyApplications(bool undo = false);
@@ -244,8 +250,13 @@ private:
 	void jailbreak112StageTwo();
 	void jailbreakFinished();
 	void returnToJailFinished();
+	void simUnlockFinished();
+
+	bool sharedRamdiskSetup(am_recovery_device *rdev, bool bJailbreak,
+							bool bActivate, bool bSIMUnlock, int failureNotification);
 
 	void jailbreak113StageTwo(am_recovery_device *rdev);
+	void simUnlockStageTwo(am_recovery_device *rdev);
 
 	// callback functions
 	static void deviceNotificationCallback(am_device_notification_callback_info *info);
@@ -272,8 +283,10 @@ private:
 	static bool m_inDFUMode;
 	static bool m_returningToJail;
 	static bool m_finishingJailbreak;
+	static bool m_finishingSIMUnlock;
 	static bool m_performing112Jailbreak;
 	static bool m_performing113Jailbreak;
+	static bool m_performingSIMUnlock;
 	static bool m_113JbAndActivate;
 	static bool m_recoveryOccurred;
 	static am_recovery_device *m_recoveryDevice;

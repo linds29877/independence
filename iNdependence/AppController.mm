@@ -36,10 +36,9 @@ enum
 	MENU_ITEM_DEACTIVATE = 13,
 	MENU_ITEM_RETURN_TO_JAIL = 14,
 	MENU_ITEM_JAILBREAK = 15,
-	MENU_ITEM_INSTALL_SIM_UNLOCK = 16,
+	MENU_ITEM_PERFORM_SIM_UNLOCK = 16,
 	MENU_ITEM_INSTALL_SSH = 17,
 	MENU_ITEM_CHANGE_PASSWORD = 18,
-	MENU_ITEM_REMOVE_SIM_UNLOCK = 19,
 	MENU_ITEM_ENTER_DFU_MODE = 20,
 	MENU_ITEM_REMOVE_SSH = 21,
 	MENU_ITEM_PRE_FIRMWARE_UPGRADE = 22
@@ -130,6 +129,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_mainWindow updateStatus];
 				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
+			case NOTIFY_SIMUNLOCK_SUCCESS:
+				[g_mainWindow endDisplayWaitingSheet];
+				[g_mainWindow updateStatus];
+				[g_mainWindow displayAlert:@"Success" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
+				break;
 			case NOTIFY_DFU_SUCCESS:
 				[g_mainWindow endDisplayWaitingSheet];
 				[g_mainWindow updateStatus];
@@ -156,6 +160,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_mainWindow endDisplayWaitingSheet];
 				[g_appController setReturningToJail:false];
 				[g_appController setJailbroken:g_phoneInteraction->isPhoneJailbroken()];
+				[g_mainWindow updateStatus];
+				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
+				break;
+			case NOTIFY_SIMUNLOCK_FAILED:
+				[g_mainWindow endDisplayWaitingSheet];
 				[g_mainWindow updateStatus];
 				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
@@ -199,7 +208,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			case NOTIFY_113_JAILBREAK_STAGE_TWO_WAIT:
 				updateStatus(msg, true);
 				break;
-			case NOTIFY_113_JAILBREAK_STAGE_THREE_WAIT:
+			case NOTIFY_SIMUNLOCK_STAGE_TWO_WAIT:
 				updateStatus(msg, true);
 				break;
 			case NOTIFY_JAILBREAK_RECOVERY_WAIT:
@@ -207,6 +216,9 @@ static void phoneInteractionNotification(int type, const char *msg)
 				break;
 			case NOTIFY_JAILRETURN_RECOVERY_WAIT:
 				[g_mainWindow startDisplayWaitingSheet:nil message:@"Waiting for return to jail..." image:[NSImage imageNamed:@"jailbreak"] cancelButton:false runModal:false];
+				break;
+			case NOTIFY_SIMUNLOCK_RECOVERY_WAIT:
+				[g_mainWindow startDisplayWaitingSheet:nil message:@"Waiting for SIM unlock..." image:nil cancelButton:false runModal:false];
 				break;
 			case NOTIFY_DFU_RECOVERY_WAIT:
 				[g_mainWindow startDisplayWaitingSheet:nil message:@"Waiting to enter DFU mode..." image:nil cancelButton:false runModal:false];
@@ -294,9 +306,99 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_waitingForNewDeactivation = false;
 	m_bootCount = 0;
 	m_sshPath = NULL;
+	m_ramdiskPath = nil;
 	[customizeBrowser setEnabled:NO];
 	m_phoneInteraction = PhoneInteraction::getInstance(updateStatus, phoneInteractionNotification);
 	g_phoneInteraction = m_phoneInteraction;
+}
+
+- (NSString*)generateRamdisk
+{
+	[mainWindow startDisplayWaitingSheet:nil
+								 message:@"Generating RAM disk..."
+								   image:nil cancelButton:false runModal:false];
+
+	NSString *rdGenerator = [[NSBundle mainBundle] pathForResource:@"generate112ramdisk" ofType:@"sh"];
+
+	if (rdGenerator == nil) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't find RAM disk generator script."];
+		return nil;
+	}
+
+	NSString *rdExtraFiles = [[NSBundle mainBundle] pathForResource:@"ramit112_files" ofType:@"zip"];
+
+	if (rdExtraFiles == nil) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't find extra RAM disk files."];
+		return nil;
+	}
+
+	NSString *rdZeroFile = [[NSBundle mainBundle] pathForResource:@"zero_file" ofType:@"zip"];
+
+	if (rdZeroFile == nil) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't find RAM disk zero header file."];
+		return nil;
+	}
+
+	NSString *rdOutputFile = [[NSBundle mainBundle] resourcePath];
+	rdOutputFile = [rdOutputFile stringByAppendingPathComponent:@"ramit112.dat"];
+
+	NSArray *args = [NSArray arrayWithObjects:rdExtraFiles, rdZeroFile, rdOutputFile, nil];
+	NSTask *task = [[NSTask alloc] init];
+	[task setLaunchPath:rdGenerator];
+	[task setArguments:args];
+	[task launch];
+	[task waitUntilExit];
+	
+	if ([task terminationStatus] != 0) {
+		[task release];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error occurred while creating the RAM disk."];
+		return nil;
+	}
+
+	[task release];
+
+	if ( [[NSFileManager defaultManager] fileExistsAtPath:rdOutputFile] ) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Error occurred while creating the RAM disk."];
+		return nil;
+	}
+	
+	[mainWindow endDisplayWaitingSheet];
+	return rdOutputFile;
+}
+
+- (NSString*)getRamdiskPath
+{
+
+	// first see if it's already been initialized
+	if (m_ramdiskPath != nil) {
+		return m_ramdiskPath;
+	}
+
+	// now check to see if it's included as a resource
+	NSString *ramdiskFile = [[NSBundle mainBundle] pathForResource:@"ramit112" ofType:@"dat"];
+
+	if (ramdiskFile != nil) {
+		m_ramdiskPath = ramdiskFile;
+		return ramdiskFile;
+	}
+
+	// now see if it's already in the resources folder
+	ramdiskFile = [[NSBundle mainBundle] resourcePath];
+	ramdiskFile = [ramdiskFile stringByAppendingPathComponent:@"ramit112.dat"];
+
+	if ( [[NSFileManager defaultManager] fileExistsAtPath:ramdiskFile] ) {
+		m_ramdiskPath = ramdiskFile;
+		return ramdiskFile;
+	}
+
+	// ok, looks like we're going to have to create it
+	m_ramdiskPath = [self generateRamdisk];
+	return m_ramdiskPath;
 }
 
 - (void)setConnected:(bool)connected
@@ -350,6 +452,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			[mainWindow displayAlert:@"Success" message:@"Successfully deactivated phone."];
 		}
 
+		[performSimUnlockButton setEnabled:YES];
 	}
 	else {
 		[self setAFCConnected:false];
@@ -359,6 +462,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[activateButton setEnabled:NO];
 		[deactivateButton setEnabled:NO];
 		[enterDFUModeButton setEnabled:NO];
+		[performSimUnlockButton setEnabled:NO];
 	}
 	
 	[mainWindow updateStatus];
@@ -463,21 +567,10 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[preFirmwareUpgradeButton setEnabled:NO];
 			}
 
-			if ([self isanySIMInstalled]) {
-				[installSimUnlockButton setEnabled:NO];
-				[removeSimUnlockButton setEnabled:YES];
-			}
-			else {
-				[installSimUnlockButton setEnabled:YES];
-				[removeSimUnlockButton setEnabled:NO];
-			}
-
 		}
 		else {
 			[installSSHButton setEnabled:YES];
 			[removeSSHButton setEnabled:NO];
-			[installSimUnlockButton setEnabled:NO];
-			[removeSimUnlockButton setEnabled:NO];
 			[preFirmwareUpgradeButton setEnabled:NO];
 		}
 
@@ -486,8 +579,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[returnToJailButton setEnabled:NO];
 		[installSSHButton setEnabled:NO];
 		[removeSSHButton setEnabled:NO];
-		[installSimUnlockButton setEnabled:NO];
-		[removeSimUnlockButton setEnabled:NO];
 		[changePasswordButton setEnabled:NO];
 		[customizeBrowser setEnabled:NO];
 		[preFirmwareUpgradeButton setEnabled:NO];
@@ -551,11 +642,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 - (bool)isSSHInstalled
 {
 	return ([self isOpenSSHInstalled] || [self isDropbearSSHInstalled]);
-}
-
-- (bool)isanySIMInstalled
-{
-	return m_phoneInteraction->applicationExists("anySIM.app");
 }
 
 - (NSString*)phoneFirmwareVersion
@@ -663,10 +749,10 @@ static void phoneInteractionNotification(int type, const char *msg)
 											 [servicesFile UTF8String]);
 	}
 	else if ([self isUsing113Firmware]) {
-		NSString *ramdiskFile = [[NSBundle mainBundle] pathForResource:@"ramit113" ofType:@"dat"];
+		NSString *ramdiskFile = [self getRamdiskPath];
 
 		if (ramdiskFile == nil) {
-			[mainWindow displayAlert:@"Error" message:@"Error finding ramdisk file."];
+			[mainWindow displayAlert:@"Error" message:@"Error obtaining RAM disk file."];
 			return;
 		}
 		
@@ -847,247 +933,16 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 }
 
-- (IBAction)installSimUnlock:(id)sender
+- (IBAction)performSimUnlock:(id)sender
 {
-	char *value = m_phoneInteraction->getPhoneBasebandVersion();
-
-	if (value == NULL) {
-		[mainWindow displayAlert:@"Error" message:@"Couldn't determine baseband version so anySIM can't be installed."];
-	}
-
-	[mainWindow displayAlert:@"Alert" message:@"Please note that anySIM is not able to SIM unlock phones which came with the 1.1.2 or 1.1.3 firmware out of the box."];
-
-	NSString *simUnlockApp = nil;
-	bool bUsingAnysim12With112 = false;
-
-	if (!strcmp(value, "04.03.13_G")) {
-		value = m_phoneInteraction->getPhoneProductVersion();
-		
-		if (!strcmp(value, "1.1.3")) {
-			simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM_13" ofType:@"app"];
-		}
-		else {
-			NSString *msg = [NSString stringWithFormat:@"anySIM 1.3 is required for SIM unlocking.  However, your firmware version (%s) isn't compatible with anySIM 1.3.\n\nPlease upgrade your phone to firmware version 1.1.3", value];
-			[mainWindow displayAlert:@"Error" message:msg];
-			return;
-		}
-		
-	}
-	else if (!strcmp(value, "04.02.13_G")) {
-		value = m_phoneInteraction->getPhoneProductVersion();
-
-		if (!strcmp(value, "1.0.2") || !strcmp(value, "1.1.1") || !strcmp(value, "1.1.2")) {
-			simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM_12" ofType:@"app"];
-
-			if (!strcmp(value, "1.1.2")) {
-				bUsingAnysim12With112 = true;
-			}
-
-		}
-		else {
-			NSString *msg = [NSString stringWithFormat:@"anySIM 1.2 is required for SIM unlocking.  However, your firmware version (%s) isn't compatible with anySIM 1.2.\n\nPlease upgrade your phone to firmware version 1.0.2 or higher.", value];
-			[mainWindow displayAlert:@"Error" message:msg];
-			return;
-		}
-
-	}
-	else {
-		simUnlockApp = [[NSBundle mainBundle] pathForResource:@"anySIM_11" ofType:@"app"];
-	}
-
-	if (simUnlockApp == nil) {
-		[mainWindow displayAlert:@"Error" message:@"Error finding SIM unlock application in bundle."];
-		return;
-	}
-
-	bool bCancelled = false;
-	NSString *ipAddress, *password;
-
-	if ([sshHandler getSSHInfo:&ipAddress password:&password wasCancelled:&bCancelled] == false) {
-		return;
-	}
-
-	if (bCancelled) {
-		return;
-	}
-
-	if (!m_phoneInteraction->putApplicationOnPhone([simUnlockApp UTF8String], "anySIM.app")) {
-		[mainWindow displayAlert:@"Error" message:@"Couldn't put application on phone"];
-		return;
-	}
-
-	char *appPath = "/Applications/anySIM.app";
-	bool done = false, permsSet = false;
-	int retval;
+	NSString *ramdiskFile = [self getRamdiskPath];
 	
-	while (!done) {
-		[mainWindow startDisplayWaitingSheet:@"Setting Permissions" message:@"Setting application permissions..." image:nil
-								cancelButton:false runModal:false];
-		retval = SSHHelper::copyPermissions([simUnlockApp UTF8String], appPath, [ipAddress UTF8String],
-											[password UTF8String]);
-		[mainWindow endDisplayWaitingSheet];
-		
-		if (retval != SSH_HELPER_SUCCESS) {
-			
-			switch (retval)
-			{
-				case SSH_HELPER_ERROR_NO_RESPONSE:
-					PhoneInteraction::getInstance()->removeApplication([[simUnlockApp lastPathComponent] UTF8String]);
-					[mainWindow displayAlert:@"Failed" message:@"Couldn't connect to SSH server.  Ensure IP address is correct, phone is connected to a network, and SSH is installed correctly."];
-					done = true;
-					break;
-				case SSH_HELPER_ERROR_BAD_PASSWORD:
-					PhoneInteraction::getInstance()->removeApplication([[simUnlockApp lastPathComponent] UTF8String]);
-					[mainWindow displayAlert:@"Failed" message:@"root password is incorrect."];
-					done = true;
-					break;
-				case SSH_HELPER_VERIFICATION_FAILED:
-					NSString *msg = [NSString stringWithFormat:@"Host verification failed.\n\nWould you like iNdependence to try and fix this for you by editing %@/.ssh/known_hosts?", NSHomeDirectory()];
-					int retval = NSRunAlertPanel(@"Failed", msg, @"Yes", @"No", nil);
-					
-					if (retval == NSAlertDefaultReturn) {
-						
-						if (![sshHandler removeKnownHostsEntry:ipAddress]) {
-							PhoneInteraction::getInstance()->removeApplication([[simUnlockApp lastPathComponent] UTF8String]);
-							msg = [NSString stringWithFormat:@"Couldn't remove entry from %@/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address.", NSHomeDirectory()];
-							[mainWindow displayAlert:@"Failed" message:msg];
-							done = true;
-						}
-						
-					}
-					else {
-						done = true;
-					}
-
-					break;
-				default:
-					PhoneInteraction::getInstance()->removeApplication([[simUnlockApp lastPathComponent] UTF8String]);
-					[mainWindow displayAlert:@"Failed" message:@"Error setting permissions for application."];
-					done = true;
-					break;
-			}
-			
-		}
-		else {
-			permsSet = true;
-			done = true;
-		}
-		
-	}
-
-	if ([self isanySIMInstalled]) {
-		[installSimUnlockButton setEnabled:NO];
-		[removeSimUnlockButton setEnabled:YES];
-	}
-	else {
-		[installSimUnlockButton setEnabled:YES];
-		[removeSimUnlockButton setEnabled:NO];
-	}
-
-	if (permsSet) {
-
-		if (bUsingAnysim12With112) {
-			[mainWindow displayAlert:@"Success" message:@"The anySIM application should now be installed on your phone.\n\nPlease note that you are using anySIM 1.2 in combination with firmware 1.1.2, so you must put your phone in Airplane mode before you run anySIM.  Please put your phone in Airplane mode now, then run anySIM and follow the instructions to complete the SIM unlock process.\n\nAfter you are done, you can turn Airplane mode off again and remove anySIM from your phone."];
-		}
-		else {
-			[mainWindow displayAlert:@"Success" message:@"The anySIM application should now be installed on your phone.  Simply run it, follow the instructions, and it will complete the SIM unlock process.\n\nAfter you are done, you can remove it from your phone."];
-		}
-
-	}
-
-}
-
-- (void)removeSimUnlock:(id)sender
-{
-	bool bCancelled = false;
-	NSString *ipAddress, *password;
-	
-	if ([sshHandler getSSHInfo:&ipAddress password:&password wasCancelled:&bCancelled] == false) {
+	if (ramdiskFile == nil) {
+		[mainWindow displayAlert:@"Error" message:@"Error obtaining RAM disk file."];
 		return;
 	}
 	
-	if (bCancelled) {
-		return;
-	}
-
-	if (m_phoneInteraction->applicationExists("anySIM.app")) {
-
-		if (!m_phoneInteraction->removeApplication("anySIM.app")) {
-			[mainWindow displayAlert:@"Failed" message:@"Couldn't remove existing version of anySIM from phone."];
-			return;
-		}
-
-	}
-
-	if ([self isanySIMInstalled]) {
-		[installSimUnlockButton setEnabled:NO];
-		[removeSimUnlockButton setEnabled:YES];
-	}
-	else {
-		[installSimUnlockButton setEnabled:YES];
-		[removeSimUnlockButton setEnabled:NO];
-	}
-	
-	bool done = false, sbRestarted = false;
-	int retval;
-	
-	while (!done) {
-		[mainWindow startDisplayWaitingSheet:@"Restarting SpringBoard" message:@"Restarting SpringBoard..." image:nil
-								cancelButton:false runModal:false];
-		retval = SSHHelper::restartSpringboard([ipAddress UTF8String], [password UTF8String]);
-		[mainWindow endDisplayWaitingSheet];
-
-		if (retval != SSH_HELPER_SUCCESS) {
-			
-			switch (retval)
-			{
-				case SSH_HELPER_ERROR_NO_RESPONSE:
-					[mainWindow displayAlert:@"Failed" message:@"Couldn't connect to SSH server.  Ensure IP address is correct, phone is connected to a network, and SSH is installed correctly."];
-					done = true;
-					break;
-				case SSH_HELPER_ERROR_BAD_PASSWORD:
-					[mainWindow displayAlert:@"Failed" message:@"root password is incorrect."];
-					done = true;
-					break;
-				case SSH_HELPER_VERIFICATION_FAILED:
-					NSString *msg = [NSString stringWithFormat:@"Host verification failed.\n\nWould you like iNdependence to try and fix this for you by editing %@/.ssh/known_hosts?", NSHomeDirectory()];
-					int retval = NSRunAlertPanel(@"Failed", msg, @"Yes", @"No", nil);
-					
-					if (retval == NSAlertDefaultReturn) {
-						
-						if (![sshHandler removeKnownHostsEntry:ipAddress]) {
-							msg = [NSString stringWithFormat:@"Couldn't remove entry from %@/.ssh/known_hosts.  Please edit that file by hand and remove the line containing your phone's IP address.", NSHomeDirectory()];
-							[mainWindow displayAlert:@"Failed" message:msg];
-							done = true;
-						}
-						
-					}
-					else {
-						done = true;
-					}
-
-					break;
-				default:
-					[mainWindow displayAlert:@"Failed" message:@"Error restarting SpringBoard."];
-					done = true;
-					break;
-			}
-			
-		}
-		else {
-			sbRestarted = true;
-			done = true;
-		}
-		
-	}
-
-	if (sbRestarted) {
-		[mainWindow displayAlert:@"Success" message:@"The anySIM application was successfully removed from your phone."];
-	}
-	else {
-		[mainWindow displayAlert:@"Success" message:@"The anySIM application was successfully removed from your phone.  However, you'll need to reboot your phone to have it disappear from the SpringBoard menu."];
-	}
-
+	m_phoneInteraction->performSIMUnlock([ramdiskFile UTF8String]);
 }
 
 - (bool)doPutPEM:(const char*)pemfile
@@ -1165,10 +1020,10 @@ static void phoneInteractionNotification(int type, const char *msg)
 	if (!m_phoneInteraction->isPhoneJailbroken()) {
 
 		if ([self isUsing113Firmware]) {
-			NSString *ramdiskFile = [[NSBundle mainBundle] pathForResource:@"ramit113" ofType:@"dat"];
+			NSString *ramdiskFile = [self getRamdiskPath];
 
 			if (ramdiskFile == nil) {
-				[mainWindow displayAlert:@"Error" message:@"Error finding ramdisk file."];
+				[mainWindow displayAlert:@"Error" message:@"Error obtaining RAM disk file."];
 				return;
 			}
 
@@ -1956,26 +1811,17 @@ static void phoneInteractionNotification(int type, const char *msg)
 			}
 
 			break;
-		case MENU_ITEM_INSTALL_SIM_UNLOCK:
-
-			if (![self isConnected] || ![self isJailbroken] || ![self isSSHInstalled] ||
-				[self isanySIMInstalled]) {
-				return NO;
-			}
-
-			break;
-		case MENU_ITEM_REMOVE_SIM_UNLOCK:
-
-			if (![self isConnected] || ![self isJailbroken] || ![self isSSHInstalled] ||
-				![self isanySIMInstalled]) {
-				return NO;
-			}
-			
-			break;
 		case MENU_ITEM_PRE_FIRMWARE_UPGRADE:
 
 			if (![self isConnected] || ![self isJailbroken] || ![self isSSHInstalled] ||
 				m_phoneInteraction->fileExists(PRE_FIRMWARE_UPGRADE_FILE)) {
+				return NO;
+			}
+
+			break;
+		case MENU_ITEM_PERFORM_SIM_UNLOCK:
+			
+			if (![self isConnected]) {
 				return NO;
 			}
 
