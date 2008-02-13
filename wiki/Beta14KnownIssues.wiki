@@ -1,4 +1,4 @@
-#summary This page is for reporting issues with 1.4 beta
+#summary This page is for reporting issues with iNdependence 1.4 beta
 #labels Featured
 
 == Details ==
