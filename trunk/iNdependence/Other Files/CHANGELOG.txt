@@ -1,13 +1,14 @@
 Changelog
 ---------
 
-v1.3.2
+v1.4 beta
 
 - Changed copyright dates for 2008
 - Cleaned up libPhoneInteraction a bit so that internally used functions are hidden from application developers.  Also refactored MobileDevice private function code out into a separate class.
 - Changed title of SSH libarmfp.dylib alert dialog from "Failure" to "Alert" to make things clearer
 - Added better handling for cases where some phone information can't be obtained (doesn't fail outright)
 - Added 1.1.3 jailbreak (thanks to Zibri for the method)
+- Removed old anySIM-based SIM unlock and put in new gunlock method (thanks to Geohot for this)
 
 
 v1.3.2 beta - 01/16/08
