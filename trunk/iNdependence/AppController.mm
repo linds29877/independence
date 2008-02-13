@@ -935,7 +935,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (IBAction)performSimUnlock:(id)sender
 {
-	int retval = NSRunAlertPanel(@"Warning", @"If you have previously used iPhoneSimFree to SIM unlock your phone, then this may not work for you. It's completely untested with IPSF unlocked phones.\n\nDo you wish to continue SIM unlocking?", @"No", @"Yes", nil);
+	int retval = NSRunAlertPanel(@"Warning", @"If you have previously used iPhoneSimFree to SIM unlock your phone, then this will very likely mess up your phone. It's completely untested with IPSF unlocked phones.\n\nDo you wish to continue SIM unlocking?", @"No", @"Yes", nil);
 
 	if (retval == NSAlertDefaultReturn) {
 		return;
