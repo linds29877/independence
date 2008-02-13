@@ -1,0 +1,49 @@
+# System-wide .profile for sh(1)
+
+export PATH="/bin:/sbin:/usr/bin:/usr/local/bin:/usr/sbin"
+
+/bin/sleep 5
+
+/sbin/fsck_hfs /dev/disk0s1
+/sbin/fsck_hfs /dev/disk0s2
+
+/sbin/mount_hfs -o noasync,sync /dev/disk0s1 /mnt1
+/sbin/mount_hfs -o noasync,sync /dev/disk0s2 /mnt2
+
+if [ "`/usr/bin/nvram jailbreak 2>/dev/null|/bin/cut -f 2`" == "1" ] ; then
+    /bin/echo "Performing jailbreak..."
+    /bin/cp /ramit/fstab /mnt1/private/etc/fstab
+    /bin/cp /ramit/Services.plist /mnt1/System/Library/Lockdown/Services.plist
+fi
+
+if [ "`/usr/bin/nvram activate 2>/dev/null|/bin/cut -f 2`" == "1" ] ; then
+    /bin/echo "Patching lockdownd..."
+    /bin/ipatcher -l /mnt1/usr/libexec/lockdownd
+    /bin/echo "Activating youtube..."
+    /bin/mkdir -p /mnt2/private/var/root/Library/Lockdown
+    /bin/cp /ramit/data_ark.plist /mnt2/root/Library/Lockdown/
+    /bin/cp /ramit/device_private_key.pem /mnt2/root/Library/Lockdown/
+    /bin/cp /ramit/device_public_key.pem /mnt2/root/Library/Lockdown/
+fi
+
+if [ "`/usr/bin/nvram simunlock 2>/dev/null|/bin/cut -f 2`" == "1" ] ; then
+    /bin/echo "Performing SIM unlock..."
+    /ramit/gunlock_0p /ramit/secpack /usr/local/standalone/firmware/ICE04.02.13_G.fls
+fi
+
+/bin/echo "Unmounting filesystems..."
+/usr/bin/umount /mnt1
+/usr/bin/umount /mnt2
+/sbin/fsck_hfs /dev/disk0s1
+/sbin/fsck_hfs /dev/disk0s2
+
+/usr/bin/nvram auto-boot=true
+/usr/bin/nvram boot-args=""
+/usr/bin/nvram -d jailbreak
+/usr/bin/nvram -d activate
+/usr/bin/nvram -d simunlock
+
+/bin/echo "Now rebooting..."
+/sbin/reboot
+
+while (true); do /bin/sleep 1; done

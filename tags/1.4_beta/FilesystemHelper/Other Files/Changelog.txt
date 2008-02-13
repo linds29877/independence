@@ -1,0 +1,17 @@
+Changelog
+---------
+
+v1.0 - 07/25/07
+
+- Initlal release for Mac (universal binary)
+
+
+v1.0.1 - 07/26/07
+
+- Fixed the dylib location problem
+- Uses new version of phone interaction dylib
+
+
+v1.0.2 - 07/30/07
+
+- Updated to use new version of libPhoneInteraction
