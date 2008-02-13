@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-v1.4 beta
+v1.4 beta - 02/13/08
 
 - Changed copyright dates for 2008
 - Cleaned up libPhoneInteraction a bit so that internally used functions are hidden from application developers.  Also refactored MobileDevice private function code out into a separate class.
