@@ -361,7 +361,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	[task release];
 
-	if ( [[NSFileManager defaultManager] fileExistsAtPath:rdOutputFile] ) {
+	if ( ![[NSFileManager defaultManager] fileExistsAtPath:rdOutputFile] ) {
 		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Error occurred while creating the RAM disk."];
 		return nil;
