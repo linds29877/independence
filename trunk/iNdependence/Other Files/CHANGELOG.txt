@@ -9,6 +9,8 @@ v1.4 beta - 02/13/08
 - Added better handling for cases where some phone information can't be obtained (doesn't fail outright)
 - Added 1.1.3 jailbreak (thanks to Zibri for the method)
 - Removed old anySIM-based SIM unlock and put in new gunlock method (thanks to Geohot for this)
+- Added documentation for usage with firmware 1.1.3
+- Updated the other documentation accordingly
 
 
 v1.3.2 beta - 01/16/08
