@@ -278,6 +278,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 		free(m_sshPath);
 	}
 
+	if (m_ramdiskPath != nil) {
+		[m_ramdiskPath release];
+		m_ramdiskPath = nil;
+	}
+
 	[super dealloc];
 }
 
@@ -383,7 +388,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 	NSString *ramdiskFile = [[NSBundle mainBundle] pathForResource:@"ramit112" ofType:@"dat"];
 
 	if (ramdiskFile != nil) {
-		m_ramdiskPath = ramdiskFile;
+		m_ramdiskPath = [[NSString alloc] initWithString:ramdiskFile];
 		return ramdiskFile;
 	}
 
@@ -392,12 +397,17 @@ static void phoneInteractionNotification(int type, const char *msg)
 	ramdiskFile = [ramdiskFile stringByAppendingPathComponent:@"ramit112.dat"];
 
 	if ( [[NSFileManager defaultManager] fileExistsAtPath:ramdiskFile] ) {
-		m_ramdiskPath = ramdiskFile;
+		m_ramdiskPath = [[NSString alloc] initWithString:ramdiskFile];
 		return ramdiskFile;
 	}
 
 	// ok, looks like we're going to have to create it
-	m_ramdiskPath = [self generateRamdisk];
+	ramdiskFile = [self generateRamdisk];
+
+	if (ramdiskFile != nil) {
+		m_ramdiskPath = [[NSString alloc] initWithString:ramdiskFile];
+	}
+
 	return m_ramdiskPath;
 }
 
