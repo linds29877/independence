@@ -37,8 +37,7 @@ class PhoneInteraction;
 	IBOutlet NSButton* installSSHButton;
 	IBOutlet NSButton* removeSSHButton;
 	IBOutlet NSButton* changePasswordButton;
-	IBOutlet NSButton* installSimUnlockButton;
-	IBOutlet NSButton* removeSimUnlockButton;
+	IBOutlet NSButton* performSimUnlockButton;
 	IBOutlet NSButton* enterDFUModeButton;
 	IBOutlet NSButton* preFirmwareUpgradeButton;
 	IBOutlet CustomizeBrowser* customizeBrowser;
@@ -70,6 +69,7 @@ class PhoneInteraction;
 	bool m_waitingForNewDeactivation;
 	int m_bootCount;
 	char *m_sshPath;
+	NSString *m_ramdiskPath;
 }
 
 - (void)setConnected:(bool)connected;
@@ -99,7 +99,6 @@ class PhoneInteraction;
 - (bool)isOpenSSHInstalled;
 - (bool)isDropbearSSHInstalled;
 - (bool)isSSHInstalled;
-- (bool)isanySIMInstalled;
 
 - (bool)isWaitingForActivation;
 - (bool)isWaitingForNewActivation;
@@ -118,14 +117,16 @@ class PhoneInteraction;
 
 - (void)updateInfo;
 
+- (NSString*)generateRamdisk;
+- (NSString*)getRamdiskPath;
+
 - (IBAction)activate:(id)sender;
 - (IBAction)deactivate:(id)sender;
 - (IBAction)enterDFUMode:(id)sender;
 - (IBAction)preFirmwareUpgrade:(id)sender;
 - (IBAction)performJailbreak:(id)sender;
 - (IBAction)returnToJail:(id)sender;
-- (IBAction)installSimUnlock:(id)sender;
-- (IBAction)removeSimUnlock:(id)sender;
+- (IBAction)performSimUnlock:(id)sender;
 - (IBAction)changePassword:(id)sender;
 
 - (IBAction)installSSH:(id)sender;

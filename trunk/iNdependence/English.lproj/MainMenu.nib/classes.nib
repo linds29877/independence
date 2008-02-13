@@ -147,6 +147,8 @@
 				<string>id</string>
 				<key>performJailbreak</key>
 				<string>id</string>
+				<key>performSimUnlock</key>
+				<string>id</string>
 				<key>preFirmwareUpgrade</key>
 				<string>id</string>
 				<key>putPEMOnPhone</key>
@@ -210,6 +212,8 @@
 				<string>NSSecureTextField</string>
 				<key>passwordField</key>
 				<string>NSSecureTextField</string>
+				<key>performSimUnlockButton</key>
+				<string>NSButton</string>
 				<key>preFirmwareUpgradeButton</key>
 				<string>NSButton</string>
 				<key>productVersionField</key>

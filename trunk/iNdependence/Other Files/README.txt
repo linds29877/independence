@@ -1,5 +1,5 @@
  *
- * iNdependence v1.3.2
+ * iNdependence v1.4 beta
  * Copyright 2007-2008 The Operator
  *
  * This software is free software; you can redistribute it and/or
@@ -37,5 +37,7 @@ Credits to:
   - planetbeing for the iTunes 7.5 private function offsets
   - iPhone Elite team for the 1.1.2 jailbreak and for being so open with information.  You're truly a credit to the community.
   - Christian Terrazas for the icon/banner
+  - Geohot for gunlock (and answering my questions)
+  - Zibri for the proper 1.1.3 jailbreak (ala ZiPhone)
 
 Cheers to the iPhone Dev, iPhone Elite, and iTouch Dev teams!
