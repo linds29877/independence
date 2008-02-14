@@ -54,7 +54,7 @@ How I got installer.app working:
 
   # Get the latest version from here: http://repository.apptapp.com/packages/System/Installer.zip
 
-  # Install it using independence (naturally)
+  # Install the Installer.app file using iNdependence
 
   # SSH into your phone and issue the following commands:
 
@@ -62,4 +62,4 @@ How I got installer.app working:
 
     chmod 755 /Applications/Installer.app/Installer
 
-*NOTE*: You do not need to do step #3 if the Installer.app permissions are set correctly on your Mac before you install it using iNdependence.  So technically, you could run those commands from Terminal on your Mac before you install it.
+*NOTE*: You do not need to do step #3 if the Installer.app permissions are set correctly on your Mac before you install it using iNdependence.  So technically, you could run those commands from Terminal on your Mac before you install it (adjusting for the correct path to where you downloaded Installer.app of course).
