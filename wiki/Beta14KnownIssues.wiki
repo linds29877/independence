@@ -43,3 +43,23 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
   * iNdependence currently does not put Installer.app on your phone.  You'll need to find a standalone copy and use SSH to copy it over to the phone.  I am considering adding some sort of feature for this.
 
   * If Wi-Fi/Bluetooth/Phone aren't working after performing a SIM unlock, then it's likely that gunlock failed at some point and left your baseband in a bad state (I've had this happen).  However, iNdependence won't detect this failure and will still report that SIM unlock worked.  If this happens, just do a SIM unlock again.  gunlock should work properly the second time around.  NOTE: You can tell that gunlock works if you see a lot of messages on the phone which say "Wrote: 0x800 ...".  If you don't see those messages, then it likely failed.
+
+== Getting Installer.app onto Your Phone ==
+
+(From john.angus - slightly modified by me)
+
+How I got installer.app working:
+
+  # Get the latest version from here: http://repository.apptapp.com/packages/System/Installer.zip
+
+  # Install it using independence (naturally)
+
+  # SSH into your phone and issue the following commands:
+
+    chmod 755 /Applications
+
+    chmod 755 /Applications/Installer.app
+
+    chmod 755 /Applications/Installer.app/Installer
+
+*NOTE*: You do not need to do step #3 if the Installer.app permissions are set correctly on your Mac before you install it using iNdependence.  So technically, you could run those commands from Terminal on your Mac before you install it.
