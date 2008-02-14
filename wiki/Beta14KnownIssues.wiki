@@ -12,7 +12,7 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
   * The "Generating RAM disk" stage can take a long time.  Don't worry, it's not frozen.  If you want to see what's going on, open up /Applications/Utilities/Console
 
-  * iNdependence almost always hangs *after* creating the RAM disk file.  It never gets to the jailbreak/activate/SIM unlock stage after creating the RAM disk.  It just sits there at the "Waiting for jail break" dialog.
+  * iNdependence almost always hangs *after* creating the RAM disk file.  It never gets to the jailbreak/activate/SIM unlock stage after creating the RAM disk.  It just sits there at the "Waiting for jail break" dialog.  If you don't see the screen of your phone change for more than a couple of minutes after you see the "Waiting for jail break" message, then it's likely frozen.
 
   WORKAROUND: Quit and restart iNdependence, then try again.
 
