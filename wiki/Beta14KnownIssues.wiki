@@ -10,8 +10,6 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
   * Wallpaper customization does not work with firmware 1.1.3
 
-  * The "Generating RAM disk" stage can take a long time.  Don't worry, it's not frozen.  If you want to see what's going on, open up /Applications/Utilities/Console
-
   * iNdependence almost always hangs *after* creating the RAM disk file.  It never gets to the jailbreak/activate/SIM unlock stage after creating the RAM disk.  It just sits there at the "Waiting for jail break" dialog.  If you don't see the screen of your phone change for more than a couple of minutes after you see the "Waiting for jail break" message, then it's likely frozen.
 
   WORKAROUND: Quit and restart iNdependence, then try again.
@@ -26,7 +24,7 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
   * Sometimes, if you Activate and then SIM Unlock right afterwards, the SIM Unlock step will only do a jailbreak (not actually SIM Unlock the phone).  If you see "Jailbreak succeeded" after SIM Unlocking, then it didn't work.  If you SIM Unlock a second time, it should work.
 
-  * The RAM disk file can take a long time to generate.  If you want to see what's happening during this stage, run /Applications/Utilities/Console.app and check the Console.log file.  It's likely that you are downloading the 1.1.2 firmware file.  iNdependence will not be frozen up while it's generating the RAM disk.
+  * The "Generating RAM disk" stage can take a long time.  If you want to see what's happening during this stage, run /Applications/Utilities/Console.app and check the Console.log file.  It's likely that you are downloading the 1.1.2 firmware file.  iNdependence will not be frozen up while it's generating the RAM disk.
 
   * However, iNdependence can freeze up when it's attempting to jail break and SIM unlock.  If the screen on your phone hasn't switched to the Apple logo within 30 seconds, then it's likely frozen.  You'll need to force quit and restart iNdependence (Alt+Option+Esc, select iNdependence, press "Force Quit").  This is a long-standing bug, and it's due to a faulty API in the iTunes library it uses (MobileDevice).
 
