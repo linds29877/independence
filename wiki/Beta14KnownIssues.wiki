@@ -12,15 +12,15 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
   * iNdependence almost always hangs after creating the RAM disk file.  It never gets to the jailbreak/activate/SIM unlock stage after creating the RAM disk.  It just sits there at the "Waiting for jail break" dialog.
 
-*WORKAROUND*: Quit and restart iNdependence, then try again.
+  WORKAROUND: Quit and restart iNdependence, then try again.
 
   * iNdependence will not work properly when run from the disk image.  There is no way around this because it needs to create a file within it's application bundle, and it can't do that when it's run from the disk image.
 
   * I'm unsure about how the new SIM unlock interacts with a phone previously SIM unlocked using iPhoneSimFree.  Anyone who wants to risk this and try it out, please post the results.
 
-*UPDATE*: It seems that if you do this, it will work, but you need to run Signal.app each time your phone boots to make it work with the IPSF unlock.
+  UPDATE: It seems that if you do this, it will work, but you need to run Signal.app each time your phone boots to make it work with the IPSF unlock.
 
-*UPDATE2*: fruiteatingbear reports that his previously IPSF unlocked phone works fine after SIM unlocking via iNdependence.  No need for Signal.app
+  UPDATE2: fruiteatingbear reports that his previously IPSF unlocked phone works fine after SIM unlocking via iNdependence.  No need for Signal.app
 
   * Sometimes, if you Activate and then SIM Unlock right afterwards, the SIM Unlock step will only do a jailbreak (not actually SIM Unlock the phone).  If you see "Jailbreak succeeded" after SIM Unlocking, then it didn't work.  If you SIM Unlock a second time, it should work.
 
@@ -32,9 +32,9 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
   * Some people are reporting that when they do a jail break or SIM unlock, the phone boots to text mode, but then hangs and displays the same message over and over again (BSD root: md0, major 2, minor 0).  This is currently being investigated (I'm unable to reproduce it).  To get out of this mode, you need to manually put your phone in DFU mode (using the Power + Home buttons), then use iTunes to restore your firmware.
 
-*UPDATE* I think that something bad is happening while iNdependence is creating the RAM disk file and people are ending up with an invalid RAM disk.  In Finder, right-click on iNdependence.app, select "Show Package Contents", then go to Contents -> Resources.  Delete the file called "ramit112.dat".  Now run iNdependence again.
+  UPDATE: I think that something bad is happening while iNdependence is creating the RAM disk file and people are ending up with an invalid RAM disk.  In Finder, right-click on iNdependence.app, select "Show Package Contents", then go to Contents -> Resources.  Delete the file called "ramit112.dat".  Now run iNdependence again.
 
-*UPDATE2* If you are comfortable with the command-line and you really want to see what's happening, open up /Applications/Utilities/Terminal, navigate to the iNdependence.app/Contents/Resources/ folder, then type "./generate112ramdisk.sh ramit112_files.zip zero_file.zip ramit112.dat"
+  UPDATE2: If you are comfortable with the command-line and you really want to see what's happening, open up /Applications/Utilities/Terminal, navigate to the iNdependence.app/Contents/Resources/ folder, then type "./generate112ramdisk.sh ramit112_files.zip zero_file.zip ramit112.dat"
 
   * If a phone has been previously jailbroken with ZiPhone, iNdependence will say that it's still jailed.  The reason for this is because ZiPhone does not create the AFC2 service on the phone.  The AFC2 service allows computer-based applications to write to all areas of the phone (not just the Media partition).  So really, ZiPhone only jailbreaks for applications which run on the phone itself (not applications which run from the computer).
 
