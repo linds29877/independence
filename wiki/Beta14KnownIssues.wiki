@@ -56,11 +56,13 @@ How I got installer.app working:
   # Install the Installer.app file using iNdependence
   # SSH into your phone and issue the following commands:
 
-    chmod 755 /Applications/Installer.app
+    chmod 777 /Applications
 
-    chmod 755 /Applications/Installer.app/Installer
+    chmod 777 /Applications/Installer.app
 
-*NOTE*: You do not need to do step #3 if the Installer.app permissions are set correctly on your Mac before you install it using iNdependence.  So technically, you could run those commands from Terminal on your Mac before you install it (adjusting for the correct path to where you downloaded Installer.app of course).
+    chmod 777 /Applications/Installer.app/Installer
+
+*UPDATE* My apologies for the earlier mistake in the instructions.  I now realize that you need to make /Applications world writable in order for Installer.app to work (ie. *chmod 777* instead of chmod 755).  This is because it's running as user "mobile".  So you do indeed need to perform step #3 for Installer.app to work properly.
 
 == Problems With 3rd Party Applications on 1.1.3 ==
 
