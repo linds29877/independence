@@ -58,8 +58,6 @@ How I got installer.app working:
 
   # SSH into your phone and issue the following commands:
 
-    chmod 755 /Applications
-
     chmod 755 /Applications/Installer.app
 
     chmod 755 /Applications/Installer.app/Installer
