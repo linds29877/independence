@@ -53,9 +53,7 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 How I got installer.app working:
 
   # Get the latest version from here: http://repository.apptapp.com/packages/System/Installer.zip
-
   # Install the Installer.app file using iNdependence
-
   # SSH into your phone and issue the following commands:
 
     chmod 755 /Applications/Installer.app
