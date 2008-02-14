@@ -9,9 +9,17 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 == Current Known Issues ==
 
   * Wallpaper customization does not work with firmware 1.1.3
+
   * iNdependence almost always hangs after creating the RAM disk file.  It never gets to the jailbreak/activate/SIM unlock stage after creating the RAM disk.  It just sits there at the "Waiting for jail break" dialog.  *WORKAROUND*: Quit and restart iNdependence, then try again.
+
   * iNdependence will not work properly when run from the disk image.  There is no way around this because it needs to create a file within it's application bundle, and it can't do that when it's run from the disk image.
+
   * I'm unsure about how the new SIM unlock interacts with a phone previously SIM unlocked using iPhoneSimFree.  Anyone who wants to risk this and try it out, please post the results.  *UPDATE* It seems that if you do this, it will work, but you need to run Signal.app each time your phone boots to make it work with the IPSF unlock. *IPSF USERS -- DO A SEARCH ON THE [http://hackint0sh.org/forum/forumdisplay.php?f=123 HACKINTOSH FORUMS] FOR SIGNAL.APP AND YOU WILL FIND YOUR SOLUTION*
+
   * Sometimes, if you Activate and then SIM Unlock right afterwards, the SIM Unlock step will only do a jailbreak (not actually SIM Unlock the phone).  If you see "Jailbreak succeeded" after SIM Unlocking, then it didn't work.  If you SIM Unlock a second time, it should work.
+
   * The RAM disk file can take a long time to generate.  If you want to see what's happening during this stage, run /Applications/Utilities/Console.app and check the Console.log file.  It's likely that you are downloading the 1.1.2 firmware file.  iNdependence will not be frozen up while it's generating the RAM disk.
+
   * However, iNdependence can freeze up when it's attempting to jail break and SIM unlock.  If the screen on your phone hasn't switched to the Apple logo within 30 seconds, then it's likely frozen.  You'll need to force quit and restart iNdependence (Alt+Option+Esc, select iNdependence, press "Force Quit").  This is a long-standing bug, and it's due to a faulty API in the iTunes library it uses (MobileDevice).
+
+  * If you were previously SIM unlocked, you will need to do a SIM unlock again after upgrading to 1.1.3.  TurboSIM doesn't work under 1.1.3, and even the IPSF SIM unlock doesn't work without Signal.app.
