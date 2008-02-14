@@ -44,7 +44,7 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
   * If a phone has been previously jailbroken with ZiPhone, iNdependence will say that it's still jailed.  The reason for this is because ZiPhone does not create the AFC2 service on the phone.  The AFC2 service allows computer-based applications to write to all areas of the phone (not just the Media partition).  So really, ZiPhone only jailbreaks for applications which run on the phone itself (not applications which run from the computer).
 
-  * iNdependence currently does not put Installer.app on your phone.  You'll need to find a standalone copy and use SSH to copy it over to the phone (see below for instructions).  I am considering adding some sort of feature for this.
+  * iNdependence currently does not put Installer.app on your phone.  You'll need to find a standalone copy and then use the Customize tab in iNdependence to install it (see below for instructions).  I am considering adding some sort of feature for this.
 
 == Getting Installer.app onto Your Phone ==
 
