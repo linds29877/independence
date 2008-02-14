@@ -14,7 +14,10 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
   * iNdependence will not work properly when run from the disk image.  There is no way around this because it needs to create a file within it's application bundle, and it can't do that when it's run from the disk image.
 
-  * I'm unsure about how the new SIM unlock interacts with a phone previously SIM unlocked using iPhoneSimFree.  Anyone who wants to risk this and try it out, please post the results.  *UPDATE* It seems that if you do this, it will work, but you need to run Signal.app each time your phone boots to make it work with the IPSF unlock. *UPDATE2* fruiteatingbear reports that his previously IPSF unlocked phone works fine after SIM unlocking via iNdependence.  No need for Signal.app
+  * I'm unsure about how the new SIM unlock interacts with a phone previously SIM unlocked using iPhoneSimFree.  Anyone who wants to risk this and try it out, please post the results.
+
+*UPDATE*: It seems that if you do this, it will work, but you need to run Signal.app each time your phone boots to make it work with the IPSF unlock.
+*UPDATE2*: fruiteatingbear reports that his previously IPSF unlocked phone works fine after SIM unlocking via iNdependence.  No need for Signal.app
 
   * Sometimes, if you Activate and then SIM Unlock right afterwards, the SIM Unlock step will only do a jailbreak (not actually SIM Unlock the phone).  If you see "Jailbreak succeeded" after SIM Unlocking, then it didn't work.  If you SIM Unlock a second time, it should work.
 
