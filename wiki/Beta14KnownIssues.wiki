@@ -36,6 +36,8 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
   UPDATE2: If you are comfortable with the command-line and you really want to see what's happening, open up /Applications/Utilities/Terminal, navigate to the iNdependence.app/Contents/Resources/ folder, then type "./generate112ramdisk.sh ramit112_files.zip zero_file.zip ramit112.dat"
 
+  UPDATE3: If you aren't comfortable with the command-line, but still want to see what's happening, after you have deleted "ramit112.dat", open up /Applications/Utilities/Console, make sure you are viewing the Console.log, then run iNdependence, and try to jail break.  You should see the output from the RAM disk creator script in the Console.
+
   * If a phone has been previously jailbroken with ZiPhone, iNdependence will say that it's still jailed.  The reason for this is because ZiPhone does not create the AFC2 service on the phone.  The AFC2 service allows computer-based applications to write to all areas of the phone (not just the Media partition).  So really, ZiPhone only jailbreaks for applications which run on the phone itself (not applications which run from the computer).
 
   * iNdependence currently does not put Installer.app on your phone.  You'll need to find a standalone copy and use SSH to copy it over to the phone.  I am considering adding some sort of feature for this.
