@@ -12,7 +12,7 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
   * iNdependence almost always hangs after creating the RAM disk file.  It never gets to the jailbreak/activate/SIM unlock stage after creating the RAM disk.  It just sits there at the "Waiting for jail break" dialog.
 
-  *WORKAROUND*: Quit and restart iNdependence, then try again.
+*WORKAROUND*: Quit and restart iNdependence, then try again.
 
   * iNdependence will not work properly when run from the disk image.  There is no way around this because it needs to create a file within it's application bundle, and it can't do that when it's run from the disk image.
 
