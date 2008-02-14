@@ -25,3 +25,5 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
   * If you were previously SIM unlocked, you will need to do a SIM unlock again after upgrading to 1.1.3.  TurboSIM doesn't work under 1.1.3, and even the IPSF SIM unlock doesn't work without Signal.app.
 
   * Some people are reporting that when they do a jail break or SIM unlock, the phone boots to text mode, but then hangs and displays the same message over and over again (BSD root: md0, major 2, minor 0).  This is currently being investigated (I'm unable to reproduce it).  To get out of this mode, you need to manually put your phone in DFU mode (using the Power + Home buttons), then use iTunes to restore your firmware.
+
+  * If a phone has been previously jailbroken with ZiPhone, iNdependence will say that it's still jailed.  The reason for this is because ZiPhone does not create the AFC2 service on the phone.  The AFC2 service allows computer-based applications to write to all areas of the phone (not just the Media partition).  So really, ZiPhone only jailbreaks for applications which run on the phone itself (not applications which run from the computer).
