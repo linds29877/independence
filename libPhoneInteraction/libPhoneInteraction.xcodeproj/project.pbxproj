@@ -191,6 +191,7 @@
 				);
 				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../Public Headers\"";
 				OBJROOT = build;
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				SYMROOT = "../Public Libraries";
 			};
 			name = Debug;
@@ -204,6 +205,7 @@
 				);
 				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../Public Headers\"";
 				OBJROOT = build;
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				SYMROOT = "../Public Libraries";
 			};
 			name = Release;
@@ -268,6 +270,7 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../Third Party Libraries\"";
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				PRODUCT_NAME = libPhoneInteraction;
 				SKIP_INSTALL = NO;
 			};
