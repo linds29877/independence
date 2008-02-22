@@ -19,6 +19,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+//#include <openssl/md5.h>
 
 #import "AppController.h"
 #import "MainWindow.h"
@@ -312,68 +313,524 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_bootCount = 0;
 	m_sshPath = NULL;
 	m_ramdiskPath = nil;
+	m_rdFirmwarePath = nil;
+	m_rdDLPath = nil;
+	m_downloadResponse = nil;
 	[customizeBrowser setEnabled:NO];
 	m_phoneInteraction = PhoneInteraction::getInstance(updateStatus, phoneInteractionNotification);
 	g_phoneInteraction = m_phoneInteraction;
 }
 
+// -----------------------------------------------------------------------------------
+
 - (NSString*)generateRamdisk
 {
-	[mainWindow startDisplayWaitingSheet:nil
-								 message:@"Generating RAM disk..."
-								   image:nil cancelButton:false runModal:false];
 
-	NSString *rdGenerator = [[NSBundle mainBundle] pathForResource:@"generate112ramdisk" ofType:@"sh"];
+	if (m_rdFirmwarePath == nil) {
+		NSString *homeDir = NSHomeDirectory();
 
-	if (rdGenerator == nil) {
-		[mainWindow endDisplayWaitingSheet];
-		[mainWindow displayAlert:@"Error" message:@"Couldn't find RAM disk generator script."];
-		return nil;
+		if (homeDir == nil) {
+			[mainWindow displayAlert:@"Error" message:@"Couldn't get home directory."];
+			return nil;
+		}
+
+		m_rdDLPath = [homeDir stringByAppendingPathComponent:@"Library/iTunes/iPhone Software Updates/"];
+		m_rdFirmwarePath = [m_rdDLPath stringByAppendingPathComponent:@"iPhone1,1_1.1.2_3B48b_Restore.ipsw"];
+		[m_rdDLPath retain];
+		[m_rdFirmwarePath retain];
 	}
 
-	NSString *rdExtraFiles = [[NSBundle mainBundle] pathForResource:@"ramit112_files" ofType:@"zip"];
+#ifdef DEBUG
+	NSLog(@"Firmware path is: %@", m_rdFirmwarePath);
+	NSLog(@"Firmware DL path is: %@", m_rdDLPath);
+#endif
 
+	if ( ![[NSFileManager defaultManager] fileExistsAtPath:m_rdFirmwarePath] ) {
+		[mainWindow startDisplayWaitingSheet:nil
+									 message:@"Downloading firmware file..."
+									   image:nil cancelButton:false
+							   indeterminate:NO runModal:false];
+		[mainWindow updateWaitingSheetPct:0.0];
+
+		m_bIsDownloading = true;
+		m_bDownloadSucceeded = false;
+
+		NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPhone/061-4037.20071107.5Bghn/iPhone1,1_1.1.2_3B48b_Restore.ipsw"]];
+		NSURLDownload *dl = [[NSURLDownload alloc] initWithRequest:req delegate:self];
+
+		if (dl == nil) {
+			[mainWindow endDisplayWaitingSheet];
+			[mainWindow displayAlert:@"Error" message:@"Couldn't download firmware file."];
+			return nil;
+		}
+
+		[dl setDestination:m_rdFirmwarePath allowOverwrite:YES];
+
+		while (m_bIsDownloading) {
+			[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
+
+			if (m_expectedLength != NSURLResponseUnknownLength) {
+				float percentComplete = ((float)m_bytesReceived / (float)m_expectedLength) * 100.0f;
+				[mainWindow updateWaitingSheetPct:percentComplete];
+			}
+			else {
+				[mainWindow updateWaitingSheetPct:-1.0f];
+			}
+
+		}
+
+		if (m_bDownloadSucceeded) {
+			[mainWindow updateWaitingSheetPct:100.0];
+			[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
+		}
+
+		[mainWindow endDisplayWaitingSheet];
+
+		if (m_downloadResponse) {
+			[m_downloadResponse release];
+			m_downloadResponse = nil;
+		}
+
+		if (!m_bDownloadSucceeded) {
+			[mainWindow displayAlert:@"Error" message:@"Couldn't download firmware file."];
+			return nil;
+		}
+
+	}
+
+	NSFileManager *fm = [NSFileManager defaultManager];
+
+	[mainWindow startDisplayWaitingSheet:nil
+								 message:@"Creating RAM disk..."
+								   image:nil cancelButton:false
+						   indeterminate:NO runModal:false];
+	[mainWindow updateWaitingSheetPct:0.0];
+
+	// get paths to the resource files
+	NSString *rdExtraFiles = [[NSBundle mainBundle] pathForResource:@"ramit112_files" ofType:@"zip"];
+	
 	if (rdExtraFiles == nil) {
 		[mainWindow endDisplayWaitingSheet];
 		[mainWindow displayAlert:@"Error" message:@"Couldn't find extra RAM disk files."];
 		return nil;
 	}
 
-	NSString *rdZeroFile = [[NSBundle mainBundle] pathForResource:@"zero_file" ofType:@"zip"];
+#ifdef DEBUG
+	NSLog(@"Extracting firmware files...");
+#endif
 
-	if (rdZeroFile == nil) {
+	[mainWindow updateWaitingSheetPct:5.0];
+
+	// extract the firmware
+	NSString *extractPath = [m_rdDLPath stringByAppendingPathComponent:@"firmware_112/"];
+
+	NSTask *task = [[NSTask alloc] init];
+	[task setLaunchPath:@"/usr/bin/ditto"];
+	[task setArguments:[NSArray arrayWithObjects:@"-k", @"-x", m_rdFirmwarePath, extractPath, nil]];
+	[task launch];
+	[task waitUntilExit];
+
+	if ([task terminationStatus] != 0) {
+		[task release];
 		[mainWindow endDisplayWaitingSheet];
-		[mainWindow displayAlert:@"Error" message:@"Couldn't find RAM disk zero header file."];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't extract firmware file contents."];
 		return nil;
 	}
 
-	NSString *rdOutputFile = [[NSBundle mainBundle] resourcePath];
-	rdOutputFile = [rdOutputFile stringByAppendingPathComponent:@"ramit112.dat"];
+	[task release];
+	[mainWindow updateWaitingSheetPct:25.0];
 
-	NSArray *args = [NSArray arrayWithObjects:rdExtraFiles, rdZeroFile, rdOutputFile, nil];
-	NSTask *task = [[NSTask alloc] init];
-	[task setLaunchPath:rdGenerator];
-	[task setArguments:args];
+#ifdef DEBUG
+	NSLog(@"Stripping 2048 byte header...");
+#endif
+
+	// strip the 2048 byte header from the embedded RAM disk
+	NSString *ifFile = [extractPath stringByAppendingPathComponent:@"022-3726-1.dmg"];
+	NSString *ofFile = [m_rdDLPath stringByAppendingPathComponent:@"ramdisk.dmg"];
+
+	task = [[NSTask alloc] init];
+	[task setLaunchPath:@"/bin/dd"];
+	[task setArguments:[NSArray arrayWithObjects:[NSString stringWithFormat:@"if=%@", ifFile],
+						[NSString stringWithFormat:@"of=%@", ofFile], @"bs=512", @"skip=4", @"conv=sync", nil]];
+	[task launch];
+	[task waitUntilExit];
+
+	if ([task terminationStatus] != 0) {
+		[task release];
+		[fm removeFileAtPath:extractPath handler:nil];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't strip header from firmware RAM disk."];
+		return nil;
+	}
+
+	[task release];
+	[mainWindow updateWaitingSheetPct:30.0];
+
+#ifdef DEBUG
+	NSLog(@"Decrypting RAM disk...");
+#endif
+
+	// decrypt the RAM disk
+	NSString *decFile = [m_rdDLPath stringByAppendingPathComponent:@"ramdisk_decrypted.dmg"];
+
+	task = [[NSTask alloc] init];
+	[task setLaunchPath:@"/usr/bin/openssl"];
+	[task setArguments:[NSArray arrayWithObjects:@"enc", @"-d", @"-in", ofFile, @"-out",
+						decFile, @"-aes-128-cbc", @"-K", @"188458A6D15034DFE386F23B61D43774",
+						@"-iv", @"0", nil]];
+	[task launch];
+	[task waitUntilExit];
+
+	// 0p - Ignore the failure in this case
+	/*
+	if ([task terminationStatus] != 0) {
+		[task release];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't decrypt firmware RAM disk."];
+		return nil;
+	}
+	 */
+
+	[task release];
+	[mainWindow updateWaitingSheetPct:40.0];
+
+#ifdef DEBUG
+	NSLog(@"Stripping the RAM disk signature...");
+#endif
+
+	// now strip the signature from the decrypted RAM disk
+	NSString *decCleanFile = [m_rdDLPath stringByAppendingPathComponent:@"ramdisk_decrypted_clean.dmg"];
+
+	task = [[NSTask alloc] init];
+	[task setLaunchPath:@"/bin/dd"];
+	[task setArguments:[NSArray arrayWithObjects:[NSString stringWithFormat:@"if=%@", decFile],
+						[NSString stringWithFormat:@"of=%@", decCleanFile], @"bs=512", @"count=36632", @"conv=sync", nil]];
 	[task launch];
 	[task waitUntilExit];
 	
 	if ([task terminationStatus] != 0) {
 		[task release];
+		[fm removeFileAtPath:extractPath handler:nil];
+		[fm removeFileAtPath:ofFile handler:nil];
+		[fm removeFileAtPath:decFile handler:nil];
 		[mainWindow endDisplayWaitingSheet];
-		[mainWindow displayAlert:@"Error" message:@"Error occurred while creating the RAM disk."];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't strip signature from the decrypted firmware RAM disk."];
 		return nil;
 	}
 
 	[task release];
+	[mainWindow updateWaitingSheetPct:45.0];
 
-	if ( ![[NSFileManager defaultManager] fileExistsAtPath:rdOutputFile] ) {
+#ifdef DEBUG
+	NSLog(@"Cleaning up...");
+#endif
+
+	// clean up
+	if ([fm removeFileAtPath:extractPath handler:nil] == NO) {
 		[mainWindow endDisplayWaitingSheet];
-		[mainWindow displayAlert:@"Error" message:@"Error occurred while creating the RAM disk."];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't clean up firmware path."];
 		return nil;
 	}
+
+	if ([fm removeFileAtPath:ofFile handler:nil] == NO) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't clean up RAM disk."];
+		return nil;
+	}
+
+	if ([fm removeFileAtPath:decFile handler:nil] == NO) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't clean up decrypted RAM disk."];
+		return nil;
+	}
+
+	[mainWindow updateWaitingSheetPct:50.0];
+
+#ifdef DEBUG
+	NSLog(@"Mounting the RAM disk...");
+#endif
+
+	// mount the RAM disk
+	task = [[NSTask alloc] init];
+	[task setLaunchPath:@"/usr/bin/hdiutil"];
+	[task setArguments:[NSArray arrayWithObjects:@"attach", decCleanFile, nil]];
+	[task launch];
+	[task waitUntilExit];
 	
+	if ([task terminationStatus] != 0) {
+		[task release];
+		[fm removeFileAtPath:decCleanFile handler:nil];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't mount decrypted, cleaned firmware RAM disk."];
+		return nil;
+	}
+
+	[task release];
+	[mainWindow updateWaitingSheetPct:65.0];
+
+#ifdef DEBUG
+	NSLog(@"Modifying the RAM disk...");
+#endif
+
+	// modify the RAM disk
+	if ([fm removeFileAtPath:@"/Volumes/ramdisk/System/Library/Frameworks/CoreGraphics.framework" handler:nil] == NO) {
+		task = [[NSTask alloc] init];
+		[task setLaunchPath:@"/usr/bin/hdiutil"];
+		[task setArguments:[NSArray arrayWithObjects:@"detach", @"/Volumes/ramdisk", nil]];
+		[task launch];
+		[task waitUntilExit];
+		[task release];
+		[fm removeFileAtPath:decCleanFile handler:nil];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't modify RAM disk."];
+		return nil;
+	}
+
+	[mainWindow updateWaitingSheetPct:70.0];
+
+	task = [[NSTask alloc] init];
+	[task setLaunchPath:@"/usr/bin/ditto"];
+	[task setArguments:[NSArray arrayWithObjects:@"-k", @"-x", rdExtraFiles, @"/Volumes/ramdisk/", nil]];
+	[task launch];
+	[task waitUntilExit];
+	
+	if ([task terminationStatus] != 0) {
+		[task release];
+		task = [[NSTask alloc] init];
+		[task setLaunchPath:@"/usr/bin/hdiutil"];
+		[task setArguments:[NSArray arrayWithObjects:@"detach", @"/Volumes/ramdisk", nil]];
+		[task launch];
+		[task waitUntilExit];
+		[task release];
+		[fm removeFileAtPath:decCleanFile handler:nil];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't decompress extra files to the RAM disk."];
+		return nil;
+	}
+
+	[task release];
+	[mainWindow updateWaitingSheetPct:75.0];
+
+#ifdef DEBUG
+	NSLog(@"Unmounting the RAM disk...");
+#endif
+
+	// unmount the RAM disk
+	task = [[NSTask alloc] init];
+	[task setLaunchPath:@"/usr/bin/hdiutil"];
+	[task setArguments:[NSArray arrayWithObjects:@"detach", @"/Volumes/ramdisk", nil]];
+	[task launch];
+	[task waitUntilExit];
+	
+	if ([task terminationStatus] != 0) {
+		[task release];
+		[fm removeFileAtPath:decCleanFile handler:nil];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't unmount firmware RAM disk."];
+		return nil;
+	}
+
+	[task release];
+	[mainWindow updateWaitingSheetPct:85.0];
+
+#ifdef DEBUG
+	NSLog(@"Creating new RAM disk...");
+#endif
+
+	// create the new RAM disk
+	unsigned int dataLength = 13377536;
+	unsigned char *zData = (unsigned char*)malloc(dataLength);
+	bzero(zData, dataLength);
+	NSData *zeroData = [NSData dataWithBytes:zData length:dataLength];
+
+	if (zeroData == nil) {
+		free(zData);
+		[fm removeFileAtPath:decCleanFile handler:nil];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't create zero data for new RAM disk."];
+		return nil;
+	}
+
+	free(zData);
+	NSData *rdData = [NSData dataWithContentsOfFile:decCleanFile];
+
+	if (rdData == nil) {
+		[fm removeFileAtPath:decCleanFile handler:nil];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't read in RAM disk image."];
+		return nil;
+	}
+
+	NSString *resPath = [[NSBundle mainBundle] resourcePath];
+
+	if (resPath == nil) {
+		[fm removeFileAtPath:decCleanFile handler:nil];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't get bundle resource path."];
+		return nil;
+	}
+
+	NSString *newRamDisk = [resPath stringByAppendingPathComponent:@"ramit112.dat"];
+	int fd = open([newRamDisk UTF8String], O_WRONLY | O_CREAT);
+
+	if (fd == -1) {
+		[fm removeFileAtPath:decCleanFile handler:nil];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't create new RAM disk image."];
+		return nil;
+	}
+
+	// set the proper file attributes
+	if (fchmod(fd, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == -1) {
+		close(fd);
+		[fm removeFileAtPath:decCleanFile handler:nil];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't create new RAM disk image."];
+		return nil;
+	}
+
+	NSFileHandle *rdFH = [[NSFileHandle alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
+
+	if (rdFH == nil) {
+		close(fd);
+		[fm removeFileAtPath:decCleanFile handler:nil];
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't create new RAM disk image."];
+		return nil;
+	}
+
+	[rdFH writeData:zeroData];
+	[rdFH writeData:rdData];
+	[rdFH closeFile];
+	[rdFH release];
+
+	[mainWindow updateWaitingSheetPct:95.0];
+
+#ifdef DEBUG
+	NSLog(@"Secondary clean up...");
+#endif
+
+	// clean up again
+	if ([fm removeFileAtPath:decCleanFile handler:nil] == NO) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't clean up decrypted, cleaned RAM disk file."];
+		return nil;
+	}
+
+	[mainWindow updateWaitingSheetPct:100.0];
+	[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
 	[mainWindow endDisplayWaitingSheet];
-	return rdOutputFile;
+
+	return newRamDisk;
+}
+
+- (void)setDownloadResponse:(NSURLResponse*)downloadResponse
+{
+    [downloadResponse retain];
+
+	if (m_downloadResponse) {
+		[m_downloadResponse release];
+	}
+
+    m_downloadResponse = downloadResponse;
+    m_expectedLength = [downloadResponse expectedContentLength];
+}
+
+- (void)download:(NSURLDownload*)download didReceiveResponse:(NSURLResponse*)response
+{
+	m_bytesReceived = 0;
+	[self setDownloadResponse:response];
+}
+
+- (void)download:(NSURLDownload*)download didReceiveDataOfLength:(unsigned)length
+{
+	m_bytesReceived = m_bytesReceived + length;
+
+#ifdef DEBUG
+	NSLog(@"Bytes received: %d", m_bytesReceived);
+#endif
+
+}
+
+- (void)download:(NSURLDownload*)download didFailWithError:(NSError*)error
+{
+#ifdef DEBUG
+	NSLog(@"download failed");
+#endif
+	[download release];
+	m_bDownloadSucceeded = false;
+	m_bIsDownloading = false;
+}
+
+#ifdef DEBUG
+- (void)downloadDidBegin:(NSURLDownload*)download
+{
+	NSLog(@"downloadDidBegin");
+}
+#endif
+
+- (void)downloadDidFinish:(NSURLDownload*)download
+{
+#ifdef DEBUG
+	NSLog(@"downloadDidFinish");
+#endif
+	[download release];
+	m_bDownloadSucceeded = true;
+	m_bIsDownloading = false;
+}
+
+// -----------------------------------------------------------------------------------
+
+- (bool)validateRamDisk:(NSString*)rdPath
+{
+	
+	// check the MD5 of the RAM disk to ensure it's correct
+	//
+	// 0p - I wish this worked, but it seems the MD5 is different all the time, so the
+	// best we can do is a file size check
+	/*
+	NSData *checkData = [NSData dataWithContentsOfFile:rdPath];
+
+	if (checkData != nil) {
+		unsigned char *digest = (unsigned char*)MD5((const unsigned char*)[checkData bytes], [checkData length], NULL);
+
+		if (digest != NULL) {
+			NSString *chkStr = [NSString stringWithFormat: @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+								digest[0], digest[1], digest[2], digest[3],
+								digest[4], digest[5], digest[6], digest[7],
+								digest[8], digest[9], digest[10], digest[11],
+								digest[12], digest[13], digest[14], digest[15]];
+
+#ifdef DEBUG
+			NSLog(@"RAM disk MD5: %@", chkStr);
+#endif
+
+			if ( [chkStr caseInsensitiveCompare:@"2389955b77f2574478609a1460fb4601"] != NSOrderedSame ) {
+				return false;
+			}
+			
+		}
+		else {
+			return false;
+		}
+		
+	}
+	else {
+		return false;
+	}
+	 */
+
+	struct stat st;
+
+	if (stat([rdPath UTF8String], &st) == -1) {
+		return false;
+	}
+
+	if (st.st_size != 32108032) {
+		return false;
+	}
+
+	return true;
 }
 
 - (NSString*)getRamdiskPath
@@ -381,15 +838,30 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	// first see if it's already been initialized
 	if (m_ramdiskPath != nil) {
-		return m_ramdiskPath;
+
+		if ([self validateRamDisk:m_ramdiskPath]) {
+			return m_ramdiskPath;
+		}
+		else {
+			[m_ramdiskPath release];
+			m_ramdiskPath = nil;
+		}
+
 	}
 
 	// now check to see if it's included as a resource
 	NSString *ramdiskFile = [[NSBundle mainBundle] pathForResource:@"ramit112" ofType:@"dat"];
 
 	if (ramdiskFile != nil) {
-		m_ramdiskPath = [[NSString alloc] initWithString:ramdiskFile];
-		return ramdiskFile;
+
+		if ([self validateRamDisk:ramdiskFile]) {
+			m_ramdiskPath = [[NSString alloc] initWithString:ramdiskFile];
+			return ramdiskFile;
+		}
+		else {
+			[[NSFileManager defaultManager] removeFileAtPath:ramdiskFile handler:nil];
+		}
+
 	}
 
 	// now see if it's already in the resources folder
@@ -397,15 +869,40 @@ static void phoneInteractionNotification(int type, const char *msg)
 	ramdiskFile = [ramdiskFile stringByAppendingPathComponent:@"ramit112.dat"];
 
 	if ( [[NSFileManager defaultManager] fileExistsAtPath:ramdiskFile] ) {
-		m_ramdiskPath = [[NSString alloc] initWithString:ramdiskFile];
-		return ramdiskFile;
+
+		if ([self validateRamDisk:ramdiskFile]) {
+			m_ramdiskPath = [[NSString alloc] initWithString:ramdiskFile];
+			return ramdiskFile;
+		}
+		else {
+			[[NSFileManager defaultManager] removeFileAtPath:ramdiskFile handler:nil];
+		}
+
 	}
 
 	// ok, looks like we're going to have to create it
-	ramdiskFile = [self generateRamdisk];
+	bool bContinue = true;
 
-	if (ramdiskFile != nil) {
-		m_ramdiskPath = [[NSString alloc] initWithString:ramdiskFile];
+	while ( (m_ramdiskPath == nil) && bContinue ) {
+		ramdiskFile = [self generateRamdisk];
+
+		if (ramdiskFile != nil) {
+
+			if ([self validateRamDisk:ramdiskFile]) {
+				m_ramdiskPath = [[NSString alloc] initWithString:ramdiskFile];
+			}
+
+		}
+
+		if (m_ramdiskPath == nil) {
+			int retval = NSRunAlertPanel(@"Failed", @"RAM disk creation failed.  Would you like to try again?", @"Yes", @"No", nil);
+			
+			if (retval != NSAlertDefaultReturn) {
+				bContinue = false;
+			}
+			
+		}
+
 	}
 
 	return m_ramdiskPath;
@@ -765,7 +1262,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			[mainWindow displayAlert:@"Error" message:@"Error obtaining RAM disk file."];
 			return;
 		}
-		
+
 		m_phoneInteraction->performJailbreak(false, [ramdiskFile UTF8String]);
 	}
 	else {

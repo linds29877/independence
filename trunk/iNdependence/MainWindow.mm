@@ -39,10 +39,33 @@ MainWindow *g_mainWindow;
 	NSRunAlertPanel(title, msg, @"OK", nil, nil, nil);
 }
 
+- (void)updateWaitingSheetPct:(double)pct
+{
+
+	if (pct < 0.0f) {
+
+		if (![waitDialogSpinner isIndeterminate]) {
+			[waitDialogSpinner setIndeterminate:YES];
+		}
+
+	}
+	else {
+		[waitDialogSpinner setDoubleValue:pct];
+	}
+
+}
+
 - (void)startDisplayWaitingSheet:(NSString*)title message:(NSString*)msg image:(NSImage*)img
 					cancelButton:(bool)cancel runModal:(bool)modal
 {
+	[self startDisplayWaitingSheet:title message:msg image:img cancelButton:cancel
+					 indeterminate:YES runModal:modal];
+}
 
+- (void)startDisplayWaitingSheet:(NSString*)title message:(NSString*)msg image:(NSImage*)img
+					cancelButton:(bool)cancel indeterminate:(BOOL)indeterminate runModal:(bool)modal
+{
+		
 	if (img != nil) {
 		waitDialog = [[NSPanel alloc] initWithContentRect:NSMakeRect(0, 0, 496, 286)
 												styleMask:NSTitledWindowMask
@@ -138,9 +161,19 @@ MainWindow *g_mainWindow;
 	}
 
 	waitDialogSpinner = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(231, 20, 32, 32)];
-	[waitDialogSpinner setIndeterminate:YES];
+	[waitDialogSpinner setIndeterminate:indeterminate];
 	[waitDialogSpinner setControlSize:NSRegularControlSize];
-	[waitDialogSpinner setStyle:NSProgressIndicatorSpinningStyle];
+
+	if (indeterminate) {
+		[waitDialogSpinner setStyle:NSProgressIndicatorSpinningStyle];
+	}
+	else {
+		[waitDialogSpinner setFrame:NSMakeRect(75, 30, 346, 32)];
+		[waitDialogSpinner setMinValue:0.0];
+		[waitDialogSpinner setMaxValue:100.0];
+		[waitDialogSpinner setDoubleValue:0.0];
+	}
+
 	[waitDialogSpinner startAnimation:self];
 	[[waitDialog contentView] addSubview:waitDialogSpinner];
 

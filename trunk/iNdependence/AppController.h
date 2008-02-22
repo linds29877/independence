@@ -67,9 +67,16 @@ class PhoneInteraction;
 	bool m_waitingForDeactivation;
 	bool m_waitingForNewActivation;
 	bool m_waitingForNewDeactivation;
+	bool m_bIsDownloading;
+	bool m_bDownloadSucceeded;
+	NSURLResponse *m_downloadResponse;
 	int m_bootCount;
 	char *m_sshPath;
 	NSString *m_ramdiskPath;
+	NSString *m_rdFirmwarePath;
+	NSString *m_rdDLPath;
+	long long m_expectedLength;
+	long long m_bytesReceived;
 }
 
 - (void)setConnected:(bool)connected;
@@ -119,6 +126,8 @@ class PhoneInteraction;
 
 - (NSString*)generateRamdisk;
 - (NSString*)getRamdiskPath;
+- (bool)validateRamDisk:(NSString*)rdPath;
+- (void)setDownloadResponse:(NSURLResponse*)dlResponse;
 
 - (IBAction)activate:(id)sender;
 - (IBAction)deactivate:(id)sender;
