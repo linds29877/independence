@@ -77,32 +77,39 @@ bool MobDevInternals::SetupPrivateFunctions(const PIVersion& iTunesVersion)
 
 	switch (iTunesVersion.minor) {
 		case 6:
-			m_sendCommandToDevice = (t_sendCommandToDevice)((char*)hGetProcIDDLL+0x00009290);
-			m_sendFileToDevice = (t_sendFileToDevice)((char*)hGetProcIDDLL+0x00009410);
-			m_socketForPort = (t_socketForPort)((char*)hGetProcIDDLL+0x00012830);
-			m_performOperation = (t_performOperation)((char*)hGetProcIDDLL+0x000129C0);
-			m_privateFunctionsSetup = true;
+
+			switch (iTunesVersion.point) {
+				case 0:
+					m_sendCommandToDevice = (t_sendCommandToDevice)((char*)hGetProcIDDLL+0x00009290);
+					m_sendFileToDevice = (t_sendFileToDevice)((char*)hGetProcIDDLL+0x00009410);
+					m_socketForPort = (t_socketForPort)((char*)hGetProcIDDLL+0x00012830);
+					m_performOperation = (t_performOperation)((char*)hGetProcIDDLL+0x000129C0);
+					break;
+				default:
+					SetInitializationError("Error due to bad iTunes version");
+					return false;
+					break;
+			}
+
+			break;
 		case 5:
 			// iTunes 7.5 offsets submitted by David Wang
 			m_sendCommandToDevice = (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x10008160);
 			m_sendFileToDevice = (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x100082E0);
 			m_socketForPort = (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x100130D0);
 			m_performOperation = (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FF0+0x100141C0);
-			m_privateFunctionsSetup = true;
 			break;			
 		case 4:
 			m_sendCommandToDevice = (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10008170);
 			m_sendFileToDevice = (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x100082F0);
 			m_socketForPort = (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10012F90);
 			m_performOperation = (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10008FD0+0x10014040);
-			m_privateFunctionsSetup = true;
 			break;
 		case 3:
 			m_sendCommandToDevice= (t_sendCommandToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009290);
 			m_sendFileToDevice= (t_sendFileToDevice)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10009410);
 			m_performOperation= (t_performOperation)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x100129C0);
 			m_socketForPort= (t_socketForPort)((char*)GetProcAddress(hGetProcIDDLL, "AMRestorePerformRecoveryModeRestore")-0x10009F30+0x10012830);
-			m_privateFunctionsSetup = true;
 			break;
 		default:
 			SetInitializationError("Error due to bad iTunes version");
@@ -123,27 +130,43 @@ bool MobDevInternals::SetupPrivateFunctions(const PIVersion& iTunesVersion)
 
 	switch (iTunesVersion.minor) {
 		case 6:
-			m_performOperation = (t_performOperation)0x3c3a2124;
-			m_socketForPort = (t_socketForPort)0x3c3a1530;
-			m_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a72cc;
-			m_sendFileToDevice = (t_sendFileToDevice)0x3c3a742c;
+
+			switch (iTunesVersion.point) {
+				case 1:
+					m_socketForPort = (t_socketForPort)0x3c3a1470;
+					m_performOperation = (t_performOperation)0x3c3a2064;
+					m_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a72b0;
+					m_sendFileToDevice = (t_sendFileToDevice)0x3c3a7410;
+					break;
+				case 0:
+					m_socketForPort = (t_socketForPort)0x3c3a1530;
+					m_performOperation = (t_performOperation)0x3c3a2124;
+					m_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a72cc;
+					m_sendFileToDevice = (t_sendFileToDevice)0x3c3a742c;
+					break;
+				default:
+					SetInitializationError("Error due to bad iTunes version");
+					return false;
+					break;
+			}
+
 			break;
 		case 5:
 			// iTunes 7.5 offsets submitted by David Wang
-			m_performOperation = (t_performOperation)0x3c3a1884;
 			m_socketForPort = (t_socketForPort)0x3c3a11d8;
+			m_performOperation = (t_performOperation)0x3c3a1884;
 			m_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a693c;
 			m_sendFileToDevice = (t_sendFileToDevice)0x3c3a6a9c;
 			break;
 		case 4:
-			m_performOperation = (t_performOperation)0x3c3a0bc8;
 			m_socketForPort = (t_socketForPort)0x3c3a051c;
+			m_performOperation = (t_performOperation)0x3c3a0bc8;
 			m_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a5bb0;
 			m_sendFileToDevice = (t_sendFileToDevice)0x3c3a5d10;
 			break;
 		case 3:
-			m_performOperation = (t_performOperation)0x3c3a0e14;
 			m_socketForPort = (t_socketForPort)0x3c3a0644;
+			m_performOperation = (t_performOperation)0x3c3a0e14;
 			m_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a517c;
 			m_sendFileToDevice = (t_sendFileToDevice)0x3c3a52dc;
 			break;
@@ -166,27 +189,43 @@ bool MobDevInternals::SetupPrivateFunctions(const PIVersion& iTunesVersion)
 
 	switch (iTunesVersion.minor) {
 		case 6:
-			m_performOperation = (t_performOperation)0x3c3a1cc5;
-			m_socketForPort = (t_socketForPort)0x3c3a122b;
-			m_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a71dd;
-			m_sendFileToDevice = (t_sendFileToDevice)0x3c3a7302;
+
+			switch (iTunesVersion.point) {
+				case 1:
+					m_socketForPort = (t_socketForPort)0x3c3a116b;
+					m_performOperation = (t_performOperation)0x3c3a1c05;
+					m_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a71d7;
+					m_sendFileToDevice = (t_sendFileToDevice)0x3c3a72fc;
+					break;
+				case 0:
+					m_socketForPort = (t_socketForPort)0x3c3a122b;
+					m_performOperation = (t_performOperation)0x3c3a1cc5;
+					m_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a71dd;
+					m_sendFileToDevice = (t_sendFileToDevice)0x3c3a7302;
+					break;
+				default:
+					SetInitializationError("Error due to bad iTunes version");
+					return false;
+					break;
+			}
+
 			break;
 		case 5:
 			// iTunes 7.5 offsets submitted by David Wang
-			m_performOperation = (t_performOperation)0x3c3a02f5;
 			m_socketForPort = (t_socketForPort)0x3c39fcff;
+			m_performOperation = (t_performOperation)0x3c3a02f5;
 			m_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a57a3;
 			m_sendFileToDevice = (t_sendFileToDevice)0x3c3a59ef;
 			break;
 		case 4:
-			m_performOperation = (t_performOperation)0x3c3a0599;
 			m_socketForPort = (t_socketForPort)0x3c39ffa3;
+			m_performOperation = (t_performOperation)0x3c3a0599;
 			m_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a597f;
 			m_sendFileToDevice = (t_sendFileToDevice)0x3c3a5bcb;
 			break;
 		case 3:
-			m_performOperation = (t_performOperation)0x3c39fa4b;
 			m_socketForPort = (t_socketForPort)0x3c39f36c;
+			m_performOperation = (t_performOperation)0x3c39fa4b;
 			m_sendCommandToDevice = (t_sendCommandToDevice)0x3c3a3e3b;
 			m_sendFileToDevice = (t_sendFileToDevice)0x3c3a4087;
 			break;
