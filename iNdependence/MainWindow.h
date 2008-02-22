@@ -44,6 +44,9 @@
 
 - (void)startDisplayWaitingSheet:(NSString*)title message:(NSString*)msg image:(NSImage*)img
 					cancelButton:(bool)cancel runModal:(bool)modal;
+- (void)startDisplayWaitingSheet:(NSString*)title message:(NSString*)msg image:(NSImage*)img
+					cancelButton:(bool)cancel indeterminate:(BOOL)indeterminate runModal:(bool)modal;
+- (void)updateWaitingSheetPct:(double)pct;
 - (void)endDisplayWaitingSheet;
 
 - (IBAction)showAboutPanel:(id)sender;

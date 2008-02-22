@@ -13,11 +13,7 @@
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		F207EF8E0CC27BE4002AC0AA /* Services111_mod.plist in Resources */ = {isa = PBXBuildFile; fileRef = F207EF8C0CC27BE4002AC0AA /* Services111_mod.plist */; };
 		F207EF8F0CC27BE4002AC0AA /* Services111.plist in Resources */ = {isa = PBXBuildFile; fileRef = F207EF8D0CC27BE4002AC0AA /* Services111.plist */; };
-		F21D00510D63748900F1E2A8 /* generate112ramdisk.sh in Resources */ = {isa = PBXBuildFile; fileRef = F21D004E0D63748900F1E2A8 /* generate112ramdisk.sh */; };
-		F21D00520D63748900F1E2A8 /* ramit112_files.zip in Frameworks */ = {isa = PBXBuildFile; fileRef = F21D004F0D63748900F1E2A8 /* ramit112_files.zip */; };
-		F21D00530D63748900F1E2A8 /* zero_file.zip in Frameworks */ = {isa = PBXBuildFile; fileRef = F21D00500D63748900F1E2A8 /* zero_file.zip */; };
 		F21D00760D6375E600F1E2A8 /* ramit112_files.zip in Resources */ = {isa = PBXBuildFile; fileRef = F21D004F0D63748900F1E2A8 /* ramit112_files.zip */; };
-		F21D00770D6375EA00F1E2A8 /* zero_file.zip in Resources */ = {isa = PBXBuildFile; fileRef = F21D00500D63748900F1E2A8 /* zero_file.zip */; };
 		F25021470C7B354F00B7F437 /* jailbreak.jpg in Resources */ = {isa = PBXBuildFile; fileRef = F25021460C7B354F00B7F437 /* jailbreak.jpg */; };
 		F25021550C7B363F00B7F437 /* fstab in Resources */ = {isa = PBXBuildFile; fileRef = F25021510C7B363F00B7F437 /* fstab */; };
 		F25021560C7B363F00B7F437 /* fstab_mod in Resources */ = {isa = PBXBuildFile; fileRef = F25021520C7B363F00B7F437 /* fstab_mod */; };
@@ -86,9 +82,7 @@
 		8D1107320486CEB800E47090 /* iNdependence.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iNdependence.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F207EF8C0CC27BE4002AC0AA /* Services111_mod.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services111_mod.plist; path = "Other Files/jailbreak files/Services111_mod.plist"; sourceTree = SOURCE_ROOT; };
 		F207EF8D0CC27BE4002AC0AA /* Services111.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services111.plist; path = "Other Files/jailbreak files/Services111.plist"; sourceTree = SOURCE_ROOT; };
-		F21D004E0D63748900F1E2A8 /* generate112ramdisk.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = generate112ramdisk.sh; path = "Other Files/RAMdisk/generate112ramdisk.sh"; sourceTree = SOURCE_ROOT; };
 		F21D004F0D63748900F1E2A8 /* ramit112_files.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = ramit112_files.zip; path = "Other Files/RAMdisk/ramit112_files.zip"; sourceTree = SOURCE_ROOT; };
-		F21D00500D63748900F1E2A8 /* zero_file.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = zero_file.zip; path = "Other Files/RAMdisk/zero_file.zip"; sourceTree = SOURCE_ROOT; };
 		F25021460C7B354F00B7F437 /* jailbreak.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = jailbreak.jpg; path = images/jailbreak.jpg; sourceTree = SOURCE_ROOT; };
 		F25021510C7B363F00B7F437 /* fstab */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = fstab; path = "Other Files/jailbreak files/fstab"; sourceTree = SOURCE_ROOT; };
 		F25021520C7B363F00B7F437 /* fstab_mod */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = fstab_mod; path = "Other Files/jailbreak files/fstab_mod"; sourceTree = SOURCE_ROOT; };
@@ -141,8 +135,6 @@
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				F2ECD7710D0FA51E006D8DC6 /* MobileDevice.framework in Frameworks */,
 				F25D90A00D5C26C10067EA34 /* libPhoneInteraction.dylib in Frameworks */,
-				F21D00520D63748900F1E2A8 /* ramit112_files.zip in Frameworks */,
-				F21D00530D63748900F1E2A8 /* zero_file.zip in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -246,9 +238,7 @@
 		F21D004D0D63746E00F1E2A8 /* RAMdisk */ = {
 			isa = PBXGroup;
 			children = (
-				F21D004E0D63748900F1E2A8 /* generate112ramdisk.sh */,
 				F21D004F0D63748900F1E2A8 /* ramit112_files.zip */,
-				F21D00500D63748900F1E2A8 /* zero_file.zip */,
 			);
 			name = RAMdisk;
 			sourceTree = "<group>";
@@ -378,7 +368,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F21D00770D6375EA00F1E2A8 /* zero_file.zip in Resources */,
 				F21D00760D6375E600F1E2A8 /* ramit112_files.zip in Resources */,
 				8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */,
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
@@ -412,7 +401,6 @@
 				F25D50A70CF150DE00812F3F /* mknod in Resources */,
 				F2BCFB3E0D62CFB10008D0AA /* fstab113 in Resources */,
 				F2BCFB400D62CFED0008D0AA /* Services113.plist in Resources */,
-				F21D00510D63748900F1E2A8 /* generate112ramdisk.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -503,6 +491,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = iNdependence_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",

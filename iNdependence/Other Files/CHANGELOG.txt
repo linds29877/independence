@@ -1,6 +1,17 @@
 Changelog
 ---------
 
+v1.4 beta 3 - 02/22/08
+
+- iTunes 7.6.1 support
+- Cleaned up the RAM disk creation code a lot
+
+
+v1.4 beta 2 - 02/13/08
+
+- Identical to beta 1, except it's compiled to work on Mac OS X 10.4 (in addition to 10.5)
+
+
 v1.4 beta - 02/13/08
 
 - Changed copyright dates for 2008

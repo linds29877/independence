@@ -7,9 +7,9 @@
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleGetInfoString</key>
-	<string>1.4 beta, © The Operator 2007-2008</string>
+	<string>1.4 beta 3, © The Operator 2007-2008</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.4 beta</string>
+	<string>1.4 beta 3</string>
 	<key>CFBundleHelpBookFolder</key>
 	<string>iNdependenceHelp</string>
 	<key>CFBundleHelpBookName</key>
