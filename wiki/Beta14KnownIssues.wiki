@@ -14,9 +14,8 @@ To ensure that /Volumes/ramdisk doesn't exist before running iNdependence:
 
   # Using Finder, run /Applications/Utilities/Disk Utility
   # On the left hand side you'll see a list of .dmg files you've recently mounted.  Eject any that are still mounted (indicated by an inset disk icon underneath the .dmg file name) by selecting the mounted .dmg and pressing the Eject button at the top.
-  # After that, use Finder again to run /Applications/Utilities/Terminal and type the following commands:
-    * `cd /Volumes`
-    * `rm -rf ramdisk`
+  # After that, use Finder again to run /Applications/Utilities/Terminal and type the following command:
+    * `rm -rf /Volumes/ramdisk`
   # Now run iNdependence.  RAM disk creation should work at this point.
 
 
