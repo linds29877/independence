@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+v1.4 beta 4
+
+- Made RAM disk creation code more robust by scanning the output from hdiutil for the correct mount point (rather than assumimg /Volumes/ramdisk)
+
+
 v1.4 beta 3 - 02/22/08
 
 - iTunes 7.6.1 support

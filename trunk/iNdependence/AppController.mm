@@ -554,9 +554,12 @@ static void phoneInteractionNotification(int type, const char *msg)
 	task = [[NSTask alloc] init];
 	[task setLaunchPath:@"/usr/bin/hdiutil"];
 	[task setArguments:[NSArray arrayWithObjects:@"attach", decCleanFile, nil]];
+
+	NSPipe *output = [NSPipe pipe];
+	[task setStandardOutput:output];
 	[task launch];
 	[task waitUntilExit];
-	
+
 	if ([task terminationStatus] != 0) {
 		[task release];
 		[fm removeFileAtPath:decCleanFile handler:nil];
@@ -565,7 +568,23 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return nil;
 	}
 
+	// scan the output of hdiutil for the RAM disk mount point
+	NSString *mountPoint = @"/Volumes/ramdisk";
+    NSData *outputData = [[output fileHandleForReading] readDataToEndOfFile];
+    NSString *outputString = [[NSString alloc] initWithData:outputData encoding:NSUTF8StringEncoding];
+	NSRange range = [outputString rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+	if (range.location != NSNotFound) {
+		NSString *newString = [[outputString substringFromIndex:(range.location + range.length)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+		if (newString != nil) {
+			mountPoint = [NSString stringWithString:newString];
+		}
+
+	}
+
 	[task release];
+	[outputString release];
 	[mainWindow updateWaitingSheetPct:65.0];
 
 #ifdef DEBUG
@@ -573,10 +592,12 @@ static void phoneInteractionNotification(int type, const char *msg)
 #endif
 
 	// modify the RAM disk
-	if ([fm removeFileAtPath:@"/Volumes/ramdisk/System/Library/Frameworks/CoreGraphics.framework" handler:nil] == NO) {
+	NSString *rmDir = [mountPoint stringByAppendingPathComponent:@"System/Library/Frameworks/CoreGraphics.framework"];
+
+	if ([fm removeFileAtPath:rmDir handler:nil] == NO) {
 		task = [[NSTask alloc] init];
 		[task setLaunchPath:@"/usr/bin/hdiutil"];
-		[task setArguments:[NSArray arrayWithObjects:@"detach", @"/Volumes/ramdisk", nil]];
+		[task setArguments:[NSArray arrayWithObjects:@"detach", mountPoint, nil]];
 		[task launch];
 		[task waitUntilExit];
 		[task release];
@@ -590,7 +611,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	task = [[NSTask alloc] init];
 	[task setLaunchPath:@"/usr/bin/ditto"];
-	[task setArguments:[NSArray arrayWithObjects:@"-k", @"-x", rdExtraFiles, @"/Volumes/ramdisk/", nil]];
+	[task setArguments:[NSArray arrayWithObjects:@"-k", @"-x", rdExtraFiles, mountPoint, nil]];
 	[task launch];
 	[task waitUntilExit];
 	
@@ -598,7 +619,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[task release];
 		task = [[NSTask alloc] init];
 		[task setLaunchPath:@"/usr/bin/hdiutil"];
-		[task setArguments:[NSArray arrayWithObjects:@"detach", @"/Volumes/ramdisk", nil]];
+		[task setArguments:[NSArray arrayWithObjects:@"detach", mountPoint, nil]];
 		[task launch];
 		[task waitUntilExit];
 		[task release];
@@ -618,7 +639,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 	// unmount the RAM disk
 	task = [[NSTask alloc] init];
 	[task setLaunchPath:@"/usr/bin/hdiutil"];
-	[task setArguments:[NSArray arrayWithObjects:@"detach", @"/Volumes/ramdisk", nil]];
+	[task setArguments:[NSArray arrayWithObjects:@"detach", mountPoint, nil]];
 	[task launch];
 	[task waitUntilExit];
 	
