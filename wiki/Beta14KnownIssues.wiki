@@ -30,10 +30,6 @@ To ensure that /Volumes/ramdisk doesn't exist before running iNdependence:
 
   UPDATE: I think that something bad is happening while iNdependence is creating the RAM disk file and people are ending up with an invalid RAM disk.  In Finder, right-click on iNdependence.app, select "Show Package Contents", then go to Contents -> Resources.  Delete the file called "ramit112.dat".  Now run iNdependence again.
 
-  UPDATE2: If you are comfortable with the command-line and you really want to see what's happening, open up /Applications/Utilities/Terminal, navigate to the iNdependence.app/Contents/Resources/ folder, then type "./generate112ramdisk.sh ramit112_files.zip zero_file.zip ramit112.dat"
-
-  UPDATE3: If you aren't comfortable with the command-line, but still want to see what's happening, after you have deleted "ramit112.dat", open up /Applications/Utilities/Console, make sure you are viewing the Console.log, then run iNdependence, and try to jail break.  You should see the output from the RAM disk creator script in the Console.
-
   * If Wi-Fi/Bluetooth/Phone aren't working after performing a SIM unlock, then it's likely that gunlock failed at some point and left your baseband in a bad state (I've had this happen).  However, iNdependence won't detect this failure and will still report that SIM unlock worked.  If this happens, just do a SIM unlock again.  gunlock should work properly the second time around.  NOTE: You can tell that gunlock works if you see a lot of messages on the phone which say "Wrote: 0x800 ...".  If you don't see those messages, then it likely failed.
 
   * iNdependence almost always hangs *after* creating the RAM disk file.  It never gets to the jailbreak/activate/SIM unlock stage after creating the RAM disk.  It just sits there at the "Waiting for jail break" dialog.  If you don't see the screen of your phone change for more than a couple of minutes after you see the "Waiting for jail break" message, then it's likely frozen.
@@ -69,14 +65,9 @@ How I got installer.app working:
   # Get the latest version from here: http://repository.apptapp.com/packages/System/Installer.zip
   # Install the Installer.app file using iNdependence
   # SSH into your phone and issue the following commands:
-
-    chmod 777 /Applications
-
-    chmod 777 /Applications/Installer.app
-
-    chmod 777 /Applications/Installer.app/Installer
-
-*UPDATE* My apologies for the earlier mistake in the instructions.  I now realize that you need to make /Applications world writable in order for Installer.app to work (ie. *chmod 777* instead of chmod 755).  This is because it's running as user "mobile".  So you do indeed need to perform step #3 for Installer.app to work properly.
+    * `chmod 777 /Applications`
+    * `chmod 777 /Applications/Installer.app`
+    * `chmod 777 /Applications/Installer.app/Installer`
 
 == Problems With 3rd Party Applications on 1.1.3 ==
 
