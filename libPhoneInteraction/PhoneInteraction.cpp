@@ -743,7 +743,7 @@ void PhoneInteraction::connectToPhone()
 		return;
 	}
 
-	// we only support firmware versions 1.0 to 1.1.3
+	// we only support firmware versions 1.0 to 1.1.4
 	if ( productVersion.major != 1 ) {
 		char msg[128];
 		snprintf(msg, 128, "Unsupported version of phone firmware installed.\nDetected version is %d.%d.%d\n",
@@ -762,7 +762,7 @@ void PhoneInteraction::connectToPhone()
 
 	if (productVersion.minor == 1) {
 
-		if (productVersion.point > 3) {
+		if (productVersion.point > 4) {
 			char msg[128];
 			snprintf(msg, 128, "Unsupported version of phone firmware installed.\nDetected version is %d.%d.%d\n",
 					 productVersion.major, productVersion.minor, productVersion.point);
@@ -1335,6 +1335,11 @@ bool PhoneInteraction::factoryActivate(bool undo)
 			buf[0xD274] = 0x00;
 		}
 
+	}
+	else if (!strcmp(phoneProdVer, "1.1.4")) {
+		// TODO: Implement me!
+		free(buf);
+		return false;
 	}
 	else {
 		free(buf);
@@ -2233,7 +2238,7 @@ bool PhoneInteraction::putWallpaperOnPhone(const char *wallpaperFile, const char
 	else {
 		char *phoneProdVer = getPhoneProductVersion();
 
-		if (strncmp(phoneProdVer, "1.1.3", 5)) {
+		if (strncmp(phoneProdVer, "1.1.3", 5) || strncmp(phoneProdVer, "1.1.4", 5)) {
 			wallpaperDir = "/var/mobile/Library/Wallpaper";
 		}
 
@@ -3650,7 +3655,7 @@ void PhoneInteraction::performJailbreak(bool bActivate, const char *modifiedServ
 		perform112Jailbreak(modifiedServicesOrRamdiskPath);
 		return;
 	}
-	else if (!strncmp(phoneProdVer, "1.1.3", 5)) {
+	else if (!strncmp(phoneProdVer, "1.1.3", 5) || !strncmp(phoneProdVer, "1.1.4", 5)) {
 		perform113Jailbreak(bActivate, modifiedServicesOrRamdiskPath);
 		return;
 	}
