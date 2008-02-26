@@ -17,11 +17,11 @@
 {
 	int selection = [self selectedRowInColumn:0];
 
-	// no drag and drop for ringtones in version 1.1.2 or 1.1.3
+	// no drag and drop for ringtones in version 1.1.2, 1.1.3, or 1.1.4
 	if (selection == 0) {
 		char *value = PhoneInteraction::getInstance()->getPhoneProductVersion();
 
-		if (!strcmp(value, "1.1.2") || !strcmp(value, "1.1.3")) {
+		if (!strcmp(value, "1.1.2") || !strcmp(value, "1.1.3") || !strcmp(value, "1.1.4")) {
 			return NSDragOperationNone;
 		}
 

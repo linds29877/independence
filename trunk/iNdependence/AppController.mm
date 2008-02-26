@@ -1216,7 +1216,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 {
 	char *value = m_phoneInteraction->getPhoneProductVersion();
 	
-	if (!strncmp(value, "1.1.3", 5)) {
+	if (!strncmp(value, "1.1.3", 5) || !strncmp(value, "1.1.4", 5)) {
 		return true;
 	}
 	

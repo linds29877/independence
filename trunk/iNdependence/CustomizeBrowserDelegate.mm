@@ -113,7 +113,7 @@ static int g_numSystemApps = 19;
 		}
 		else if ([col2sel isEqualToString:@"User"]) {
 
-			if (!strncmp(value, "1.1.3", 5)) {
+			if (!strncmp(value, "1.1.3", 5) || !strncmp(value, "1.1.4", 5)) {
 				return "/var/mobile/Library/Wallpaper";
 			}
 			else {
@@ -924,8 +924,8 @@ static int g_numSystemApps = 19;
 
 			if ([title isEqualToString:@"Ringtones"]) {
 
-				if (!strcmp(value, "1.1.2") || !strcmp(value, "1.1.3")) {
-					// no ringtone handling in version 1.1.2 or 1.1.3
+				if (!strcmp(value, "1.1.2") || !strcmp(value, "1.1.3") || !strcmp(value, "1.1.4")) {
+					// no ringtone handling in version 1.1.2, 1.1.3, or 1.1.4
 					bDisable = true;
 				}
 				else {
@@ -944,8 +944,8 @@ static int g_numSystemApps = 19;
 			}
 			else if ([title isEqualToString:@"Wallpapers"]) {
 
-				if (!strcmp(value, "1.1.3")) {
-					// no user wallpapers in version 1.1.3
+				if (!strcmp(value, "1.1.3") || !strcmp(value, "1.1.4")) {
+					// no user wallpapers in version 1.1.3 or 1.1.4
 					selrow = [m_browser selectedRowInColumn:1];
 					title = (NSString*)[[m_col2Dictionary objectForKey:title] objectAtIndex:selrow];
 
