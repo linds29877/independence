@@ -106,12 +106,20 @@ static int g_numSystemApps = 19;
 
 	}
 	else if ([col1sel isEqualToString:@"Wallpapers"]) {
+		char *value = PhoneInteraction::getInstance()->getPhoneProductVersion();
 		
 		if ([col2sel isEqualToString:@"System"]) {
 			return "/Library/Wallpaper";
 		}
 		else if ([col2sel isEqualToString:@"User"]) {
-			return "/var/root/Library/Wallpaper";
+
+			if (!strncmp(value, "1.1.3", 5)) {
+				return "/var/mobile/Library/Wallpaper";
+			}
+			else {
+				return "/var/root/Library/Wallpaper";
+			}
+
 		}
 
 	}
@@ -791,7 +799,7 @@ static int g_numSystemApps = 19;
 
 		}
 
-		const char *filename = [nsFilename UTF8String], *filename2 = [nsFilename UTF8String];
+		const char *filename = [nsFilename UTF8String], *filename2 = [nsFilename2 UTF8String];
 		
 		if (!PhoneInteraction::getInstance()->putWallpaperOnPhone(filename, filename2, bInSystemDir)) {
 			return false;
@@ -931,6 +939,26 @@ static int g_numSystemApps = 19;
 						[m_addButton setEnabled:NO];
 					}
 
+				}
+
+			}
+			else if ([title isEqualToString:@"Wallpapers"]) {
+
+				if (!strcmp(value, "1.1.3")) {
+					// no user wallpapers in version 1.1.3
+					selrow = [m_browser selectedRowInColumn:1];
+					title = (NSString*)[[m_col2Dictionary objectForKey:title] objectAtIndex:selrow];
+
+					if ([title isEqualToString:@"System"]) {
+						[m_addButton setEnabled:YES];
+					}
+					else {
+						bDisable = true;
+					}
+
+				}
+				else {
+					[m_addButton setEnabled:YES];
 				}
 
 			}
