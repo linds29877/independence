@@ -229,6 +229,7 @@ bool PhoneInteraction::m_113JbAndActivate = false;
 bool PhoneInteraction::m_usingPrivateFunctions = false;
 PIVersion PhoneInteraction::m_iTunesVersion = { 0, 0, 0 };
 int PhoneInteraction::m_recoveryAttempts = 0;
+bool PhoneInteraction::m_rebooting = false;
 
 PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 								   void (*notifyFunc)(int, const char*),
@@ -3906,6 +3907,11 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 
 		return;
 	}
+	else if ( m_rebooting ) {
+		m_rebooting = false;
+		exitRecoveryMode(rdev);
+		return;
+	}
 	else if ( !m_waitingForRecovery ) {
 
 		// try once to save them from recovery mode
@@ -4092,6 +4098,23 @@ void PhoneInteraction::recoveryModeFinished(am_recovery_device *dev)
 	m_recoveryDevice = NULL;
 	setConnected(false);
 	(*m_notifyFunc)(NOTIFY_RECOVERY_DISCONNECTED, "Recovery mode ended");
+}
+
+bool PhoneInteraction::reboot()
+{
+	
+	if (!isConnected()) {
+		return false;
+	}
+
+	m_rebooting = true;
+
+	if (AMDeviceEnterRecovery(m_iPhone)) {
+		m_rebooting = false;
+		return false;
+	}
+
+	return true;
 }
 
 void PhoneInteraction::enterRecoveryMode()

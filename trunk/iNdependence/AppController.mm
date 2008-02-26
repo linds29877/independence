@@ -575,13 +575,28 @@ static void phoneInteractionNotification(int type, const char *msg)
 	NSRange range = [outputString rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
 	if (range.location != NSNotFound) {
-		NSString *newString = [[outputString substringFromIndex:(range.location + range.length)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+		NSString *newString = [outputString substringFromIndex:range.location];
 
 		if (newString != nil) {
-			mountPoint = [NSString stringWithString:newString];
+			range = [newString rangeOfString:@"/"];
+
+			if (range.location != NSNotFound) {
+				newString = [newString substringFromIndex:range.location];
+
+				if (newString != nil) {
+					newString = [newString stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"\n\r"]];
+					mountPoint = [NSString stringWithString:newString];
+				}
+
+			}
+
 		}
 
 	}
+
+#ifdef DEBUG
+	NSLog(@"Mount point is: %@", mountPoint);
+#endif
 
 	[task release];
 	[outputString release];
@@ -964,6 +979,9 @@ static void phoneInteractionNotification(int type, const char *msg)
 			if (m_bootCount == 1) {
 				[self sshInstallStageTwo];
 			}
+			else if (m_bootCount == 2) {
+				[self sshInstallStageThree];
+			}
 			else {
 				[self finishInstallingSSH:false];
 			}
@@ -1159,7 +1177,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (bool)isOpenSSHInstalled
 {
-	return m_phoneInteraction->fileExists("/usr/bin/sshd");
+	return ( m_phoneInteraction->fileExists("/usr/sbin/sshd") ||
+			 m_phoneInteraction->fileExists("/usr/bin/sshd") );
 }
 
 - (bool)isDropbearSSHInstalled
@@ -1861,9 +1880,9 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 	
-	if (!m_phoneInteraction->putFile([sftpFile UTF8String], "/usr/bin/sftp-server")) {
+	if (!m_phoneInteraction->putFile([sftpFile UTF8String], "/usr/libexec/sftp-server")) {
 		[mainWindow endDisplayWaitingSheet];
-		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/bin/sftp-server to phone."];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/libexec/sftp-server to phone."];
 		return;
 	}
 
@@ -1903,9 +1922,9 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 	
-	if (!m_phoneInteraction->putFile([sshdFile UTF8String], "/usr/bin/sshd")) {
+	if (!m_phoneInteraction->putFile([sshdFile UTF8String], "/usr/sbin/sshd")) {
 		[mainWindow endDisplayWaitingSheet];
-		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/bin/sshd to phone."];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /usr/sbin/sshd to phone."];
 		return;
 	}
 	
@@ -2015,8 +2034,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 	[mutArgs addObject:@"555"];
 	[mutArgs addObject:@"/bin/chmod"];
 	[mutArgs addObject:@"/bin/sh"];
-	[mutArgs addObject:@"/usr/bin/sshd"];
-	[mutArgs addObject:@"/usr/bin/sftp-server"];
+	[mutArgs addObject:@"/usr/sbin/sshd"];
+	[mutArgs addObject:@"/usr/libexec/sftp-server"];
 	[mutArgs addObject:@"/usr/bin/scp"];
 	[mutDict setObject:mutArgs forKey:@"ProgramArguments"];
 
@@ -2049,7 +2068,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 
-	NSString *sshPlistFile = [[NSBundle mainBundle] pathForResource:@"org.thebends.openssh" ofType:@"plist"];
+	NSString *sshPlistFile = [[NSBundle mainBundle] pathForResource:@"com.openssh.sshd" ofType:@"plist"];
 
 	if (sshPlistFile == nil) {
 		m_phoneInteraction->putFile([tmpFilePath UTF8String], "/usr/sbin/update");
@@ -2058,18 +2077,18 @@ static void phoneInteractionNotification(int type, const char *msg)
 		remove([tmpFilePath2 UTF8String]);
 		remove([tmpFilePath3 UTF8String]);
 		[mainWindow endDisplayWaitingSheet];
-		[mainWindow displayAlert:@"Error" message:@"Error finding org.thebends.openssh.plist in bundle."];
+		[mainWindow displayAlert:@"Error" message:@"Error finding com.openssh.sshd.plist in bundle."];
 		return;
 	}
 	
-	if (!m_phoneInteraction->putFile([sshPlistFile UTF8String], "/System/Library/LaunchDaemons/org.thebends.openssh.plist")) {
+	if (!m_phoneInteraction->putFile([sshPlistFile UTF8String], "/Library/LaunchDaemons/com.openssh.sshd.plist")) {
 		m_phoneInteraction->putFile([tmpFilePath UTF8String], "/usr/sbin/update");
 		m_phoneInteraction->putFile([tmpFilePath2 UTF8String], "/System/Library/LaunchDaemons/com.apple.update.plist");
 		remove([tmpFilePath UTF8String]);
 		remove([tmpFilePath2 UTF8String]);
 		remove([tmpFilePath3 UTF8String]);
 		[mainWindow endDisplayWaitingSheet];
-		[mainWindow displayAlert:@"Error" message:@"Error writing /System/Library/LaunchDaemons/org.thebends.openssh.plist to phone."];
+		[mainWindow displayAlert:@"Error" message:@"Error writing /Library/LaunchDaemons/com.openssh.sshd.plist to phone."];
 		return;
 	}
 
@@ -2078,8 +2097,16 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	[mainWindow endDisplayWaitingSheet];
 	[mainWindow startDisplayWaitingSheet:nil
-								 message:@"Please press and hold the Sleep/Wake button for 3 seconds, then power off your phone, then press Sleep/Wake again to restart it."
-								   image:[NSImage imageNamed:@"sleep_button"] cancelButton:true runModal:false];
+								 message:@"Rebooting the phone..."
+								   image:nil cancelButton:false runModal:false];
+
+	if (!m_phoneInteraction->reboot()) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow startDisplayWaitingSheet:nil
+									 message:@"Couldn't reboot phone automatically.\n\nPlease reboot your phone manually by pressing and holding the Sleep/Wake button for 3 seconds, then powering off your phone, then pressing Sleep/Wake again to restart it..."
+									   image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
+	}
+
 }
 
 - (void)sshInstallStageTwo
@@ -2097,7 +2124,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 	[mutArgs addObject:@"/etc/ssh/ssh_host_rsa_key"];
 	[mutArgs addObject:@"/etc/ssh/ssh_host_dsa_key"];
 	[mutDict setObject:mutArgs forKey:@"ProgramArguments"];
-	
+
 	remove([backupFilePath UTF8String]);
 	
 	if (![mutDict writeToFile:backupFilePath atomically:YES]) {
@@ -2113,8 +2140,49 @@ static void phoneInteractionNotification(int type, const char *msg)
 	}
 
 	[mainWindow startDisplayWaitingSheet:nil
-								 message:@"Please reboot your phone again using the same steps..."
-								   image:[NSImage imageNamed:@"sleep_button"] cancelButton:true runModal:false];
+								 message:@"Rebooting the phone a second time..."
+								   image:nil cancelButton:false runModal:false];
+
+	if (!m_phoneInteraction->reboot()) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow startDisplayWaitingSheet:nil
+									 message:@"Couldn't reboot phone automatically.\n\nPlease reboot your phone manually by pressing and holding the Sleep/Wake button for 3 seconds, then powering off your phone, then pressing Sleep/Wake again to restart it..."
+									   image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
+	}
+
+}
+
+- (void)sshInstallStageThree
+{
+	NSString *tmpDir = NSTemporaryDirectory();
+	NSMutableString *backupFilePath = [NSMutableString stringWithString:tmpDir];
+	[backupFilePath appendString:@"/com.apple.update.plist.backup.iNdependence"];
+	NSMutableString *backupFilePath2 = [NSMutableString stringWithString:tmpDir];
+	[backupFilePath2 appendString:@"/update.backup.iNdependence"];
+	NSMutableString *backupFilePath3 = [NSMutableString stringWithString:tmpDir];
+	[backupFilePath3 appendString:@"/com.apple.update.plist.iNdependence"];
+	
+	if (!m_phoneInteraction->putFile([backupFilePath UTF8String], "/System/Library/LaunchDaemons/com.apple.update.plist")) {
+		[self finishInstallingSSH:true];
+		return;
+	}
+	
+	if (!m_phoneInteraction->putFile([backupFilePath2 UTF8String], "/usr/sbin/update")) {
+		[self finishInstallingSSH:true];
+		return;
+	}
+
+	[mainWindow startDisplayWaitingSheet:nil
+								 message:@"Rebooting the phone a final time..."
+								   image:nil cancelButton:false runModal:false];
+
+	if (!m_phoneInteraction->reboot()) {
+		[mainWindow endDisplayWaitingSheet];
+		[mainWindow startDisplayWaitingSheet:nil
+									 message:@"Couldn't reboot phone automatically.\n\nPlease reboot your phone manually by pressing and holding the Sleep/Wake button for 3 seconds, then powering off your phone, then pressing Sleep/Wake again to restart it..."
+									   image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
+	}
+
 }
 
 - (void)finishInstallingSSH:(bool)bCancelled
@@ -2129,7 +2197,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 	[backupFilePath2 appendString:@"/update.backup.iNdependence"];
 	NSMutableString *backupFilePath3 = [NSMutableString stringWithString:tmpDir];
 	[backupFilePath3 appendString:@"/com.apple.update.plist.iNdependence"];
-
+	
 	if (!m_phoneInteraction->putFile([backupFilePath UTF8String], "/System/Library/LaunchDaemons/com.apple.update.plist")) {
 		m_phoneInteraction->putFile([backupFilePath2 UTF8String], "/usr/sbin/update");
 		remove([backupFilePath UTF8String]);
@@ -2138,7 +2206,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[mainWindow displayAlert:@"Error" message:@"Error restoring original /System/Library/LaunchDaemons/com.apple.update.plist on phone.  Please try installing SSH again."];
 		return;
 	}
-
+	
 	if (!m_phoneInteraction->putFile([backupFilePath2 UTF8String], "/usr/sbin/update")) {
 		remove([backupFilePath UTF8String]);
 		remove([backupFilePath2 UTF8String]);
@@ -2146,7 +2214,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		[mainWindow displayAlert:@"Error" message:@"Error restoring original /usr/sbin/update on phone.  Please try installing SSH again."];
 		return;
 	}
-
+	
 	// clean up
 	remove([backupFilePath UTF8String]);
 	remove([backupFilePath2 UTF8String]);
@@ -2155,16 +2223,39 @@ static void phoneInteractionNotification(int type, const char *msg)
 	if (!bCancelled) {
 		[mainWindow displayAlert:@"Success" message:@"Successfully installed SSH, SFTP, and SCP on your phone."];
 	}
-
+	
 }
 
 - (IBAction)removeSSH:(id)sender
 {
-	int retval = NSRunAlertPanel(@"Alert", @"During SSH installation, a file named libarmfp.dylib was installed.  This is needed by SSH, but is also needed by many 3rd party applications.  Removing it could render many 3rd party applications you have installed inoperable.\n\nWould you like to remove libarmfp.dylib during SSH removal?", @"No", @"Yes", nil);
-	bool bRemoveLibarmfp = false;
+	[libarmfpRemovalButton setState:NSOffState];
+	[shRemovalButton setState:NSOffState];
+	[chmodRemovalButton setState:NSOffState];
 
-	if (retval == NSAlertAlternateReturn) {
+	[NSApp beginSheet:sshRemovalDialog modalForWindow:mainWindow modalDelegate:nil
+	   didEndSelector:nil contextInfo:nil];
+
+	if ([NSApp runModalForWindow:sshRemovalDialog] == -1) {
+		[NSApp endSheet:sshRemovalDialog];
+		[sshRemovalDialog orderOut:self];
+		return;
+	}
+
+	[NSApp endSheet:sshRemovalDialog];
+	[sshRemovalDialog orderOut:self];
+
+	bool bRemoveLibarmfp = false, bRemoveSh = false, bRemoveChmod = false;
+
+	if ([libarmfpRemovalButton state] == NSOnState) {
 		bRemoveLibarmfp = true;
+	}
+
+	if ([shRemovalButton state] == NSOnState) {
+		bRemoveSh = true;
+	}
+
+	if ([chmodRemovalButton state] == NSOnState) {
+		bRemoveChmod = true;
 	}
 
 	if ([self isDropbearSSHInstalled]) {
@@ -2203,43 +2294,57 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	if ([self isOpenSSHInstalled]) {
 		
-		if (!m_phoneInteraction->removePath("/usr/bin/sshd")) {
-			[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/sshd from phone."];
-			return;
+		if (!m_phoneInteraction->removePath("/usr/sbin/sshd")) {
+
+			if (!m_phoneInteraction->removePath("/usr/bin/sshd")) {
+				[mainWindow displayAlert:@"Error" message:@"Error removing sshd from phone."];
+				return;
+			}
+
 		}
-		
-		if (!m_phoneInteraction->removePath("/usr/bin/sftp-server")) {
-			[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/sftp-server from phone."];
-			return;
+
+		// Extra just in case both files are installed
+		m_phoneInteraction->removePath("/usr/bin/sshd");
+
+		if (!m_phoneInteraction->removePath("/usr/libexec/sftp-server")) {
+
+			if (!m_phoneInteraction->removePath("/usr/bin/sftp-server")) {
+				[mainWindow displayAlert:@"Error" message:@"Error removing sftp-server from phone."];
+				return;
+			}
+
 		}
-		
+
+		// Extra just in case both files are installed
+		m_phoneInteraction->removePath("/usr/bin/sftp-server");
+
 		if (!m_phoneInteraction->removePath("/etc/ssh/ssh_host_key")) {
-			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh/ssh_host_key from phone."];
+			[mainWindow displayAlert:@"Error" message:@"Error removing ssh_host_key from phone."];
 			return;
 		}
 		
 		if (!m_phoneInteraction->removePath("/etc/ssh/ssh_host_key.pub")) {
-			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh/ssh_host_key.pub from phone."];
+			[mainWindow displayAlert:@"Error" message:@"Error removing ssh_host_key.pub from phone."];
 			return;
 		}
 		
 		if (!m_phoneInteraction->removePath("/etc/ssh/ssh_host_rsa_key")) {
-			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh/ssh_host_rsa_key from phone."];
+			[mainWindow displayAlert:@"Error" message:@"Error removing ssh_host_rsa_key from phone."];
 			return;
 		}
 		
 		if (!m_phoneInteraction->removePath("/etc/ssh/ssh_host_rsa_key.pub")) {
-			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh/ssh_host_rsa_key.pub from phone."];
+			[mainWindow displayAlert:@"Error" message:@"Error removing ssh_host_rsa_key.pub from phone."];
 			return;
 		}
 		
 		if (!m_phoneInteraction->removePath("/etc/ssh/ssh_host_dsa_key")) {
-			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh/ssh_host_dsa_key from phone."];
+			[mainWindow displayAlert:@"Error" message:@"Error removing ssh_host_dsa_key from phone."];
 			return;
 		}
 		
 		if (!m_phoneInteraction->removePath("/etc/ssh/ssh_host_dsa_key.pub")) {
-			[mainWindow displayAlert:@"Error" message:@"Error removing /etc/ssh/ssh_host_dsa_key.pub from phone."];
+			[mainWindow displayAlert:@"Error" message:@"Error removing ssh_host_dsa_key.pub from phone."];
 			return;
 		}
 		
@@ -2248,41 +2353,65 @@ static void phoneInteractionNotification(int type, const char *msg)
 			return;
 		}
 		
-		if (!m_phoneInteraction->removePath("/System/Library/LaunchDaemons/org.thebends.openssh.plist")) {
-			[mainWindow displayAlert:@"Error" message:@"Error removing /System/Library/LaunchDaemons/org.thebends.openssh.plist from phone."];
-			return;
+		if (!m_phoneInteraction->removePath("/Library/LaunchDaemons/com.openssh.sshd.plist")) {
+
+			if (!m_phoneInteraction->removePath("/System/Library/LaunchDaemons/org.thebends.openssh.plist")) {
+				[mainWindow displayAlert:@"Error" message:@"Error removing LaunchDaemon plist file from phone."];
+				return;
+			}
+
 		}
-		
+
+		// Extra just in case both files are installed
+		m_phoneInteraction->removePath("/System/Library/LaunchDaemons/org.thebends.openssh.plist");
 	}
 
 	[installSSHButton setEnabled:YES];
 	[removeSSHButton setEnabled:NO];
 
 	if (!m_phoneInteraction->removePath("/usr/bin/scp")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /usr/bin/scp from phone."];
+		[mainWindow displayAlert:@"Error" message:@"Error removing scp from phone."];
 		return;
 	}
 
 	if (bRemoveLibarmfp) {
 
 		if (!m_phoneInteraction->removePath("/usr/lib/libarmfp.dylib")) {
-			[mainWindow displayAlert:@"Error" message:@"Error removing /usr/lib/libarmfp.dylib from phone."];
+			[mainWindow displayAlert:@"Error" message:@"Error removing libarmfp.dylib from phone."];
 			return;
 		}
 
 	}
 
-	if (!m_phoneInteraction->removePath("/bin/chmod")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /bin/chmod from phone."];
-		return;
+	if (bRemoveChmod) {
+
+		if (!m_phoneInteraction->removePath("/bin/chmod")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing chmod from phone."];
+			return;
+		}
+
 	}
 
-	if (!m_phoneInteraction->removePath("/bin/sh")) {
-		[mainWindow displayAlert:@"Error" message:@"Error removing /bin/sh from phone."];
-		return;
+	if (bRemoveSh) {
+
+		if (!m_phoneInteraction->removePath("/bin/sh")) {
+			[mainWindow displayAlert:@"Error" message:@"Error removing sh from phone."];
+			return;
+		}
+
 	}
 
 	[mainWindow displayAlert:@"Success" message:@"Successfully removed SSH, SFTP, and SCP from your phone.\n\nNote that SSH will continue to run on the phone until you reboot it."];
+}
+
+- (IBAction)sshRemovalDialogCancel:(id)sender
+{
+	[NSApp stopModalWithCode:-1];
+}
+
+- (IBAction)sshRemovalDialogOk:(id)sender
+{
+	[NSApp stopModalWithCode:0];
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem

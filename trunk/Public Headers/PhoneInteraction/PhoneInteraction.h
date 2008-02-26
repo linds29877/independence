@@ -174,6 +174,9 @@ public:
 	void enterDFUMode(const char *firmwarePath);
 	void enterRecoveryMode();
 
+	// used to reboot the phone via recovery mode
+	bool reboot();
+
 	// lower level file I/O
 	bool putData(void *data, int len, char *dest, int failureMsg = NOTIFY_PUTFILE_FAILED,
 				 int successMsg = NOTIFY_PUTFILE_SUCCESS);
@@ -316,5 +319,6 @@ private:
 	static char *m_servicesPath;
 	static MobDevInternals *m_mobDevInternals;
 	static int m_recoveryAttempts;
+	static bool m_rebooting;
 
 };

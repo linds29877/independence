@@ -163,6 +163,10 @@
 				<string>id</string>
 				<key>showAboutPanel</key>
 				<string>id</string>
+				<key>sshRemovalDialogCancel</key>
+				<string>id</string>
+				<key>sshRemovalDialogOk</key>
+				<string>id</string>
 				<key>syncRingtones</key>
 				<string>id</string>
 				<key>waitDialogCancel</key>
@@ -186,6 +190,8 @@
 				<string>NSTextField</string>
 				<key>changePasswordButton</key>
 				<string>NSButton</string>
+				<key>chmodRemovalButton</key>
+				<string>NSButton</string>
 				<key>customizeBrowser</key>
 				<string>CustomizeBrowser</string>
 				<key>deactivateButton</key>
@@ -204,6 +210,8 @@
 				<string>NSButton</string>
 				<key>jailbrokenField</key>
 				<string>NSTextField</string>
+				<key>libarmfpRemovalButton</key>
+				<string>NSButton</string>
 				<key>mainWindow</key>
 				<string>MainWindow</string>
 				<key>newPasswordDialog</key>
@@ -226,10 +234,14 @@
 				<string>NSButton</string>
 				<key>serialNumberField</key>
 				<string>NSTextField</string>
+				<key>shRemovalButton</key>
+				<string>NSButton</string>
 				<key>sshHandler</key>
 				<string>SSHHandler</string>
 				<key>sshInstalledField</key>
 				<string>NSTextField</string>
+				<key>sshRemovalDialog</key>
+				<string>NSWindow</string>
 			</dict>
 			<key>SUPERCLASS</key>
 			<string>NSObject</string>
