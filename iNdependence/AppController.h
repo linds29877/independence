@@ -25,8 +25,9 @@ class PhoneInteraction;
 
 @interface AppController : NSObject
 {
-	IBOutlet MainWindow *mainWindow;
+	IBOutlet MainWindow* mainWindow;
 	IBOutlet NSWindow* newPasswordDialog;
+	IBOutlet NSWindow* sshRemovalDialog;
 	IBOutlet NSTextField* accountNameField;
 	IBOutlet NSSecureTextField* passwordField;
 	IBOutlet NSSecureTextField* passwordAgainField;
@@ -40,6 +41,9 @@ class PhoneInteraction;
 	IBOutlet NSButton* performSimUnlockButton;
 	IBOutlet NSButton* enterDFUModeButton;
 	IBOutlet NSButton* preFirmwareUpgradeButton;
+	IBOutlet NSButton* libarmfpRemovalButton;
+	IBOutlet NSButton* shRemovalButton;
+	IBOutlet NSButton* chmodRemovalButton;
 	IBOutlet CustomizeBrowser* customizeBrowser;
 	IBOutlet NSTextField* iTunesVersionField;
 	IBOutlet NSTextField* productVersionField;
@@ -141,11 +145,15 @@ class PhoneInteraction;
 - (IBAction)installSSH:(id)sender;
 - (IBAction)removeSSH:(id)sender;
 - (void)sshInstallStageTwo;
+- (void)sshInstallStageThree;
 - (void)finishInstallingSSH:(bool)bCancelled;
 
 - (IBAction)waitDialogCancel:(id)sender;
 
 - (IBAction)passwordDialogCancel:(id)sender;
 - (IBAction)passwordDialogOk:(id)sender;
+
+- (IBAction)sshRemovalDialogCancel:(id)sender;
+- (IBAction)sshRemovalDialogOk:(id)sender;
 
 @end
