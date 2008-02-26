@@ -8,6 +8,8 @@ v1.4 beta 4
 - Added new dialog for SSH removal which allows people to choose which shared files to remove
 - Made it so that SSH installation tries to reboot the phone automatically before requesting the user to do so manually
 - Added a 3rd reboot to SSH installation so that chmod isn't being run perpetually (chewing up some battery life).  Yes, I should have done this a long time ago. :)
+- Fixed a bug with wallpaper uploading
+- Disabled addition of wallpaper to user folder in Customize tab since it doesn't work
 
 
 v1.4 beta 3 - 02/22/08

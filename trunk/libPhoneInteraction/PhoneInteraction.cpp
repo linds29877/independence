@@ -2230,6 +2230,14 @@ bool PhoneInteraction::putWallpaperOnPhone(const char *wallpaperFile, const char
 	if (bInSystemDir) {
 		wallpaperDir = "/Library/Wallpaper";
 	}
+	else {
+		char *phoneProdVer = getPhoneProductVersion();
+
+		if (strncmp(phoneProdVer, "1.1.3", 5)) {
+			wallpaperDir = "/var/mobile/Library/Wallpaper";
+		}
+
+	}
 
 	if (AFCDirectoryOpen(m_hAFC, (char*)wallpaperDir, &dir)) {
 		
