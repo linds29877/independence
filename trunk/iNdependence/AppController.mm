@@ -998,7 +998,14 @@ static void phoneInteractionNotification(int type, const char *msg)
 			[mainWindow displayAlert:@"Success" message:@"Successfully deactivated phone."];
 		}
 
-		[performSimUnlockButton setEnabled:YES];
+
+		if ([self isUsing114Firmware]) {
+			[performSimUnlockButton setEnabled:NO];
+		}
+		else {
+			[performSimUnlockButton setEnabled:YES];
+		}
+
 	}
 	else {
 		[self setAFCConnected:false];
@@ -1216,7 +1223,18 @@ static void phoneInteractionNotification(int type, const char *msg)
 {
 	char *value = m_phoneInteraction->getPhoneProductVersion();
 	
-	if (!strncmp(value, "1.1.3", 5) || !strncmp(value, "1.1.4", 5)) {
+	if (!strncmp(value, "1.1.3", 5)) {
+		return true;
+	}
+	
+	return false;
+}
+
+- (bool)isUsing114Firmware
+{
+	char *value = m_phoneInteraction->getPhoneProductVersion();
+	
+	if (!strncmp(value, "1.1.4", 5)) {
 		return true;
 	}
 	
@@ -1295,7 +1313,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		m_phoneInteraction->performJailbreak(false, [firmwarePath UTF8String], [fstabFile UTF8String],
 											 [servicesFile UTF8String]);
 	}
-	else if ([self isUsing113Firmware]) {
+	else if ([self isUsing113Firmware] || [self isUsing114Firmware]) {
 		NSString *ramdiskFile = [self getRamdiskPath];
 
 		if (ramdiskFile == nil) {
@@ -1330,7 +1348,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		servicesFile = [[NSBundle mainBundle] pathForResource:@"Services" ofType:@"plist"];
 		fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab" ofType:@""];
 	}
-	else if ([self isUsing113Firmware]) {
+	else if ([self isUsing113Firmware] || [self isUsing114Firmware]) {
 		servicesFile = [[NSBundle mainBundle] pathForResource:@"Services113" ofType:@"plist"];
 		fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab113" ofType:@""];
 	}
@@ -1572,7 +1590,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 	
 	if (!m_phoneInteraction->isPhoneJailbroken()) {
 
-		if ([self isUsing113Firmware]) {
+		if ([self isUsing113Firmware] || [self isUsing114Firmware]) {
 			NSString *ramdiskFile = [self getRamdiskPath];
 
 			if (ramdiskFile == nil) {
@@ -2502,7 +2520,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			break;
 		case MENU_ITEM_PERFORM_SIM_UNLOCK:
 			
-			if (![self isConnected]) {
+			if (![self isConnected] || [self isUsing114Firmware]) {
 				return NO;
 			}
 

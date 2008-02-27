@@ -117,6 +117,7 @@ class PhoneInteraction;
 
 - (bool)isUsing10xFirmware;
 - (bool)isUsing113Firmware;
+- (bool)isUsing114Firmware;
 - (NSString*)phoneFirmwareVersion;
 
 - (bool)doPutPEM:(const char*)pemfile;
