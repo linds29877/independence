@@ -1,12 +1,14 @@
 #summary A list of links into the iPhone development / hacking community
 
-  * [http://iphone.fiveforty.net/wiki/index.php/Main_Page The iPhone Dev Wiki] - The site that started it all for me.  Lots of great technical information and history there, but unfortunately spammers have also invaded the site recently, making life difficult for the maintainers.
+  * [http://iphone.fiveforty.net/wiki/index.php/Main_Page The iPhone Dev Wiki] - The site that started it all for me.  Lots of great technical information and history there, but unfortunately spammers have also invaded the site recently, making life difficult for the maintainers. (Now Defunct)
 
   * [http://hackint0sh.org/forum/forumdisplay.php?f=123 The Hackint0sh iPhone Forums] - Started up around the same time as the iPhone Dev Wiki, so again, a wealth of information and helpful people here.
 
-  * [http://code.google.com/p/iphone-elite/ iPhone Elite Dev Team] - The elite iPhone hackers.  These guys know what they're doing and are open with information.  A true credit to the dev community.
+  * [http://iphone-dev.org/] - Portal to the original iPhone dev team.  The people who started it all.
 
-  * [http://iphonejtag.blogspot.com/ Geohot's Blog] - On the same tip, Geohot is the first person to have a SIM unlocked iPhone (outside of Apple).  Knows the iPhone hardware as well as the Apple engineers.  Though his software skills are still in question... (hey, I cleaned up bits of the fake IPSF server code for my own use, so I've seen his code) ;)
+  * [http://code.google.com/p/iphone-elite/ iPhone Elite Dev Team] - The elite iPhone dev team.  Used to be quite active and open with information.
+
+  * [http://iphonejtag.blogspot.com/ Geohot's Blog] - Geohot is the first person to have a SIM unlocked iPhone (outside of Apple).  Knows the iPhone hardware as well as the Apple engineers.  Though his software skills are still in question... (hey, I cleaned up bits of the fake IPSF server code for my own use, so I've seen his code) ;)
 
   * [http://www.touchdev.net/wiki/Main_Page The Touchdev Wiki] - Same structure as the iPhone Dev Wiki, but for the iPod Touch (or iTouch).
 
