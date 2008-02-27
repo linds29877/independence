@@ -256,7 +256,8 @@ private:
 	void simUnlockFinished();
 
 	bool sharedRamdiskSetup(am_recovery_device *rdev, bool bJailbreak,
-							bool bActivate, bool bSIMUnlock, int failureNotification);
+							bool bActivate, bool bSIMUnlock, const char *fwVersion,
+							int failureNotification);
 
 	void jailbreak113StageTwo(am_recovery_device *rdev);
 	void simUnlockStageTwo(am_recovery_device *rdev);
@@ -320,5 +321,6 @@ private:
 	static MobDevInternals *m_mobDevInternals;
 	static int m_recoveryAttempts;
 	static bool m_rebooting;
+	static char *m_activateFwVersion;
 
 };

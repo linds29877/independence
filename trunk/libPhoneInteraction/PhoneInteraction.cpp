@@ -207,6 +207,7 @@ char *PhoneInteraction::m_buildVersion = NULL;
 char *PhoneInteraction::m_basebandVersion = NULL;
 char *PhoneInteraction::m_serialNumber = NULL;
 char *PhoneInteraction::m_activationState = NULL;
+char *PhoneInteraction::m_activateFwVersion = NULL;
 MobDevInternals *PhoneInteraction::m_mobDevInternals = NULL;
 bool PhoneInteraction::m_connected = false;
 bool PhoneInteraction::m_afcConnected = false;
@@ -227,9 +228,9 @@ bool PhoneInteraction::m_performing113Jailbreak = false;
 bool PhoneInteraction::m_performingSIMUnlock = false;
 bool PhoneInteraction::m_113JbAndActivate = false;
 bool PhoneInteraction::m_usingPrivateFunctions = false;
+bool PhoneInteraction::m_rebooting = false;
 PIVersion PhoneInteraction::m_iTunesVersion = { 0, 0, 0 };
 int PhoneInteraction::m_recoveryAttempts = 0;
-bool PhoneInteraction::m_rebooting = false;
 
 PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
 								   void (*notifyFunc)(int, const char*),
@@ -3499,20 +3500,34 @@ void PhoneInteraction::perform113Jailbreak(bool bActivate, const char *ramdiskFi
 	strncpy(m_ramdiskPath, ramdiskFile, len);
 	m_ramdiskPath[len] = 0;
 
+	m_waitingForRecovery = true;
+	m_performing113Jailbreak = true;
+	m_113JbAndActivate = bActivate;
+
+	if (bActivate) {
+		char *prodVer = getPhoneProductVersion();
+		len = strlen(prodVer);
+
+		if (m_activateFwVersion != NULL) {
+			free(m_activateFwVersion);
+		}
+
+		m_activateFwVersion = (char*)malloc(len+1);
+		strncpy(m_activateFwVersion, prodVer, len);
+		m_activateFwVersion[len] = 0;
+	}
+
 	if (AMDeviceEnterRecovery(m_iPhone)) {
 		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error entering recovery mode.");
 		return;
 	}
 	
-	m_waitingForRecovery = true;
-	m_performing113Jailbreak = true;
-	m_113JbAndActivate = bActivate;
-
 	(*m_notifyFunc)(NOTIFY_JAILBREAK_RECOVERY_WAIT, "Waiting for jail break...");
 }
 
 bool PhoneInteraction::sharedRamdiskSetup(am_recovery_device *rdev, bool bJailbreak,
-										  bool bActivate, bool bSIMUnlock, int failureNotification)
+										  bool bActivate, bool bSIMUnlock, const char *fwVersion,
+										  int failureNotification)
 {
 	CFStringRef cfStr = CFStringCreateWithCString(kCFAllocatorDefault, "setenv auto-boot true", kCFStringEncodingUTF8);
 	
@@ -3553,7 +3568,7 @@ bool PhoneInteraction::sharedRamdiskSetup(am_recovery_device *rdev, bool bJailbr
 
 	}
 
-	if (bActivate) {
+	if (bActivate && (fwVersion != NULL)) {
 		cfStr = CFStringCreateWithCString(kCFAllocatorDefault, "setenv activate 1", kCFStringEncodingUTF8);
 		
 		if (cfStr == NULL) {
@@ -3566,6 +3581,35 @@ bool PhoneInteraction::sharedRamdiskSetup(am_recovery_device *rdev, bool bJailbr
 			return false;
 		}
 		
+		if (!strcmp(fwVersion, "1.1.3")) {
+			cfStr = CFStringCreateWithCString(kCFAllocatorDefault, "setenv fw113 1", kCFStringEncodingUTF8);
+
+			if (cfStr == NULL) {
+				(*m_notifyFunc)(failureNotification, "Error creating CFString.");
+				return false;
+			}
+
+			if (m_mobDevInternals->sendCommandToDevice(rdev, cfStr)) {
+				(*m_notifyFunc)(failureNotification, "Error setting fw113 enviroment variable.");
+				return false;
+			}
+
+		}
+		else if (!strcmp(fwVersion, "1.1.4")) {
+			cfStr = CFStringCreateWithCString(kCFAllocatorDefault, "setenv fw114 1", kCFStringEncodingUTF8);
+
+			if (cfStr == NULL) {
+				(*m_notifyFunc)(failureNotification, "Error creating CFString.");
+				return false;
+			}
+
+			if (m_mobDevInternals->sendCommandToDevice(rdev, cfStr)) {
+				(*m_notifyFunc)(failureNotification, "Error setting fw114 enviroment variable.");
+				return false;
+			}
+
+		}
+
 	}
 
 	if (bSIMUnlock) {
@@ -3626,12 +3670,15 @@ bool PhoneInteraction::sharedRamdiskSetup(am_recovery_device *rdev, bool bJailbr
 void PhoneInteraction::jailbreak113StageTwo(am_recovery_device *rdev)
 {
 
-	if (sharedRamdiskSetup(rdev, true, m_113JbAndActivate, false, NOTIFY_JAILBREAK_FAILED)) {
+	if (sharedRamdiskSetup(rdev, true, m_113JbAndActivate, false, m_activateFwVersion,
+						   NOTIFY_JAILBREAK_FAILED)) {
 		m_recoveryOccurred = true;
 		m_finishingJailbreak = true;
 		(*m_notifyFunc)(NOTIFY_113_JAILBREAK_STAGE_TWO_WAIT, "Waiting for reboot...");
 	}
 
+	free(m_activateFwVersion);
+	m_activateFwVersion = NULL;
 }
 
 void PhoneInteraction::performJailbreak(bool bActivate, const char *modifiedServicesOrRamdiskPath,
@@ -3700,7 +3747,7 @@ void PhoneInteraction::performJailbreak(bool bActivate, const char *modifiedServ
 void PhoneInteraction::simUnlockStageTwo(am_recovery_device *rdev)
 {
 	
-	if (sharedRamdiskSetup(rdev, false, false, true, NOTIFY_SIMUNLOCK_FAILED)) {
+	if (sharedRamdiskSetup(rdev, false, false, true, NULL, NOTIFY_SIMUNLOCK_FAILED)) {
 		m_recoveryOccurred = true;
 		m_finishingSIMUnlock = true;
 		(*m_notifyFunc)(NOTIFY_SIMUNLOCK_STAGE_TWO_WAIT, "Waiting for reboot...");
@@ -3839,7 +3886,16 @@ void PhoneInteraction::jailbreakFinished()
 void PhoneInteraction::simUnlockFinished()
 {
 	m_finishingSIMUnlock = false;
-	(*m_notifyFunc)(NOTIFY_SIMUNLOCK_SUCCESS, "SIM unlock succeeded!");
+
+	// check for failure
+	if (fileExists("/gunlock.failure")) {
+		removePath("/gunlock.failure");
+		(*m_notifyFunc)(NOTIFY_SIMUNLOCK_FAILED, "SIM unlock failed.");
+	}
+	else {
+		(*m_notifyFunc)(NOTIFY_SIMUNLOCK_SUCCESS, "SIM unlock succeeded!");
+	}
+
 }
 
 bool PhoneInteraction::isPhoneJailbroken()
