@@ -1294,7 +1294,7 @@ bool PhoneInteraction::factoryActivate(bool undo)
 		}
 		
 	}
-	else if (!strcmp(phoneProdVer, "1.1.3")) {
+	else if (!strcmp(phoneProdVer, "1.1.3") || !strcmp(phoneProdVer, "1.1.4")) {
 
 		if (undo) {
 			buf[0x83AF] = 0x0A;
@@ -1335,11 +1335,6 @@ bool PhoneInteraction::factoryActivate(bool undo)
 			buf[0xD274] = 0x00;
 		}
 
-	}
-	else if (!strcmp(phoneProdVer, "1.1.4")) {
-		// TODO: Implement me!
-		free(buf);
-		return false;
 	}
 	else {
 		free(buf);
