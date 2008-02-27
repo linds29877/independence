@@ -2096,6 +2096,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_bootCount = 0;
 
 	[mainWindow endDisplayWaitingSheet];
+#ifdef DEBUG
 	[mainWindow startDisplayWaitingSheet:nil
 								 message:@"Rebooting the phone..."
 								   image:nil cancelButton:false runModal:false];
@@ -2103,9 +2104,14 @@ static void phoneInteractionNotification(int type, const char *msg)
 	if (!m_phoneInteraction->reboot()) {
 		[mainWindow endDisplayWaitingSheet];
 		[mainWindow startDisplayWaitingSheet:nil
-									 message:@"Couldn't reboot phone automatically.\n\nPlease reboot your phone manually by pressing and holding the Sleep/Wake button for 3 seconds, then powering off your phone, then pressing Sleep/Wake again to restart it..."
+									 message:@"Couldn't reboot phone automatically.\n\nPlease reboot your phone manually by pressing and holding the Sleep/Wake button for 3 seconds, then powering off your phone, then pressing Sleep/Wake again for a second to restart it..."
 									   image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
 	}
+#else
+	[mainWindow startDisplayWaitingSheet:nil
+								 message:@"Please reboot your phone by pressing and holding the Sleep/Wake button for 3 seconds, then powering off your phone, then pressing Sleep/Wake again for a second to restart it..."
+								   image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
+#endif
 
 }
 
@@ -2139,6 +2145,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 
+#ifdef DEBUG
 	[mainWindow startDisplayWaitingSheet:nil
 								 message:@"Rebooting the phone a second time..."
 								   image:nil cancelButton:false runModal:false];
@@ -2149,6 +2156,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 									 message:@"Couldn't reboot phone automatically.\n\nPlease reboot your phone manually by pressing and holding the Sleep/Wake button for 3 seconds, then powering off your phone, then pressing Sleep/Wake again to restart it..."
 									   image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
 	}
+#else
+	[mainWindow startDisplayWaitingSheet:nil
+								 message:@"Please reboot your phone again using the same steps..."
+								   image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
+#endif
 
 }
 
@@ -2172,6 +2184,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return;
 	}
 
+#ifdef DEBUG
 	[mainWindow startDisplayWaitingSheet:nil
 								 message:@"Rebooting the phone a final time..."
 								   image:nil cancelButton:false runModal:false];
@@ -2182,6 +2195,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 									 message:@"Couldn't reboot phone automatically.\n\nPlease reboot your phone manually by pressing and holding the Sleep/Wake button for 3 seconds, then powering off your phone, then pressing Sleep/Wake again to restart it..."
 									   image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
 	}
+#else
+	[mainWindow startDisplayWaitingSheet:nil
+								 message:@"Please reboot your phone one final time using the same steps..."
+								   image:[NSImage imageNamed:@"sleep_button"] cancelButton:false runModal:false];
+#endif
 
 }
 
