@@ -4,7 +4,7 @@
 
   * [http://hackint0sh.org/forum/forumdisplay.php?f=123 The Hackint0sh iPhone Forums] - Started up around the same time as the iPhone Dev Wiki, so again, a wealth of information and helpful people here.
 
-  * [http://iphone-dev.org/] - Portal to the original iPhone dev team.  The people who started it all.
+  * [http://iphone-dev.org/ iPhone Dev Team Portal] - Site for the original iPhone dev team.  The people who started it all.
 
   * [http://code.google.com/p/iphone-elite/ iPhone Elite Dev Team] - The elite iPhone dev team.  Used to be quite active and open with information.
 
