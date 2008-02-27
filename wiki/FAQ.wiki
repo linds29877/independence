@@ -5,7 +5,7 @@ Note from 0p: This information is out of date for the 1.4 beta release.
 
 ===What Versions of Mac OS X/iTunes/iPhone Firmware Is iNdependence Compatible With?===
 
-It's been tested and is known to work on Intel and PPC Macintosh systems running Mac OS 10.4.10, 10.4.11, and 10.5.1, 10.5.2 and with iTunes versions 7.3 - 7.6.
+It's been tested and is known to work on Intel and PPC Macintosh systems running Mac OS 10.4.10, 10.4.11, and 10.5.1, 10.5.2 and with iTunes versions 7.3 - 7.6.1
 
 It's also been tested and is known to work with iPhone firmware 1.0, 1.0.1, 1.0.2, 1.1.1, 1.1.2, 1.1.3, and 1.1.4 (SIM unlock doesn't work on 1.1.4).
 
