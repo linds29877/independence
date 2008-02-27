@@ -323,6 +323,51 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 // -----------------------------------------------------------------------------------
 
+- (NSString*)pathToAppSupportRamDisk
+{
+	// find the path to ~/Library/Application Support/
+	FSRef foundRef;
+	OSErr err = FSFindFolder(kUserDomain, kApplicationSupportFolderType, kDontCreateFolder, &foundRef);
+	
+	if (err != noErr) {
+		return nil;
+	}
+	
+	unsigned char path[PATH_MAX];
+	FSRefMakePath(&foundRef, path, sizeof(path));
+	NSString *applicationSupportFolder = [NSString stringWithUTF8String:(const char*)path];
+	
+	if (applicationSupportFolder == nil) {
+		return nil;
+	}
+	
+	applicationSupportFolder = [applicationSupportFolder stringByAppendingPathComponent:@"iNdependence/"];
+
+	NSFileManager *fm = [NSFileManager defaultManager];
+	BOOL isDir = NO;
+
+	if (![fm fileExistsAtPath:applicationSupportFolder isDirectory:&isDir]) {
+
+		if (![fm createDirectoryAtPath:applicationSupportFolder attributes:nil]) {
+			return nil;
+		}
+
+	}
+	else if (!isDir) {
+
+		if (![fm removeFileAtPath:applicationSupportFolder handler:nil]) {
+			return nil;
+		}
+
+		if (![fm createDirectoryAtPath:applicationSupportFolder attributes:nil]) {
+			return nil;
+		}
+
+	}
+
+	return [applicationSupportFolder stringByAppendingPathComponent:@"ramit112_1.dat"];
+}
+
 - (NSString*)generateRamdisk
 {
 
@@ -697,16 +742,15 @@ static void phoneInteractionNotification(int type, const char *msg)
 		return nil;
 	}
 
-	NSString *resPath = [[NSBundle mainBundle] resourcePath];
+	NSString *newRamDisk = [self pathToAppSupportRamDisk];
 
-	if (resPath == nil) {
+	if (newRamDisk == nil) {
 		[fm removeFileAtPath:decCleanFile handler:nil];
 		[mainWindow endDisplayWaitingSheet];
-		[mainWindow displayAlert:@"Error" message:@"Couldn't get bundle resource path."];
+		[mainWindow displayAlert:@"Error" message:@"Couldn't get path to RAM disk."];
 		return nil;
 	}
 
-	NSString *newRamDisk = [resPath stringByAppendingPathComponent:@"ramit112.dat"];
 	int fd = open([newRamDisk UTF8String], O_WRONLY | O_CREAT);
 
 	if (fd == -1) {
@@ -885,8 +929,8 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	}
 
-	// now check to see if it's included as a resource
-	NSString *ramdiskFile = [[NSBundle mainBundle] pathForResource:@"ramit112" ofType:@"dat"];
+	// now check to see if it's already been generated
+	NSString *ramdiskFile = [self pathToAppSupportRamDisk];
 
 	if (ramdiskFile != nil) {
 
@@ -900,23 +944,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	}
 
-	// now see if it's already in the resources folder
-	ramdiskFile = [[NSBundle mainBundle] resourcePath];
-	ramdiskFile = [ramdiskFile stringByAppendingPathComponent:@"ramit112.dat"];
-
-	if ( [[NSFileManager defaultManager] fileExistsAtPath:ramdiskFile] ) {
-
-		if ([self validateRamDisk:ramdiskFile]) {
-			m_ramdiskPath = [[NSString alloc] initWithString:ramdiskFile];
-			return ramdiskFile;
-		}
-		else {
-			[[NSFileManager defaultManager] removeFileAtPath:ramdiskFile handler:nil];
-		}
-
-	}
-
-	// ok, looks like we're going to have to create it
+	// ok, looks like we're going to have to generate it
 	bool bContinue = true;
 
 	while ( (m_ramdiskPath == nil) && bContinue ) {

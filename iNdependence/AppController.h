@@ -134,6 +134,8 @@ class PhoneInteraction;
 - (bool)validateRamDisk:(NSString*)rdPath;
 - (void)setDownloadResponse:(NSURLResponse*)dlResponse;
 
+- (NSString*)pathToAppSupportRamDisk;
+
 - (IBAction)activate:(id)sender;
 - (IBAction)deactivate:(id)sender;
 - (IBAction)enterDFUMode:(id)sender;
