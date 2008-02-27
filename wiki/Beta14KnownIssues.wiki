@@ -13,6 +13,8 @@ Be patient... you'll only need to download it once. :)
 
 == Current Known Issues ==
 
+  * iNdependence can't SIM unlock a phone which has the 1.1.4 firmware installed on it
+
   * Google maps current location feature will not work if you SIM unlock using iNdependence 1.4 beta.  This is because when iNdependence SIM unlocks your phone, it installs baseband 04.02.13_G, and this (older) baseband doesn't support that feature.
 
   * If Wi-Fi/Bluetooth/Phone aren't working after performing a SIM unlock, then it's likely that gunlock failed at some point and left your baseband in a bad state (I've had this happen).  iNdependence will detect this failure and give an error message, but your phone may still be in that bad state.
