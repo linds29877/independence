@@ -7,7 +7,7 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
 == Downloading the firmware file is taking forever! ==
 
-Yes, I realize that this can be slow.  I'd really love to just bundle it all up with iNdependence (like ZiPhone does) so that you don't have to download it.  Unfortunately, I don't want to risk having Apple's legal team shut this project down because it's distributing things covered under their licensing agreement.  So that's why you have to download the firmware file.
+Yes, I realize that this can be slow.  I'd really love to just bundle it all up with iNdependence so that you don't have to download it.  Unfortunately, I don't want to risk having Apple's legal team shut this project down because it's distributing things covered under their licensing agreement.  So that's why you have to download the firmware file.
 
 Be patient... you'll only need to download it once. :)
 
