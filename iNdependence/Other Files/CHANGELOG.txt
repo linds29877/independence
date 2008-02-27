@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-v1.4 beta 4
+v1.4 beta 4 - 02/27/08
 
 - Made RAM disk creation code more robust by scanning the output from hdiutil for the correct mount point (rather than assumimg /Volumes/ramdisk)
 - Synchronized SSH version and installation with version installed by Installer.app.  This makes it compatible with Boss Prefs.app and Services.app
@@ -12,6 +12,7 @@ v1.4 beta 4
 - Added failure checking for SIM unlock
 - Added my own tool (optivate) for patching all versions of lockdownd from the RAM disk
 - Disabled SIM unlock button when using firmware 1.1.4
+- Moved RAM disk to Application Support folder.  This should fix the problem where RAM disk creation fails for some people (but not others).
 
 
 v1.4 beta 3 - 02/22/08
