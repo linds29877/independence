@@ -1,0 +1,32 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {
+                createDir = id; 
+                dialogCancel = id; 
+                dialogOk = id; 
+                getFile = id; 
+                putFile = id; 
+                putRingtone = id; 
+                putWallpaper = id; 
+                removePath = id; 
+            }; 
+            CLASS = MainWindow; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                createDirButton = NSButton; 
+                getFileButton = NSButton; 
+                pathField = NSTextField; 
+                pathWindow = NSWindow; 
+                putFileButton = NSButton; 
+                putRingtoneButton = NSButton; 
+                putWallpaperButton = NSButton; 
+                removeButton = NSButton; 
+                statusBar = NSTextField; 
+            }; 
+            SUPERCLASS = NSWindow; 
+        }
+    ); 
+    IBVersion = 1; 
+}
