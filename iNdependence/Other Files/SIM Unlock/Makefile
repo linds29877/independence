@@ -3,13 +3,13 @@ CFLAGS=-fsigned-char
 LDFLAGS=-Wl,-syslibroot,/usr/local/share/iphone-filesystem -framework IOKit
 LD=$(CC)
 
-all: gunlock_new
+all: gunlock_0p
 
-gunlock_new: gunlock_new.o
+gunlock_0p: gunlock_0p.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
-	rm -f *.o gunlock_new
+	rm -f *.o gunlock_0p
