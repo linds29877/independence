@@ -7,25 +7,11 @@ Note from 0p: This information is out of date for the 1.4 beta release.
 
 It's been tested and is known to work on Intel and PPC Macintosh systems running Mac OS 10.4.10, 10.4.11, and 10.5.1, 10.5.2 and with iTunes versions 7.3 - 7.6.1
 
-It's also been tested and is known to work with iPhone firmware 1.0, 1.0.1, 1.0.2, 1.1.1, 1.1.2, 1.1.3, and 1.1.4 (SIM unlock doesn't work on 1.1.4).
+It's also been tested and is known to work with iPhone firmware 1.0, 1.0.1, 1.0.2, 1.1.1, 1.1.2, 1.1.3, and 1.1.4.
 
 ===Do I need any other applications besides iNdependence to jailbreak/activate my phone?===
 
 No, iNdependence does everything itself (doesn't rely on any external applications or special activities on your phone).  The only exception to this is for SIM unlocking where the gunlock application is used.  As well, it uses OpenSSH to communicate with the phone for some operations.
-
-===I have a brand new phone with firmware 1.1.1/1.1.2 installed on it.  How do I jailbreak/activate it?===
-
-In order to jailbreak and activate a 1.1.x phone which is not jailbroken already, you must first downgrade your firmware to version 1.0.2, then jailbreak and activate it, install SSH, get it connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.1 or 1.1.2 using iTunes, then jailbreak and activate it again.  Instructions for all of these steps are contained in the iNdependence help files (available from the Help menu when running iNdependence).
-
-Another option if you have a 1.1.2 phone is to downgrade to 1.1.1, use the jailbreakme.com website to jailbreak your phone, install SSH, perform the Pre Firmware Upgrade in iNdependence, then upgrade to 1.1.2.
-
-===Are you sure that iNdependence can jailbreak a phone which comes with 1.1.2 out of the box (OTB)?===
-
-While I haven't done this myself, I have received reports from a number of people who have had success jailbreaking 1.1.2 OTB phones with iNdependence.
-
-===I have a jailbroken 1.1.1 phone and want to upgrade to 1.1.2.  How do I do this so that I am able to jailbreak it again on 1.1.2?===
-
-In this case, you do not need to downgrade to 1.0.2.  You can simply install SSH, get your phone connected to your computer via Wi-Fi properly, perform the "Pre Firmware Upgrade", then upgrade to 1.1.2 via iTunes.  After that, you will be able to jailbreak and activate it.  Again, detailed instructions for this are contained in the iNdependence help files (available from the Help menu when running iNdependence).
 
 ===I previously used anySIM 1.0/iUnlock to SIM unlock my 1.0.x phone.  Now I want to upgrade to 1.1.x and SIM unlock again.  What should I do?===
 
@@ -52,12 +38,6 @@ To make sure your phone doesn't go to sleep at any point, change Settings->Gener
 If you have a flakey Wi-Fi connection, then I can't really help you with that.  Make sure your phone is fairly close to your computer.
 
 In order to replace the shell on your phone, you'll need to use an SFTP program to upload a new shell program to /bin/sh.  Instructions for doing this are beyond the scope of this FAQ.
-
-=== I'm using firmware 1.1.2, and anySIM is causing problems for my phone.  What do I do?===
-
-There are some known problems with using anySIM on firmware 1.1.2.  Please have a look at the iPhone Elite website for details:
-
-http://code.google.com/p/iphone-elite/
 
 ===I upgraded to 1.1.2 and now my phone/SMS program is crashing when I use it.  Why?===
 
