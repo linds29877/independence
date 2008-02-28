@@ -6,3 +6,11 @@
 This page is to collect a list of websites which are distributing iNdependence as part of their iPhone unlocking service, but are not making the source code publicly available (nor giving credit).  If you know of any others, please submit them here.
 
 = List =
+
+=== UK ===
+
+  * free-your-iphone.co.uk
+  * iphoneteam.co.uk
+  * iphone-unlocker.co.uk  
+  * IphoneUnlocking.org.uk
+  * electroclinic.co.uk
