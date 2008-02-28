@@ -1,0 +1,23 @@
+How To Build
+------------
+
+** Mac **
+
+Requirements: XCode tools version 2.4.1 or higher
+
+1) Open iNdependence/iNdependence.xcodeproj in XCode and build it.
+2) Built app will be in iNdependence/build/<build_type>/
+
+
+** Windows **
+
+Requirements: Dev-C++, OpenSSL 0.9.8e, QuickTime SDK
+
+1) Open iNdependence/iNdependence.dev in Dev-C++ and edit the include and library paths to match your build setup.
+2) Build it.  This will produce iNdependence.exe in the iNdependence/Win32 directory.
+3) Open your favorite shell, navigate to the iNdependence/Win32 directory, and type:
+
+If using MSYS: ./iNdependence.sh
+If using DOS prompt: ./iNdependence.bat
+
+You should see a list of commands you can perform.
