@@ -1,0 +1,8 @@
+#summary A list of websites which are distributing iNdependence in violation of the GPL.
+#labels Featured
+
+= Introduction =
+
+This page is to collect a list of websites which are distributing iNdependence as part of their iPhone unlocking service, but are not making the source code publicly available (nor giving credit).  If you know of any others, please submit them here.
+
+= List =
