@@ -365,7 +365,20 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	}
 
-	return [applicationSupportFolder stringByAppendingPathComponent:@"ramit112_1.dat"];
+	// remove any old versions of the RAM disk
+	int i;
+	NSString *oldFile;
+
+	for (int i = 1; i < 2; i++) {
+		oldFile = [applicationSupportFolder stringByAppendingPathComponent:[NSString stringWithFormat:@"ramit112_%d.dat", i]];
+
+		if ([fm fileExistsAtPath:oldFile]) {
+			[fm removeFileAtPath:oldFile handler:nil];
+		}
+
+	}
+
+	return [applicationSupportFolder stringByAppendingPathComponent:@"ramit112_2.dat"];
 }
 
 - (NSString*)generateRamdisk
@@ -1027,13 +1040,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		}
 
 
-		if ([self isUsing114Firmware]) {
-			[performSimUnlockButton setEnabled:NO];
-		}
-		else {
-			[performSimUnlockButton setEnabled:YES];
-		}
-
+		[performSimUnlockButton setEnabled:YES];
 	}
 	else {
 		[self setAFCConnected:false];
@@ -1528,9 +1535,9 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (IBAction)performSimUnlock:(id)sender
 {
-	int retval = NSRunAlertPanel(@"Warning", @"If you have previously used iPhoneSimFree to SIM unlock your phone, then this will very likely mess up your phone. It's completely untested with IPSF unlocked phones.\n\nDo you wish to continue SIM unlocking?", @"No", @"Yes", nil);
+	int retval = NSRunAlertPanel(@"Warning", @"If you have previously used iPhoneSimFree to SIM unlock your phone, then you do not need to do this.  You simply need to use Signal.app to reenable your unlock.\n\nDo you wish to continue with SIM unlocking?", @"Yes", @"No", nil);
 
-	if (retval == NSAlertDefaultReturn) {
+	if (retval == NSAlertAlternateReturn) {
 		return;
 	}
 
@@ -2548,7 +2555,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			break;
 		case MENU_ITEM_PERFORM_SIM_UNLOCK:
 			
-			if (![self isConnected] || [self isUsing114Firmware]) {
+			if (![self isConnected]) {
 				return NO;
 			}
 

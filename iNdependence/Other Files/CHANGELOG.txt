@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+v1.4 beta 5 - 02/27/08
+
+- Added SIM unlocking on firmware 1.1.4 (using gunlock)
+- Changed the SIM unlock warning to reflect new information with regard to IPSF-based unlocking
+- Made it so that iNdependence automatically removes old versions of the RAM disks it creates
+- Changed the credits for the RAM disk jailbreak method
+- Updated the documentation for the new SSH removal dialog
+
+
 v1.4 beta 4 - 02/27/08
 
 - Made RAM disk creation code more robust by scanning the output from hdiutil for the correct mount point (rather than assumimg /Volumes/ramdisk)
