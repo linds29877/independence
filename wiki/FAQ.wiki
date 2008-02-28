@@ -1,7 +1,7 @@
 #summary Frequently Asked Questions
 #labels Featured
 
-Note from 0p: This information is out of date for the 1.4 beta release.
+Note from 0p: This information is mostly circa 1.1.1/1.1.2 firmware.
 
 ===What Versions of Mac OS X/iTunes/iPhone Firmware Is iNdependence Compatible With?===
 
