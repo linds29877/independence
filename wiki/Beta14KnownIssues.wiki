@@ -25,9 +25,7 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
   WORKAROUND: Try SIM unlocking again as gunlock usually succeeds on the 2nd attempt.
 
-  * I'm unsure about how the new SIM unlock interacts with a phone previously SIM unlocked using iPhoneSimFree.  Anyone who wants to risk this and try it out, please post the results.
-
-  UPDATE: It seems that if you do this, it will work, but you need to run Signal.app each time your phone boots to make it work with the IPSF unlock.
+  * If you have previously used iPhoneSimFree (IPSF) to SIM unlock your phone, then iNdependence will still work for you.  However, you may need to run Signal.app each time your phone boots in order to get service.  There are mixed reports on this: some people need Signal.app, some don't.  I'm unsure why at this point as I've never used IPSF myself.
 
   * Sometimes, if you Activate and then SIM Unlock right afterwards, the SIM Unlock step will only do a jailbreak (not actually SIM Unlock the phone).  If you see "Jailbreak succeeded" after SIM Unlocking, then it didn't work.  If you SIM Unlock a second time, it should work.
 
