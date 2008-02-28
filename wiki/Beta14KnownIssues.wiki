@@ -7,7 +7,9 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
 == Current Known Issues ==
 
-  * Google maps current location feature will not work if you SIM unlock using iNdependence 1.4 beta.  This is because when iNdependence SIM unlocks your phone, it installs baseband 04.02.13_G, and this (older) baseband doesn't support that feature.
+  * Google maps current location feature will not work if you SIM unlock using iNdependence 1.4 beta.  This is because when iNdependence SIM unlocks your phone, it installs baseband 04.02.13_G, and this (older) baseband doesn't support that feature.  The reason I do things this way is because it works for _all bootloader versions_.
+
+  In an upcoming version of iNdependence I hope to have a version of gunlock which autodetects the bootloader version and chooses the best SIM unlock method possible.
 
   * Some people are reporting problems where iNdependence can't download the firmware file.
 
