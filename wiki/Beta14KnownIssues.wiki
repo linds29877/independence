@@ -9,6 +9,10 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
   * Google maps current location feature will not work if you SIM unlock using iNdependence 1.4 beta.  This is because when iNdependence SIM unlocks your phone, it installs baseband 04.02.13_G, and this (older) baseband doesn't support that feature.
 
+  * Some people are reporting problems where iNdependence can't download the firmware file.
+
+  WORKAROUND: Manually download the 1.1.2 firmware file from: http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPhone/061-4037.20071107.5Bghn/iPhone1,1_1.1.2_3B48b_Restore.ipsw and copy it to HOME/Library/iTunes/iPhone Software Updates/
+
   * If Wi-Fi/Bluetooth/Phone aren't working after performing a SIM unlock, then it's likely that gunlock failed at some point and left your baseband in a bad state (I've had this happen).  iNdependence will detect this failure and give an error message, but your phone may still be in that bad state.
 
   WORKAROUND: Try SIM unlocking again as gunlock usually succeeds on the 2nd attempt.
