@@ -1,4 +1,4 @@
-// geohot's 112 OTB unlocker
+// geohot's 1.1.2 / 1.1.3 / 1.1.4 OTB unlocker
 // This code is GPLed
 //
 // Spiffed up by The Operator
@@ -567,12 +567,12 @@ int fileExists(char *filePath)
 
 void printUsage(char *progName)
 {
-	printf("usage: %s <113secpack> <112fls>\n", progName);
+	printf("usage: %s <secpack> <112fls>\n", progName);
 }
 
 int main(int argc, char *argv[])
 {
-	printf("geohot's 1.1.2 / 1.1.3 OTB unlocker -- Spiffed up by The Operator\n");
+	printf("geohot's 1.1.2 / 1.1.3 / 1.1.4 OTB unlocker -- Spiffed up by The Operator\n");
 
 	if (argc < 3) {
 		printUsage(argv[0]);
@@ -675,7 +675,7 @@ int main(int argc, char *argv[])
 
 	fclose(secpack);
 
-	// Send the 1.1.3 secpack to erase 1.1.2
+	// Send the current firmware secpack to erase the baseband
 	if (sendSecpack(rsecpack) == -1) {
 		fprintf(stderr, "sendSecpack() failure!  Exiting...\n");
 		close(g_fp);
