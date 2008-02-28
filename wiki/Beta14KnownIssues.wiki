@@ -5,15 +5,7 @@
 
 The issue tracker has become too clogged with bugs and I don't have time to deal with it.  So could everyone report issues with iNdependence 1.4 beta on this page instead.
 
-== Downloading the firmware file is taking forever! ==
-
-Yes, I realize that this can be slow.  I'd really love to just bundle it all up with iNdependence so that you don't have to download it.  Unfortunately, I don't want to risk having Apple's legal team shut this project down because it's distributing things covered under their licensing agreement.  So that's why you have to download the firmware file.
-
-Be patient... you'll only need to download it once. :)
-
 == Current Known Issues ==
-
-  * iNdependence can't SIM unlock a phone which has the 1.1.4 firmware installed on it
 
   * Google maps current location feature will not work if you SIM unlock using iNdependence 1.4 beta.  This is because when iNdependence SIM unlocks your phone, it installs baseband 04.02.13_G, and this (older) baseband doesn't support that feature.
 
@@ -25,15 +17,13 @@ Be patient... you'll only need to download it once. :)
 
   UPDATE: It seems that if you do this, it will work, but you need to run Signal.app each time your phone boots to make it work with the IPSF unlock.
 
-  UPDATE2: fruiteatingbear reports that his previously IPSF unlocked phone works fine after SIM unlocking via iNdependence.  No need for Signal.app
-
   * Sometimes, if you Activate and then SIM Unlock right afterwards, the SIM Unlock step will only do a jailbreak (not actually SIM Unlock the phone).  If you see "Jailbreak succeeded" after SIM Unlocking, then it didn't work.  If you SIM Unlock a second time, it should work.
 
-   * iNdependence can freeze up when it's attempting to jail break and SIM unlock.  If the screen on your phone hasn't switched to the Apple logo within 30 seconds, then it's likely frozen.  You'll need to force quit and restart iNdependence (Alt+Option+Esc, select iNdependence, press "Force Quit").  This is a long-standing bug, and it's due to a faulty API in the iTunes library it uses (MobileDevice).
+   * iNdependence can freeze up when it's attempting to jailbreak, activate, and SIM unlock.  If the screen on your phone hasn't switched to the Apple logo within 30 seconds, then it's likely frozen.  You'll need to force quit and restart iNdependence (Alt+Option+Esc, select iNdependence, press "Force Quit").  This is a long-standing bug, and it's due to a faulty API in the iTunes library it uses (MobileDevice).
 
-  WORKAROUND: Quit and restart iNdependence, then try again.
+  WORKAROUND: Force quit and restart iNdependence, then try again.
 
-  * If you were previously SIM unlocked, you will need to do a SIM unlock again after upgrading to 1.1.3.  TurboSIM doesn't work under 1.1.3, and even the IPSF SIM unlock doesn't work without Signal.app.
+  * If you were previously SIM unlocked, you will need to do a SIM unlock again after upgrading to 1.1.3 or 1.1.4.  TurboSIM doesn't work under 1.1.3/1.1.4, and even the IPSF SIM unlock doesn't work without Signal.app.
 
   * If a phone has been previously jailbroken with ZiPhone, iNdependence will say that it's still jailed.  The reason for this is because ZiPhone does not create the AFC2 service on the phone.  The AFC2 service allows computer-based applications to write to all areas of the phone (not just the Media partition).  So really, ZiPhone only jailbreaks for applications which run on the phone itself (not applications which run from the computer).
 
@@ -59,3 +49,9 @@ How I got installer.app working:
 == Problems With 3rd Party Applications on 1.1.3 ==
 
 john.angus reported that many 3rd party applications don't work all that well on 1.1.3 because they are run as user "mobile" instead of user "root".  Meaning, they won't have permission to write files to certain locations on the phone, and do other things which "root" can do.  This is not a problem with iNdependence, it's a bug in those 3rd party applications (assuming they are being run as root).  You'll have to wait until the developers update their applications.
+
+== Downloading the firmware file is taking forever! ==
+
+Yes, I realize that this can be slow.  I'd really love to just bundle it all up with iNdependence so that you don't have to download it.  Unfortunately, I don't want to risk having Apple's legal team shut this project down because it's distributing things covered under their licensing agreement.  So that's why you have to download the firmware file.
+
+Be patient... you'll only need to download it once. :)
