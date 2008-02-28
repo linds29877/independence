@@ -5,6 +5,8 @@
 
 This page is to collect a list of websites which are distributing binary versions of iNdependence as part of their iPhone unlocking service, but are not making the source code publicly available (nor giving credit).  If you know of any others, please submit them here.
 
+If you think your website is here in error, then let me know by posting here as well.
+
 = List =
 
 === UK ===
