@@ -27,14 +27,16 @@ int main(int argc, char *argv[], char *env[]) {
 	cmd_system((char*[]){"/sbin/fsck_hfs", "-fy", "/dev/rdisk0s1", (char*) 0});
 	mounthfs("/dev/disk0s1", "/", MNT_ROOTFS | MNT_UPDATE);
 
-	cmd_system((char*[]){"/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2", (char*) 0});
-	mounthfs("/dev/disk0s2", "/private/var", MNT_UPDATE);
+	printf("iNdependence: I am %s - %s %s\n", deviceName(), firmwareVersion(), activationState());
 
 	// environment is basically set up at this point
 
 	// jailbreak
-	fileCopySimple("/private/var/mobile/Media/jailbreak/fstab", "/private/etc/fstab");
-	fileCopySimple("/private/var/mobile/Media/jailbreak/Services.plist", "/System/Library/Lockdown/Services.plist");
+	if(fileExists("/private/var/mobile/Media/jailbreak/fstab"))
+		fileCopySimple("/private/var/mobile/Media/jailbreak/fstab", "/private/etc/fstab");
+
+	if(fileExists("/private/var/mobile/Media/jailbreak/Services.plist"))
+		fileCopySimple("/private/var/mobile/Media/jailbreak/Services.plist", "/System/Library/Lockdown/Services.plist");
 
 	if(isIphone()) {
 		// iPhone specific stuff

@@ -1,7 +1,5 @@
 Draft of new ramdisk system:
 
-CURRENTLY UNTESTED
-
 "sudo make ramdisk" will make the ramdisk (ramdisk.dmg) under Linux system. For BSD-like systems such as OS X,
 a 512 KB filesystem HFSX case-sensitive filesystem should be created. It should have two directories: /mnt
 and /sbin. launchd should be copied to /sbin. It should be chown'ed to 0:0 and have 755 permissions.
@@ -18,6 +16,9 @@ device_private_key.pem, and device_public_key.pem in the same folder.
 
 If unlock is desired, /private/var/mobile/Media/jailbreak/gunlock_0p, /private/var/mobile/Media/jailbreak/secpack
 and /private/var/mobile/Media/jailbreak/ICE04.02.13_G.fls must also exist.
+
+If /private/var/mobile/Media/jailbreak/fstab is present, it will be copied to root.
+If /private/var/mobile/Media/jailbreak/Services.plist is present, it will be copied to root.
 
 The behavior of jailbreak is based on iNdependence's ramdisk /etc/profile.
 

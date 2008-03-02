@@ -32,13 +32,17 @@ ramdisk:	launchd
 		losetup $$FREELOOP ramdisk.dmg; \
 		mkfs.hfsplus -s -v "Jailbreak Bootstrap" $$FREELOOP; \
 		mount -t hfsplus $$FREELOOP ./ramdisk_mnt; \
+		mkdir ./ramdisk_mnt/dev; \
 		mkdir ./ramdisk_mnt/mnt; \
 		mkdir ./ramdisk_mnt/sbin; \
 		cp launchd ./ramdisk_mnt/sbin/launchd; \
 		chmod 755 ./ramdisk_mnt/sbin/launchd; \
 		chown 0:0 ./ramdisk_mnt/sbin/launchd; \
+		sync; \
 		umount ./ramdisk_mnt; \
+		sync; \
 		losetup -d $$FREELOOP
+		sync; \
 		rmdir ./ramdisk_mnt
 
 clean:
