@@ -1,0 +1,10 @@
+void cmd_system(char * argv[]);
+int isIpod();
+int isIphone();
+char* firmwareVersion();
+const char* deviceName();
+int fileExists(const char* fileName);
+unsigned int fileSize(const char* fileName);
+void fileCopySimple(const char* orig, const char* dest);
+char* activationState();
+void deleteDir(const char *path);

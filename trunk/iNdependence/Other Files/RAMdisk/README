@@ -1,0 +1,32 @@
+Draft of new ramdisk system:
+
+CURRENTLY UNTESTED
+
+"sudo make ramdisk" will make the ramdisk (ramdisk.dmg) under Linux system. For BSD-like systems such as OS X,
+a 512 KB filesystem HFSX case-sensitive filesystem should be created. It should have two directories: /mnt
+and /sbin. launchd should be copied to /sbin. It should be chown'ed to 0:0 and have 755 permissions.
+
+ramdisk.dmg ought to be padded before used (but it should be distributed without the padding to save space).
+
+Before the ramdisk is used, there ought to be a folder called /private/var/mobile/Media/jailbreak/. It should
+contain the "jailbreak" executable also made here. jailbreak checks for the existence of files in 
+/private/var/mobile/Media/jailbreak/ to decide what to do. If it sees "activate" it will attempt to activate.
+If it sees "simunlock" it will attempt to unlock. The contents of those files are irrelevant, just the names.
+
+If activation is desired, /private/var/mobile/Media/jailbreak/optivate must exist, as well as data_ark.plist,
+device_private_key.pem, and device_public_key.pem in the same folder.
+
+If unlock is desired, /private/var/mobile/Media/jailbreak/gunlock_0p, /private/var/mobile/Media/jailbreak/secpack
+and /private/var/mobile/Media/jailbreak/ICE04.02.13_G.fls must also exist.
+
+The behavior of jailbreak is based on iNdependence's ramdisk /etc/profile.
+
+FILES
+-----
+
+boost.c - main source file for the launchd stager.
+syscalls.S - assembly stubs for the syscalls boost.c needs
+
+jailbreak.c - main executable for the jailbreak payload.
+utilities.c - a set of utility functions for jailbreak.c
+
