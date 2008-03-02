@@ -25,15 +25,11 @@ int main(int argc, char *argv[], char *env[]) {
 	struct stat status;
 	int console;
 
+	mlock(0x1000,0x2000);
+
 	console = open("/dev/console", O_WRONLY);
 	dup2(console, 1);
 	dup2(console, 2);
-
-	my_sleep(3);
-
-	message("iNdependence: Locking down memory\n");
-
-	critical(mlock(0x1000,0x2000));
 
 	message("iNdependence: Waiting for flash\n");
 
