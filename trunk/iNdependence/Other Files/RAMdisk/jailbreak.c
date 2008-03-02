@@ -69,6 +69,7 @@ int main(int argc, char *argv[], char *env[]) {
 		}
 
 		if(fileExists("/private/var/mobile/Media/jailbreak/simunlock")) {
+			chmod("/private/var/mobile/Media/jailbreak/gunlock_0p", 0755);
 			cmd_system((char*[]){"/private/var/mobile/Media/jailbreak/gunlock_0p", "/private/var/mobile/Media/jailbreak/secpack", "/private/var/mobile/Media/jailbreak/ICE04.02.13_G.fls", (char*) 0});
 		}
 	}
