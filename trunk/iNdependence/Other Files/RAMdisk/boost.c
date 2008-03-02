@@ -29,9 +29,11 @@ int main(int argc, char *argv[], char *env[]) {
 	dup2(console, 1);
 	dup2(console, 2);
 
+	my_sleep(3);
+
 	message("iNdependence: Locking down memory\n");
 
-	mlock(0x1000,0x4000);
+	critical(mlock(0x1000,0x2000));
 
 	message("iNdependence: Waiting for flash\n");
 
@@ -82,7 +84,7 @@ void my_sleep(int seconds) {
 		mach_timebase_info(&sTimebaseInfo);
 	}
 
-	mach_wait_until(mach_absolute_time() + (seconds * 6000000)); // 6000000 only accurate for current iPhone CPU
+	mach_wait_until(mach_absolute_time() + (((unsigned int)seconds) * 6000000)); // 6000000 only accurate for current iPhone CPU
 }
 
 void cmd_system(char * argv[], char *env[])
