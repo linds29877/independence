@@ -105,6 +105,9 @@
 		F286572A0CCA4C1000A01FCE /* sh */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = sh; path = "Other Files/SSH/sh"; sourceTree = SOURCE_ROOT; };
 		F28657880CCABBCC00A01FCE /* scp */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = scp; path = "Other Files/SSH/OpenSSH/scp"; sourceTree = SOURCE_ROOT; };
 		F29BD4EC0CC35187004A6F30 /* English */ = {isa = PBXFileReference; lastKnownFileType = folder; name = English; path = English.lproj/iNdependenceHelp; sourceTree = "<group>"; };
+		F2AF95000D8A003C00527755 /* Danish */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Danish; path = Danish.lproj/MainMenu.nib; sourceTree = "<group>"; };
+		F2AF95280D8A007100527755 /* Danish */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Danish; path = Danish.lproj/iNdependenceHelp; sourceTree = "<group>"; };
+		F2AF953F0D8A00A500527755 /* Danish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Danish; path = Danish.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		F2BCFB3D0D62CFB10008D0AA /* fstab113 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = fstab113; path = "Other Files/jailbreak files/fstab113"; sourceTree = SOURCE_ROOT; };
 		F2BCFB3F0D62CFED0008D0AA /* Services113.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Services113.plist; path = "Other Files/jailbreak files/Services113.plist"; sourceTree = SOURCE_ROOT; };
 		F2C1F6F50CCFC345003AE395 /* sleep_button.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = sleep_button.gif; path = images/sleep_button.gif; sourceTree = SOURCE_ROOT; };
@@ -338,6 +341,13 @@
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "iNdependence" */;
 			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+				Danish,
+			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* iNdependence */;
 			projectDirPath = "";
 			projectReferences = (
@@ -453,6 +463,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				089C165DFE840E0CC02AAC07 /* English */,
+				F2AF953F0D8A00A500527755 /* Danish */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -461,6 +472,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				29B97319FDCFA39411CA2CEA /* English */,
+				F2AF95000D8A003C00527755 /* Danish */,
 			);
 			name = MainMenu.nib;
 			sourceTree = "<group>";
@@ -469,6 +481,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				F29BD4EC0CC35187004A6F30 /* English */,
+				F2AF95280D8A007100527755 /* Danish */,
 			);
 			name = iNdependenceHelp;
 			sourceTree = SOURCE_ROOT;

@@ -383,6 +383,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (NSString*)generateRamdisk
 {
+	NSFileManager *fileManager = [NSFileManager defaultManager];
 
 	if (m_rdFirmwarePath == nil) {
 		NSString *homeDir = NSHomeDirectory();
@@ -393,6 +394,15 @@ static void phoneInteractionNotification(int type, const char *msg)
 		}
 
 		m_rdDLPath = [homeDir stringByAppendingPathComponent:@"Library/iTunes/iPhone Software Updates/"];
+
+		if (![fileManager fileExistsAtPath:m_rdDLPath]) {
+
+			if (![fileManager createDirectoryAtPath:m_rdDLPath attributes:nil]) {
+				return nil;
+			}
+
+		}
+		
 		m_rdFirmwarePath = [m_rdDLPath stringByAppendingPathComponent:@"iPhone1,1_1.1.2_3B48b_Restore.ipsw"];
 		[m_rdDLPath retain];
 		[m_rdFirmwarePath retain];

@@ -1,0 +1,214 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/sgml/loosedtd.html">
+<html>
+<head>
+	<title>Brig af iNdependence med firmware 1.1.1 eller 1.1.2</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="keywords" content="brug, jailbreak, aktivering, ringetoner, baggrunde">
+	<meta name="description" content="Brug af iNdependence med 1.1.1">
+	<link media="all" rel="stylesheet" href="../css/topicPage.css" />
+</head>
+<body>
+	<div id="banner">
+		<div id="machelp">
+			<a name="Using"></a>
+				<a href="../iNdependenceHelp.html">Hjælp til iNdependence</a>
+			</div>
+		</div>
+		<div id="mainbox">
+			<div id="caticon">
+				<img class="icon" src="../images/iNdependence_icon_large.png" alt="iNdependence Icon" />
+			</div>
+
+			<div id="pagetitle">
+				<h1>Brug af iNdependence med firmware 1.1.1 og 1.1.2</h1>
+			</div>
+
+			<div id="index">
+				<h1>Indholdsfortegnelse:</h1>
+				<ul>
+					<li><a href="#downgrade">Nedgradering af en 1.1.1/1.1.2-telefon</a></li>
+					<li><a href="#upgrade">1.0.x to 1.1.1/1.1.2</a></li>
+					<li><a href="#upgrade2">Opgradere din iPhone fra firmware 1.1.1 til 1.1.2</a></li>
+					<li><a href="#activation">Aktivere din iPhone</a></li>
+					<li><a href="#jailbreak">Jailbreake din iPhone</a></li>
+					<li><a href="#ssh">Installation og osætning af SSH</a></li>
+					<li><a href="#simunlock">SIM-oplås af din iPhone</a></li>
+					<li><a href="#customization">Personliggør din iPhone og installer tredjepartsprogrammer</a></li>
+				</ul>
+			</div>
+
+			<div summary="Generel information" id="general">
+				<p>
+				iNdependence kan i øjeblikket hverken aktivere eller jailbreake en telefon med firmware 1.1.1 eller 1.1.2. For at bruge disse funktioner i iNdependence, må du først nedgradere til 1.0.2, og derefter bruge opdateringsklargøring og speciel opgradering tilbage til 1.1.1 eller 1.1.2. Instruktioner inkluderet nedenfor.
+				</p>
+			</div>
+			<div summary="Hvordan nedgraderer man firmwaren på sin telefon?" id="downgrade">
+				<h1>For at nedgradere din iPhone hvis du bruger 1.1.1 eller 1.1.2:</h1>
+				<p>Bemærk at du kan springe over dette trin hvis du allerede bruger 1.0.2-firmwaren.</p>
+			    <p>
+					<ol>
+						<li>Undersøg først firmware-udgaven på statuslinien nederst i iNdependence-vinduet. Hvis den ikke siger <i>Firmware 1.1.1</i> eller <i>Firmware 1.1.2</i> har du ikke brug for at nedgradere.</li>
+						<li>
+							Hent <a href="http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPhone/061-3823.20070821.vormd/iPhone1,1_1.0.2_1C28_Restore.ipsw">1.0.2 firmware-filen</a> fra Apple hvis du ikke allerede har den.
+							<ul>
+								<li>Hvis du hentede filen med Safari, har Safari automatisk dekomprimeret filen til en mappe med navnet <i>iPhone1,1_1</i> og fjernet den originale fil.  Du har dog brug for både den originale fil sammen med denne mappe. For at ordne dette problem skal du åbne Finder, navigere til hvor mappen er, markere alle filerne, der er i mappen (⌘ + A), højreklikke (eller ctrl-klikke) en af filerne og vælge <i>Komprimer 5 emner</i> i menuen for at genskabe filen igen. Filen vil blive døbt <b>Nyt Arkiv.zip</b>.  Ænder dens navn til <b>iPhone1,1_1.ipsw</b></li>
+								<li>Hvis du hentede filen med en anden browser, som ikke automatisk dekomprimerede filen til en mappe skal du ændre dens endelse fra <b>.ipsw</b> til <b>.zip</b> og dekomprimere den ved at høreklikke på filen, vælge <i>Åbn i</i> og derefter <i>Kompromeringsværktøj</i> i menuen. Navngav du filen fra at have en <b>.zip</b>-endelse, skal du omdøbe endelsen tilbage til <b>-ipsw</b></li>
+							</ul>
+						</li>
+						<li>Du burde nu have en mappe der har et navn, der starter med <i>iPhone1,1_1</i> som indeholder alle firmware-filerne såvel som en fil med det samme navn som mappen, men med endelsen <b>.ipsw</b>.</li>
+						<li>Vælg <i>Firmware</i>-fanen og vælg <i> Gå i DFU-tilstand</i>.</li>
+						<li>Du vil blive bedt om at udpege mappen, du dekomprimerede firmware-filerne til (som beskrevet i tidligere trin). Vær sikker på, at du vælger mappen og ikke <b>.ipsw</b>-filen.</li>
+						<li>Hvis du får en fejlmeddelelse, der siger <i>Error entering recovery mode</i> skal du genstarte iNdependende, gå i DFU-tilstand igen (Du kan springe firmware-delen over).</li>
+						<li>Efter du ser en succes-meddelelse skal du klikke <i>OK</i> og derefter afslutte iNdependence.</li>
+						<li>Start iTunes.  Du burde se en besked, der siger, at iTunes har funder en iPhone, der skal gendannes. Tryk på <i>OK</i> </li>
+						<li>Nu skal du holde <b>Option</b>-tasten nede mens du klikker på <i>Gendan</i>-knappen iTunes.</li>
+						<li>Du burde nu se en <i>Vælg fil</i>-dialog. Vælg <b>.ipsw</b>-filen denne gang (ikke mappen).</li>
+						<li>iTunes burde begynde med at gendanne firmwaren på din telefon.</li>
+						<li>Hvis du får en fejlbesked i begyndelsen fra iTunes, der siger <i>En ukendt fejl opstod (1)</i>, skal du genstarte iTunes, og forsøge at gendanne igen (ved at bruge de samme trin). Hvis dette fortsætter og hvis <b>.ipsw</b>-filen var blevet oprettet af dig betyder det, at du ikke oprettede den korrekt. Vær sikker på, at komprimere filerne, der var i firmware-mappen og ikke selve firmware-mappen.</li>
+						<li>iTunes burdde nu gendanne dine firmware-filer. Dette vil tage et par minutter.</i>
+						<li>Du vil få en besked fra iTunes til sidst, der siger <i>En ukendt fejl opstod (1013)</i>.  Dette er normalt (Og forventet).  Gendannelsen virkede fint, men meddelelsen vises, da modem-firmwaren ikke kunne nedgraderes (hvilket er ok).</li>
+						<li>Du burde nu se en gul trekant på din iPhones skærm mens iTunes siger, at du skal gendanne igen.  <b>Lad være med det!</b></li>
+						<li>Slut iTunes og start iNdependence igen.</li>
+						<li>Vent i omkring 30 seconds mens iNdependence får telefonen ud af recovery mode og tilbage til hovedskærmen med en <i>Activate iPhone</i>-besked på den.</li>
+					</ol>
+				</p>
+				<p>Tillykke! Du har nu succesfuldt nedgraderet din telefon til firmware 1.0.2.</p>
+			</div>
+
+			<div summary="Hvordan man opgraderer til 1.1.1/1.1.2 så du kan jailbreake og aktivere" id="upgrade">
+				<h1>Opgradering fra 1.0.2 til 1.1.1/1.1.2 så du kan aktivere/jailbreake din telefon:</h1>
+				<p><b>Bemærk venligst at hvis du har brugt anySIM 1.0 eller andre ældre måder at låse SIM-låsen op på (alt pånær anySIM 1.1/1.2 og iPhoneSimFree) og du prøver at opgradere til 1.1.x, vil det ødelægge den oplåsningen og gøre telefon- og sms-delen ubrugelig. Alt andet vil dog virke.</b>
+			        <p>(<b>Opdatering</b>)Du behøver kun at gøre dette hvis du opgraderer til firmware 1.1.1 eller 1.1.2. Hvis du opgraderer til 1.1.3 kan du springe over alle dette og opgradere direkte i iTunes.
+				<p>
+					<ol>
+						<li>Undersøg firmware-versionen i statuslinien nedest i iNdependence-vinduet. Hvis den ikke siger 1.0.2 (eller lavere) er du nødt til at nedgradere din firmware ved hjælp af instrktionerne ovenfor.</li>
+						<li>Aktiver din telefon ved hjælp af <a href="usage_1_0_2.html#activation">1.0.2-aktiveringsinstruktionerne</a>. Bemærk, at du ved aktivering kan genbruge den samme firmware-mappe, som du brugte, da du nedgradere (du behøver ikke hente den igen).  Sørg også for, at lade din telefon forblive jailbroken efter aktivering.</li>
+						<li>Installér SSH på din telefon ved hjælp af <a href="#ssh">instruktionerne nedenfor</a>.</li>
+						<li>Sørg for at din telfon er forbundet til et trådløst nedværk (læs iPhone-manualen for instruktioner på hvordan man opsætter Wi-Fi). Vær også sikker på, at din telfons IP-adresse ikke skaber konflikt med andre enheder på din Wi-Fi-netværk.</li>
+
+						<li>Find  IP-addresse på din telefon ved at gå ind i <i>Settings</i> på din telefon, ind i <i>Wi-Fi</i> og derefter pege på den blå pil ved siden af navnet på dit netværk, du har forbindelse til.</li>
+						<li>Vælg <i>Firmware</i>-fanen og klik på <i>Opdateringsklargøring</i>.</li>
+						<li>Indtast din telefons IP-adresse og kodeordet til root. (Se <a href="#ssh">nedenfor</a> for at finde standard-kordeordet til root hvis du ikke ændrede det da du installede SSH).</li>
+						<li>Følg instruktionerne som vises i dialogvinduerne. Hvis iNdependence viser en advarsel om  <i>host verification failure</i> og beder dig om at ændre din <b>known_hosts</b>-fil skal du vælge <i>Yes</i> (hvilket er standard nu).</li>
+						<li>Når du bliver bedt om at opgradere via iTunes skal du afslutte iNdependence, og holde option-tasten nede mens du vælger <i>Opdater</i> i iTunes (ikke </i>Gendan</i>). Vælg derefter 1.1.1 eller 1.1.2-firmware-filen når du bliver bedt om det.</li>
+						<li>Vent på, at iTunes bliver færdig.</li>
+						<li>Afslut iTunes og start iNdependence igen. I statuslinien nederst i iNdependence-vinduet burde der nu stå <i>Firmware 1.1.1</i> or <i>Firmware 1.1.2</i> (alt afhængig af hvilken udgave du opgraderede til).</li>
+						<li>Tillykke!  Du er nu klar til at aktivere og jailbreake din telefon ved at bruge instruktionerne nedenfor.</li>
+					</ol>
+				</p>
+			</div>
+
+			<div summary="Hvordan man opgraderer fra 1.1.1 til 1.1.2 så du kan jailbreake og aktivere" id="upgrade2">
+				<h1>Opgradering til 1.1.1 til 1.1.2 så du kan aktivere og jailbreake din telefon:</h1>
+				<p>
+					<ol>
+						<li>Tjek firmware-versionen, der vises i status-linien nederst i iNdependence-vinduet. Hvis den ikke siger 1.1.1er disse instruktioner ikke for dig.</li>
+						<li>Aktiver din telefon ved hjælp af <a href="#activation">aktiveringsinstruktionerne nedenfor</a>. Vær sikker på, at du efterlader din telefon jailbroken efter aktivering.</li>
+						<li>Installér SSH på din telefon ved hjælp af <a href="#ssh">instruktionerne nedenfor</a>.</li>
+						<li>Sørg for at din telfon er forbundet til et trådløst nedværk (læs iPhone-manualen for instruktioner på hvordan man opsætter Wi-Fi). Vær også sikker på, at din telfons IP-adresse ikke skaber konflikt med andre enheder på din Wi-Fi-netværk.</li>						<li>Get the IP address for your phone by launching the Settings application on the phone, navigating to <i>Wi-Fi</i> and pressing the blue arrow beside the name of the Wi-Fi network that your phone is connected to.</li>
+						<li>Vælg <i>Firmware</i>-fanen og klik på <i>Opdateringsklargøring</i>.</li>
+						<li>Indtast din telefons IP-adresse og kodeordet til root. (Se <a href="#ssh">nedenfor</a> for at finde standard-kordeordet til root hvis du ikke ændrede det da du installede SSH).</li>
+						<li>Følg instruktionerne som vises i dialogvinduerne. Hvis iNdependence viser en advarsel om  <i>host verification failure</i> og beder dig om at ændre din <b>known_hosts</b>-fil skal du vælge <i>Yes</i> (hvilket er standard nu).</li>
+						<li>Når du bliver bedt om at opgradere via iTunes skal du afslutte iNdependence, og holde option-tasten nede mens du vælger <i>Opdater</i> i iTunes (ikke </i>Gendan</i>). Bemærk at knappen kan hedde <i>Opgradering</i> istedet for <i>Opdater</i>.</li>
+						<li>Vælg 1.1.2-firmware-filen som du vil opgradere med ved at bruge filvælgeren.</li>
+						<li>Vent på, at iTunes bliver færdig.</li>
+						<li>Afslut iTunes og genstart iNdependence. I statuslinien i bunden af iNdependence-vinduet burde der nu stå <i>Firmware 1.1.2</i>.</li>
+						<li>Tillykke! Du er nu klar til at aktivere og jailbreake din 1.1.2-iPhone ved at bruge instruktionerne nedenfor.</li>
+					</ol>
+				</p>
+			</div>
+
+			<div summary="Hvordan man aktiverer din telefon" id="activation">
+				<h1>Aktivering af din telefon:</h1>
+				<p>
+					<ol>
+						<li>Vær sikker på, at du har opgraderet til 1.1.1 eller 1.1.2 ved at bruge den specielle opgraderingsmetode som er beskrevet ovenfor.</li>
+						<li>Vælg Aktiverings-fanen og klik på <i>Aktivér telefon</i> button. Får du en fejlmeddelelse, der siger Error entering recovery mode skal du prøve at genstarte iNdependence og prøve igen.</li>
+						<li>Du burde se en meddelelse der siger der siger <i>Waiting for jailbreak...</i>.  Vær tålmodig da dette kan tage et stykke tid. Det kan se ud som om at iNdependence ikke svarer, men dette er ikke tilfældet, den arbejder bare meget hårdt.</li>
+						<li>Vent på succes-meddelelse. Bemærk at aktiveringsprocessen også vil tillade YouTube, tredjepartsprogrammer og installation af egne ringetoner.</li>
+					</ol>
+				</p>
+			</div>
+
+			<div summary="Hvordan man jailbreaker sin telefon" id="jailbreak">
+				<h1>For at jailbreake sin telefon:</h1>
+				<p>
+					Bemærk at dette vil blive gjort automatisk hvis du aktiverer din telefon.
+					<ol>
+						<li>Vær sikker på at du var opgraderet til 1.1.1 eller 1.1.2 med den specielle opgraderingsmetode som beskrevet ovenfor.</li>
+						<li>Vælg <i>Jailbreak</i>fanen og klik på <i>Udfør Jailbreak</i>-knappen.  Af og til vil iNdependence sige, at den ikke kunne gå i recovery mode. Hvis dette sker skal du genstarte iNdependence og prøve igen.</li>
+						<li>Du burde se en <i>Waiting for jail break...</i>-meddelelse. Vær tålmodig, da dette kan tage et stykke tid. Det kan se ud som om iNdependence ikke svarer, men dette er ikke tilfældet; Den arbejder bare meget hårdt.</li>
+						<li>Vent på sucess-meddelelsen.  Note that the jailbreak process will enable 3rd party application and custom ringtone installation.</li>
+					</ol>
+				</p>
+			</div>
+
+			<div summary="Installation og opsætning af SSH" id="ssh">
+				<h1>Installation of opsætning af SSH</h1>
+				<p>
+					Det er let at installere SSH når din telefon er jailbroken.  Man skal bare vælge <i>SSH</i>-fanen, klikke på <i>Installer SSH/SCP/SFTP</i> og følge instruktionerne.
+				</p>
+				<p>
+					Standardkontoerne på telefonen er:<br><br>
+
+					brugernavn: root<br>
+					kodeord: dottie<br><br>
+
+					brugernavn: mobile<br>
+					kodeord: alpine
+				</p>
+				<p>
+					Husk at ændre kodeordene efter du har installeret SSH ved at klikke på  <i>Skift kodeord</i>. Jeg er ikke ansvarlig hvis nogen hacker din telefon.
+				</p>
+				<p>
+					Hvis du senere vil fjerne SSH, kan du gøre dette ved at vælge  <i>fjern SSH</i>.  iNdependence vil spørge om du samtidigt også vil fjerne <b>libarmfp.dylib</b>.  Denne fil kræves for at tredjepartsprogrammer fungerer korrekt, så du vil måske ikke fjerne den.
+				</p>
+			</div>
+			<div summary="SIM-oplås" id="simunlock">
+			    <h1>SIM-oplåsning af din telefon</h1>
+				<p>
+				    Oplås af SIM lader dig bruge din telefon med enhver mobiludbyder (istedet for at være bundet til en udbyder og en langt abonnement).</b>
+				</p>
+				<p>
+				    (<b>Opdatering</b>) For at oplåse SIM, skal du bare vælge <i>Aktivering/SIM</i>-fanen og klikke på 	<i>SIM-oplås telefon</i>. det vil tage et par minutter, så vær lidt tålmodig.
+				</p>
+			</div>
+
+			<div summary="Installing ringtones, wallpapers, and applications" id="customization">
+				<h1>Personliggør</h1>
+				<p>
+					<i>Personliggør</i>-fanen bruger en interface i stil med Finder og tillader træk og slip-installation af ringetoner, baggrunde og programmer. Du kan også bruge <i>Tilføj</i> og <i>Slet</i>-knapperne.
+				</p>
+				<h2>Tredjepartsprogrammer</h2>
+				<p>
+					Bemærk at du skal have installeret SSH på din telefon for at kunne installere og fjerne programmer, da du vil blive spurgt om din telefons IP-adresse og kodeord.
+				</p>
+				<p>
+					For at finde den telefons IP-adresse skal du gå til Indstillinger på din iPhone, navigere til <i>Wi-Fi</i> og trykke på den blå pil ved siden af navnet på Wi-Fi-netværket, du er forbundet til.
+				</p>
+				<p>
+				    Når SSH er installeret kan du installere tredjepartsprogrammer enten ved at trække programmer fra Finder ind i System/User-mappen eller ved at klikke på <i>Tilføj</i>-knappen og derefter vælge programmet med filvælgeren. For at slette det skal du vælge programmet og klikke på <i>Slet</i>.
+				</p>
+				<h2>Ringetoner</h2>
+				<p>
+					Ringetone-installation er forskellig på 1.1.1- og 1.1.2-firmwaren.
+				</p>
+				<p>
+					Hvis du bruger 1.1.1 skal ringetoner være i formatet MPEG-4 Audio (<b>.m4a</b>) da filvælgeren kun vil tillade dig at vælge <b>.m4a</b>-filer. Bemærk også at du kun kan placere egne ringetoner i System-mappen (ikke User-mappen).
+				</p>
+				<p>
+					Du kan ikke installere egne ringetoner med iNdependence hvis du bruger 1.1.2-firmwaren.  Istedet kan du ganske enkelt bruge iTunes ved at omdøbe dine <b>.m4a</b>-filer til <b>.m4r</b> og derefter importere dem til dit iTunes-bibliotek. Når din <b>.m4r</b>-fil er i importeret til iTunes vil den dukke op i <i>Ringtoner</i>-fanen hvorefter du kan vælge om den skal synkroniseres over til din iPhone. Tak til Apple for at gøre tingene simpelt.
+				</p>
+				<h2>Baggrunde</h2>
+				<p>
+					Baggrunde skal være 2 PNG (<b>.png</b>)-filer (selve billedet og et eksempel). Størrelsen på bagrundene er 320x480 for selve billedet og 75x75 for eksemplet. Dette lader lader at virke godt fint for mig.
+				</p>
+			</div>
+
+			<p>
+				<strong>God fornøjelse!</strong>
+			</p>
+
+		</div>
+	</body>
+</html>
