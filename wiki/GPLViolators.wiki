@@ -1,4 +1,4 @@
-#summary A list of websites which are distributing iNdependence in violation of the GPL.
+#summary A list of websites which are distributing iNdependence (or other iPhone unlocking software which is covered under the GPL) in violation of the GPL.
 #labels Featured
 
 = Introduction =
