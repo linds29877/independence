@@ -3989,10 +3989,12 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	m_waitingForRecovery = false;
 
 	if (m_performing113Jailbreak) {
+		m_performing113Jailbreak = false;
 		jailbreak113StageTwo(rdev);
 		return;
 	}
 	else if (m_performingSIMUnlock) {
+		m_performingSIMUnlock = false;
 		simUnlockStageTwo(rdev);
 		return;
 	}
