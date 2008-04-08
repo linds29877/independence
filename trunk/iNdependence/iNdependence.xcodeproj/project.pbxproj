@@ -83,7 +83,7 @@
 		F207EF8C0CC27BE4002AC0AA /* Services111_mod.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services111_mod.plist; path = "Other Files/jailbreak files/Services111_mod.plist"; sourceTree = SOURCE_ROOT; };
 		F207EF8D0CC27BE4002AC0AA /* Services111.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services111.plist; path = "Other Files/jailbreak files/Services111.plist"; sourceTree = SOURCE_ROOT; };
 		F21D004F0D63748900F1E2A8 /* ramit112_files.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = ramit112_files.zip; path = "Other Files/RAMdisk/ramit112_files.zip"; sourceTree = SOURCE_ROOT; };
-		F22109C70D747DFD00993463 /* com.openssh.sshd.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = com.openssh.sshd.plist; path = "Other Files/SSH/OpenSSH/com.openssh.sshd.plist"; sourceTree = SOURCE_ROOT; };
+		F22109C70D747DFD00993463 /* com.openssh.sshd.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = com.openssh.sshd.plist; path = "Other Files/SSH/OpenSSH/com.openssh.sshd.plist"; sourceTree = SOURCE_ROOT; };
 		F25021460C7B354F00B7F437 /* jailbreak.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = jailbreak.jpg; path = images/jailbreak.jpg; sourceTree = SOURCE_ROOT; };
 		F25021510C7B363F00B7F437 /* fstab */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = fstab; path = "Other Files/jailbreak files/fstab"; sourceTree = SOURCE_ROOT; };
 		F25021520C7B363F00B7F437 /* fstab_mod */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = fstab_mod; path = "Other Files/jailbreak files/fstab_mod"; sourceTree = SOURCE_ROOT; };
@@ -109,7 +109,7 @@
 		F2AF95280D8A007100527755 /* Danish */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Danish; path = Danish.lproj/iNdependenceHelp; sourceTree = "<group>"; };
 		F2AF953F0D8A00A500527755 /* Danish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Danish; path = Danish.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		F2BCFB3D0D62CFB10008D0AA /* fstab113 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = fstab113; path = "Other Files/jailbreak files/fstab113"; sourceTree = SOURCE_ROOT; };
-		F2BCFB3F0D62CFED0008D0AA /* Services113.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Services113.plist; path = "Other Files/jailbreak files/Services113.plist"; sourceTree = SOURCE_ROOT; };
+		F2BCFB3F0D62CFED0008D0AA /* Services113.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Services113.plist; path = "Other Files/jailbreak files/Services113.plist"; sourceTree = SOURCE_ROOT; };
 		F2C1F6F50CCFC345003AE395 /* sleep_button.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = sleep_button.gif; path = images/sleep_button.gif; sourceTree = SOURCE_ROOT; };
 		F2CB60C00C6186AB005490ED /* MainWindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MainWindow.mm; sourceTree = SOURCE_ROOT; };
 		F2CB60C30C6186CA005490ED /* MainWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainWindow.h; sourceTree = SOURCE_ROOT; };

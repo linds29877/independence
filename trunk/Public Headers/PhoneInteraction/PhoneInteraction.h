@@ -27,7 +27,7 @@
 #include "PIVersion.h"
 #include "MobDevInternals.h"
 
-/* Our own version of afc when in jailbreak mode */
+/* Our own version of AFC service when in jailbreak mode */
 #define AMSVC_AFC2					CFSTR("com.apple.afc2")
 
 
@@ -37,6 +37,7 @@ enum
 {
 	NOTIFY_INITIALIZATION_SUCCESS = 100,
 	NOTIFY_INITIALIZATION_FAILED,
+	NOTIFY_INITIALIZATION_WARNING,
 	NOTIFY_CONNECTION_SUCCESS,
 	NOTIFY_CONNECTION_FAILED,
 	NOTIFY_AFC_CONNECTION_SUCCESS,
@@ -124,8 +125,7 @@ public:
 
 	// singleton pattern for object instantiation
 	static PhoneInteraction* getInstance(void (*statusFunc)(const char*, bool) = NULL,
-										 void (*notifyFunc)(int, const char*) = NULL,
-										 bool bUsingPrivateFunctions = true);
+										 void (*notifyFunc)(int, const char*) = NULL);
 
 	// used to check connection status (but don't poll -- use notifcation callbacks instead)
 	bool isConnected();
@@ -226,8 +226,7 @@ public:
 private:
 	// private constructor (use getInstance to instantiate)
 	PhoneInteraction(void (*statusFunc)(const char*, bool),
-					 void (*notifyFunc)(int, const char*),
-					 bool bUsingPrivateFunctions);
+					 void (*notifyFunc)(int, const char*));
 
 	// functions used internally
 	void subscribeToNotifications();	
@@ -304,7 +303,6 @@ private:
 	static bool m_enteringRecoveryMode;
 	static bool m_enteringDFUMode;
 	static bool m_waitingForRecovery;
-	static bool m_usingPrivateFunctions;
 	static afc_connection *m_hAFC;
 	static void (*m_statusFunc)(const char*, bool);
 	static void (*m_notifyFunc)(int, const char*);

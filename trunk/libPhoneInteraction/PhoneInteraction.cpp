@@ -227,22 +227,17 @@ bool PhoneInteraction::m_performing112Jailbreak = false;
 bool PhoneInteraction::m_performing113Jailbreak = false;
 bool PhoneInteraction::m_performingSIMUnlock = false;
 bool PhoneInteraction::m_113JbAndActivate = false;
-bool PhoneInteraction::m_usingPrivateFunctions = false;
 bool PhoneInteraction::m_rebooting = false;
 PIVersion PhoneInteraction::m_iTunesVersion = { 0, 0, 0 };
 int PhoneInteraction::m_recoveryAttempts = 0;
 
 PhoneInteraction::PhoneInteraction(void (*statusFunc)(const char*, bool),
-								   void (*notifyFunc)(int, const char*),
-								   bool bUsingPrivateFunctions)
+								   void (*notifyFunc)(int, const char*))
 {
 	m_statusFunc = statusFunc;
 	m_notifyFunc = notifyFunc;
-	m_usingPrivateFunctions = bUsingPrivateFunctions;
-
-	if (determineiTunesVersion()) {
-		m_mobDevInternals = new MobDevInternals(m_iTunesVersion);
-	}
+	m_mobDevInternals = new MobDevInternals();
+	determineiTunesVersion();
 
 #ifdef DEBUG
 	printf("iTunes version: %d.%d.%d\n", m_iTunesVersion.major, m_iTunesVersion.minor,
@@ -277,12 +272,11 @@ PhoneInteraction::~PhoneInteraction()
 }
 
 PhoneInteraction* PhoneInteraction::getInstance(void (*statusFunc)(const char*, bool),
-												void (*notifyFunc)(int, const char*),
-												bool bUsingPrivateFunctions)
+												void (*notifyFunc)(int, const char*))
 {
 
 	if (m_phoneInteraction == NULL) {
-		m_phoneInteraction = new PhoneInteraction(statusFunc, notifyFunc, bUsingPrivateFunctions);
+		m_phoneInteraction = new PhoneInteraction(statusFunc, notifyFunc);
 		m_phoneInteraction->subscribeToNotifications();
 	}
 
@@ -529,10 +523,14 @@ void PhoneInteraction::recoveryProgressCallback(unsigned int progress_number, un
 #endif
 	
 	if (opcode == 9) {
-		m_mobDevInternals->sendCommandToDevice(m_phoneInteraction->m_recoveryDevice, CFSTR("setenv boot-args rd=md0 -progress"));
 
-		// alternative boot args for restore mode boot spew
-		//m_mobDevInternals->sendCommandToDevice(m_phoneInteraction->m_recoveryDevice, CFSTR("setenv boot-args rd=md0 -v"));
+		if (m_mobDevInternals && m_mobDevInternals->IsInitialized()) {
+			m_mobDevInternals->sendCommandToDevice(m_phoneInteraction->m_recoveryDevice, CFSTR("setenv boot-args rd=md0 -progress"));
+
+			// alternative boot args for restore mode boot spew
+			//m_mobDevInternals->sendCommandToDevice(m_phoneInteraction->m_recoveryDevice, CFSTR("setenv boot-args rd=md0 -v"));
+		}
+
 	}
 	else {
 #ifdef DEBUG
@@ -568,16 +566,12 @@ void PhoneInteraction::recoveryDisconnectNotificationCallback(am_recovery_device
 
 void PhoneInteraction::subscribeToNotifications()
 {
+	struct am_device_notification *notif;
 
-	if ( (!m_mobDevInternals || !m_mobDevInternals->IsInitialized()) && m_usingPrivateFunctions ) {
-		char msg[256];
-		snprintf(msg, 256, "Unsupported version of iTunes is installed.\nDetected iTunes version is %d.%d.%d\n",
-				 m_iTunesVersion.major, m_iTunesVersion.minor, m_iTunesVersion.point);
-		(*m_notifyFunc)(NOTIFY_INITIALIZATION_FAILED, msg);
+	if ( !m_mobDevInternals || !m_mobDevInternals->IsInitialized() ) {
+		(*m_notifyFunc)(NOTIFY_INITIALIZATION_WARNING, "The MobileDevice framework private functions are not initialized.  You will not be able to jailbreak or SIM unlock your phone.  Reinstalling iTunes will likely fix this problem.\n\nIf you've installed the iPhone SDK, then you'll need to manually remove /System/Library/PrivateFrameworks/MobileDevice.framework and then reinstall iTunes.  However, be aware that doing this will cause XCode 3.1 beta to crash when you connect an iPhone while it's running.");
 		return;
 	}
-
-	struct am_device_notification *notif;
 
 	if (AMDeviceNotificationSubscribe(deviceNotificationCallback, 0, 0, 0, &notif)) {
 		(*m_notifyFunc)(NOTIFY_INITIALIZATION_FAILED, "Error registering for callbacks from iPhone");
@@ -3485,6 +3479,11 @@ void PhoneInteraction::perform113Jailbreak(bool bActivate, const char *ramdiskFi
 		return;
 	}
 
+	if (!m_mobDevInternals || !m_mobDevInternals->IsInitialized()) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Mobile device internal functions are not setup.");
+		return;
+	}
+
 	int len = strlen(ramdiskFile);
 
 	if (len < 1) {
@@ -3529,6 +3528,12 @@ bool PhoneInteraction::sharedRamdiskSetup(am_recovery_device *rdev, bool bJailbr
 										  bool bActivate, bool bSIMUnlock, const char *fwVersion,
 										  int failureNotification)
 {
+
+	if (!m_mobDevInternals || !m_mobDevInternals->IsInitialized()) {
+		(*m_notifyFunc)(failureNotification, "Mobile device internal functions are not setup.");
+		return false;
+	}
+
 	CFStringRef cfStr = CFStringCreateWithCString(kCFAllocatorDefault, "setenv auto-boot true", kCFStringEncodingUTF8);
 	
 	if (cfStr == NULL) {
@@ -3702,6 +3707,11 @@ void PhoneInteraction::performJailbreak(bool bActivate, const char *modifiedServ
 		return;
 	}
 
+	if (!m_mobDevInternals || !m_mobDevInternals->IsInitialized()) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Mobile device internal functions are not setup.");
+		return;
+	}
+
 	if (m_statusFunc) {
 		(*m_statusFunc)("Performing jailbreak...", true);
 	}
@@ -3762,7 +3772,12 @@ void PhoneInteraction::performSIMUnlock(const char *ramdiskPath)
 		(*m_notifyFunc)(NOTIFY_SIMUNLOCK_FAILED, "Can't perform a SIM unlock when no phone is connected.");
 		return;
 	}
-	
+
+	if (!m_mobDevInternals || !m_mobDevInternals->IsInitialized()) {
+		(*m_notifyFunc)(NOTIFY_SIMUNLOCK_FAILED, "Mobile device internal functions are not setup.");
+		return;
+	}
+
 	int len = strlen(ramdiskPath);
 
 	if (len < 1) {
@@ -4036,6 +4051,11 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 	CFRelease(cfFirmwarePath);
 #else
 
+	if (!m_mobDevInternals || !m_mobDevInternals->IsInitialized()) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Mobile device internal functions are not setup.");
+		return;
+	}
+
 	// Tried and true method using firmware filenames
 
 	char ramdisk[PATH_MAX+1];
@@ -4203,6 +4223,11 @@ void PhoneInteraction::enterRecoveryMode()
 void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 {
 
+	if (!m_mobDevInternals || !m_mobDevInternals->IsInitialized()) {
+		(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Mobile device internal functions are not setup.");
+		return;
+	}
+
 	// set device to auto boot
 	if (m_mobDevInternals->sendCommandToDevice(dev, CFSTR("setenv auto-boot true"))) {
 
@@ -4262,6 +4287,10 @@ void PhoneInteraction::restoreModeStarted()
 {
 	m_inRestoreMode = true;
 	(*m_notifyFunc)(NOTIFY_RESTORE_CONNECTED, "Restore mode started");
+
+	if (!m_mobDevInternals || !m_mobDevInternals->IsInitialized()) {
+		return;
+	}
 
     m_restoreDevice = AMRestoreModeDeviceCreate(0, AMDeviceGetConnectionID(m_iPhone), 0);
     m_restoreDevice->port = m_mobDevInternals->socketForPort(m_restoreDevice, 0xf27e);

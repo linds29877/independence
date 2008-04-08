@@ -22,9 +22,8 @@
 #include <CoreFoundation.h>
 #else
 #include <CoreFoundation/CoreFoundation.h>
+#include <CoreServices/CoreServices.h>
 #endif
-
-#include "PIVersion.h"
 
 
 // data types from MobileDevice.h (can't directly include it here)
@@ -44,15 +43,24 @@ typedef int (*t_socketForPort)(struct am_restore_device *rdev, unsigned int port
 typedef unsigned int (*t_sendCommandToDevice)(struct am_recovery_device *rdev,
                                               CFStringRef cmd) __attribute__ ((regparm(2)));
 
+enum
+{
+	ARCH_NATIVE = 0,
+	ARCH_PPC,
+	ARCH_INTEL
+};
+
 class MobDevInternals
 {
 
 public:
-	MobDevInternals(const PIVersion& iTunesVersion);
+	MobDevInternals();
+	MobDevInternals(unsigned int arch, const char *file);
 	~MobDevInternals();
 
 	bool IsInitialized();
 	char *GetInitializationError();
+	void PrintPrivateFunctionOffsets();
 
 	int socketForPort(am_restore_device *rdev, unsigned int portnum);
 	int performOperation(am_restore_device *rdev, CFDictionaryRef cfdr);
@@ -60,8 +68,15 @@ public:
 	int sendFileToDevice(am_recovery_device *rdev, CFStringRef filename);
 
 private:
+	unsigned int m_arch;
+	const char *m_mobDevFile;
+
 	bool m_bIsInitialized;
 	char *m_initializationError;
+
+	unsigned char *m_mobDevBuffer;
+	uint32_t m_mobDevSize;
+	uint32_t m_mobDevLoadOffset;
 
 	t_socketForPort m_socketForPort;
 	t_performOperation m_performOperation;
@@ -69,6 +84,17 @@ private:
 	t_sendFileToDevice m_sendFileToDevice;
 
 	void SetInitializationError(const char *msg);
-	bool SetupPrivateFunctions(const PIVersion& iTunesVersion);
+	bool SetupPrivateFunctions();
+
+	void *ScanMobDevForBinaryPatterns(unsigned char *patterns, unsigned int numpats,
+									  unsigned int *patlens, unsigned int totalpatbytes,
+									  long int sysversion);
+	void *ScanMobDevForSFP();
+	void *ScanMobDevForPO();
+	void *ScanMobDevForSCTD();
+	void *ScanMobDevForSFTD();
+	void *ScanMobDevForFunction(int func);
+	bool ParseMobDevMacho32(FILE *fp);
+	bool OpenMobDevLibrary();
 
 };
