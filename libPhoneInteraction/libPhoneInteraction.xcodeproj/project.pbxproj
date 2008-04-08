@@ -39,7 +39,6 @@
 		F25681D50C57127B009FAEA2 /* PhoneInteraction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PhoneInteraction.h; path = "../Public Headers/PhoneInteraction/PhoneInteraction.h"; sourceTree = SOURCE_ROOT; };
 		F25681D60C57127B009FAEA2 /* UtilityFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UtilityFunctions.h; path = "../Public Headers/PhoneInteraction/UtilityFunctions.h"; sourceTree = SOURCE_ROOT; };
 		F25681D90C5712A8009FAEA2 /* MobileDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MobileDevice.h; path = "../Public Headers/MobileDevice/MobileDevice.h"; sourceTree = SOURCE_ROOT; };
-		F263AD380D0E72EA002FED54 /* libMobDev.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libMobDev.dylib; path = "../Third Party Libraries/libMobDev.dylib"; sourceTree = SOURCE_ROOT; };
 		F26F96810C885AA70024C0DF /* SSHHelper.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = SSHHelper.cpp; sourceTree = "<group>"; };
 		F26F96D70C8866C00024C0DF /* SSHHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHHelper.h; path = "../Public Headers/PhoneInteraction/SSHHelper.h"; sourceTree = SOURCE_ROOT; };
 		F27046470D4ED357001F22F1 /* MobDevInternals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MobDevInternals.h; path = "../Public Headers/PhoneInteraction/MobDevInternals.h"; sourceTree = "<group>"; };
@@ -85,7 +84,6 @@
 		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				F263AD380D0E72EA002FED54 /* libMobDev.dylib */,
 				F20742700CE4A57900A152B8 /* MobileDevice.framework */,
 				F210E3C30C8F6CE70029B820 /* libz.dylib */,
 				F2567DC60C56F81A009FAEA2 /* libcrypto.dylib */,

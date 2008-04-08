@@ -1,5 +1,5 @@
  *
- * iNdependence v1.4 beta 5
+ * iNdependence v1.4
  * Copyright 2007-2008 The Operator
  *
  * This software is free software; you can redistribute it and/or
@@ -41,5 +41,7 @@ Credits to:
   - Christian Terrazas for the icon/banner
   - Geohot for gunlock (and answering my questions)
   - pumpkin and bgm for the RAM disk jailbreak method (and for bringing to my attention it's history)
+  - Adam Elliot for the iPod Touch fix
+  - Daniel Flugt for the Danish localization
 
 Cheers to the iPhone Dev, iPhone Elite, and iTouch Dev teams!

@@ -83,6 +83,9 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				[NSApp terminate:g_appController];
 				break;
+			case NOTIFY_INITIALIZATION_WARNING:
+				[g_mainWindow displayAlert:@"Warning" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
+				break;
 			case NOTIFY_CONNECTION_FAILED:
 				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
 				break;
@@ -1253,39 +1256,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 	return [NSString stringWithCString:m_phoneInteraction->getPhoneProductVersion() encoding:NSUTF8StringEncoding];
 }
 
-- (bool)isUsing10xFirmware
-{
-	char *value = m_phoneInteraction->getPhoneProductVersion();
-
-	if (!strncmp(value, "1.0", 3)) {
-		return true;
-	}
-
-	return false;
-}
-
-- (bool)isUsing113Firmware
-{
-	char *value = m_phoneInteraction->getPhoneProductVersion();
-	
-	if (!strncmp(value, "1.1.3", 5)) {
-		return true;
-	}
-	
-	return false;
-}
-
-- (bool)isUsing114Firmware
-{
-	char *value = m_phoneInteraction->getPhoneProductVersion();
-	
-	if (!strncmp(value, "1.1.4", 5)) {
-		return true;
-	}
-	
-	return false;
-}
-
 - (void)setPerformingJailbreak:(bool)bJailbreaking
 {
 	m_performingJailbreak = bJailbreaking;
@@ -1313,8 +1283,9 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 - (IBAction)performJailbreak:(id)sender
 {
-
-	if ([self isUsing10xFirmware]) {
+	char *value = m_phoneInteraction->getPhoneProductVersion();
+	
+	if (!strncmp(value, "1.0", 3)) {
 		NSString *firmwarePath = nil;
 
 		// first things first -- get the path to the unzipped firmware files
@@ -1358,17 +1329,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 		m_phoneInteraction->performJailbreak(false, [firmwarePath UTF8String], [fstabFile UTF8String],
 											 [servicesFile UTF8String]);
 	}
-	else if ([self isUsing113Firmware] || [self isUsing114Firmware]) {
-		NSString *ramdiskFile = [self getRamdiskPath];
-
-		if (ramdiskFile == nil) {
-			[mainWindow displayAlert:@"Error" message:@"Error obtaining RAM disk file."];
-			return;
-		}
-
-		m_phoneInteraction->performJailbreak(false, [ramdiskFile UTF8String]);
-	}
-	else {
+	else if (!strncmp(value, "1.1.1", 5) || !strncmp(value, "1.1.2", 5)) {
 		NSString *servicesFile = [[NSBundle mainBundle] pathForResource:@"Services111_mod" ofType:@"plist"];
 		
 		if (servicesFile == nil) {
@@ -1378,6 +1339,16 @@ static void phoneInteractionNotification(int type, const char *msg)
 		
 		m_performingJailbreak = true;
 		m_phoneInteraction->performJailbreak(false, [servicesFile UTF8String]);
+	}
+	else {
+		NSString *ramdiskFile = [self getRamdiskPath];
+
+		if (ramdiskFile == nil) {
+			[mainWindow displayAlert:@"Error" message:@"Error obtaining RAM disk file."];
+			return;
+		}
+
+		m_phoneInteraction->performJailbreak(false, [ramdiskFile UTF8String]);
 	}
 
 }
@@ -1389,17 +1360,19 @@ static void phoneInteractionNotification(int type, const char *msg)
 	NSString *servicesFile = nil;
 	NSString *fstabFile = nil;
 
-	if ([self isUsing10xFirmware]) {
+	char *value = m_phoneInteraction->getPhoneProductVersion();
+	
+	if (!strncmp(value, "1.0", 3)) {
 		servicesFile = [[NSBundle mainBundle] pathForResource:@"Services" ofType:@"plist"];
 		fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab" ofType:@""];
 	}
-	else if ([self isUsing113Firmware] || [self isUsing114Firmware]) {
-		servicesFile = [[NSBundle mainBundle] pathForResource:@"Services113" ofType:@"plist"];
-		fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab113" ofType:@""];
-	}
-	else {
+	else if (!strncmp(value, "1.1.1", 5) || !strncmp(value, "1.1.2", 5)) {
 		servicesFile = [[NSBundle mainBundle] pathForResource:@"Services111" ofType:@"plist"];
 		fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab" ofType:@""];
+	}
+	else {
+		servicesFile = [[NSBundle mainBundle] pathForResource:@"Services113" ofType:@"plist"];
+		fstabFile = [[NSBundle mainBundle] pathForResource:@"fstab113" ofType:@""];
 	}
 
 	if (servicesFile == nil) {
@@ -1634,8 +1607,12 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_waitingForActivation = true;
 	
 	if (!m_phoneInteraction->isPhoneJailbroken()) {
-
-		if ([self isUsing113Firmware] || [self isUsing114Firmware]) {
+		char *value = m_phoneInteraction->getPhoneProductVersion();
+		
+		if (!strncmp(value, "1.0", 3) || !strncmp(value, "1.1.1", 5) || !strncmp(value, "1.1.2", 5)) {
+			[self performJailbreak:sender];
+		}
+		else {
 			NSString *ramdiskFile = [self getRamdiskPath];
 
 			if (ramdiskFile == nil) {
@@ -1644,9 +1621,6 @@ static void phoneInteractionNotification(int type, const char *msg)
 			}
 
 			m_phoneInteraction->performJailbreak(true, [ramdiskFile UTF8String]);
-		}
-		else {
-			[self performJailbreak:sender];
 		}
 
 		return;
