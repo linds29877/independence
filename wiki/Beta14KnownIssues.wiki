@@ -27,8 +27,6 @@ The issue tracker has become too clogged with bugs and I don't have time to deal
 
   * If you have previously used iPhoneSimFree (IPSF) to SIM unlock your phone, then iNdependence will still work for you.  However, you may need to run Signal.app each time your phone boots in order to get service.  There are mixed reports on this: some people need Signal.app, some don't.  I'm unsure why at this point as I've never used IPSF myself.
 
-  * Sometimes, if you Activate and then SIM Unlock right afterwards, the SIM Unlock step will only do a jailbreak (not actually SIM Unlock the phone).  If you see "Jailbreak succeeded" after SIM Unlocking, then it didn't work.  If you SIM Unlock a second time, it should work.
-
    * iNdependence can freeze up when it's attempting to jailbreak, activate, and SIM unlock.  If the screen on your phone hasn't switched to the Apple logo within 30 seconds, then it's likely frozen.  You'll need to force quit and restart iNdependence (Alt+Option+Esc, select iNdependence, press "Force Quit").  This is a long-standing bug, and it's due to a faulty API in the iTunes library it uses (MobileDevice).
 
   WORKAROUND: Force quit and restart iNdependence, then try again.
