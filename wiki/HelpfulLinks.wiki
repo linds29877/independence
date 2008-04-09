@@ -1,6 +1,6 @@
 #summary A list of links into the iPhone development / hacking community
 
-  * [http://iphonedevwiki.scribblewiki.com/Main_Page The iPhone Dev Wiki (Mirror)] - A mirror of the site that started it all for me.  Lots of great technical information and history there, but unfortunately spammers have also invaded the site recently, making life difficult for the maintainers. (Now Defunct)
+  * [http://iphonedevwiki.scribblewiki.com/Main_Page The iPhone Dev Wiki (Mirror)] - A mirror of the site that started it all for me.  Lots of great technical information and history there.
 
   * [http://hackint0sh.org/forum/forumdisplay.php?f=123 The Hackint0sh iPhone Forums] - Started up around the same time as the iPhone Dev Wiki, so again, a wealth of information and helpful people here.
 
@@ -12,7 +12,7 @@
 
   * [http://george.zjlotto.com/ George Zhu's Blog] - No, this is not Geohot's blog! ;)  But it's still a good resource for understanding the technical details behind iPhone hacking discoveries.
 
-  * [http://www.touchdev.net/wiki/Main_Page The Touchdev Wiki] - Same structure as the iPhone Dev Wiki, but for the iPod Touch (or iTouch).
+  * [http://www.touchdev.net/wiki/Main_Page The Touchdev Wiki] - Same structure as the iPhone Dev Wiki, but for the iPod Touch (or iTouch) (defunct).
 
   * [http://code.google.com/p/iphone-dev/ iPhone Toolchain Project Page] - Essential for iPhone application developers.  Just make sure to release a standalone version of your killer iPhone app, ok? ;)
 
