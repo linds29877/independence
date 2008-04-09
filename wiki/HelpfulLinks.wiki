@@ -1,6 +1,6 @@
 #summary A list of links into the iPhone development / hacking community
 
-  * [http://iphone.fiveforty.net/wiki/index.php/Main_Page The iPhone Dev Wiki] - The site that started it all for me.  Lots of great technical information and history there, but unfortunately spammers have also invaded the site recently, making life difficult for the maintainers. (Now Defunct)
+  * [http://iphonedevwiki.scribblewiki.com/Main_Page The iPhone Dev Wiki (Mirror)] - A mirror of the site that started it all for me.  Lots of great technical information and history there, but unfortunately spammers have also invaded the site recently, making life difficult for the maintainers. (Now Defunct)
 
   * [http://hackint0sh.org/forum/forumdisplay.php?f=123 The Hackint0sh iPhone Forums] - Started up around the same time as the iPhone Dev Wiki, so again, a wealth of information and helpful people here.
 
