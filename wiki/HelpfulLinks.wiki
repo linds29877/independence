@@ -10,7 +10,7 @@
 
   * [http://iphonejtag.blogspot.com/ Geohot's Blog] - Geohot is the first person to have a SIM unlocked iPhone (outside of Apple).  Knows the iPhone hardware as well as the Apple engineers.  Though his software skills are still in question... (hey, I cleaned up bits of the fake IPSF server code for my own use, so I've seen his code) ;)
 
-  * [http://george.zjlotto.com/ George's Blog] - No, this is not Geohot's blog! ;)  But it's still a good resource for understanding the technical details behind iPhone hacking discoveries.
+  * [http://george.zjlotto.com/ George Zhu's Blog] - No, this is not Geohot's blog! ;)  But it's still a good resource for understanding the technical details behind iPhone hacking discoveries.
 
   * [http://www.touchdev.net/wiki/Main_Page The Touchdev Wiki] - Same structure as the iPhone Dev Wiki, but for the iPod Touch (or iTouch).
 
