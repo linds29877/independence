@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+v1.4.1
+
+- Added button in Firmware tab to change enter/exit recovery mode
+- Added automated update checking via Sparkle framework
+
+
 v1.4 - 04/08/08
 
 - Fixed bug where, if the iPhone software download directory doesn't exist, iNdependence fails to jailbreak/activate (thanks to Adam Elliot)
