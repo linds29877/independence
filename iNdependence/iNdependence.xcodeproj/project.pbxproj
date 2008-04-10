@@ -27,6 +27,8 @@
 		F26A50AB0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = F26A50AA0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm */; };
 		F26A51EA0C80EAEC00A1C30C /* Add.png in Resources */ = {isa = PBXBuildFile; fileRef = F26A51E90C80EAEC00A1C30C /* Add.png */; };
 		F26A51EC0C80EAF100A1C30C /* Delete.png in Resources */ = {isa = PBXBuildFile; fileRef = F26A51EB0C80EAF100A1C30C /* Delete.png */; };
+		F27E36C10DADDB1B0073F5A1 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F27E36C00DADDB1B0073F5A1 /* Sparkle.framework */; };
+		F27E36CD0DADDBD00073F5A1 /* Sparkle.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = F27E36C00DADDB1B0073F5A1 /* Sparkle.framework */; };
 		F2825A100C7DCDE8006936D6 /* iNdependence.icns in Resources */ = {isa = PBXBuildFile; fileRef = F2825A0F0C7DCDE8006936D6 /* iNdependence.icns */; };
 		F286571A0CC969B600A01FCE /* sftp-server in Resources */ = {isa = PBXBuildFile; fileRef = F286570F0CC969B600A01FCE /* sftp-server */; };
 		F28657220CC969B600A01FCE /* sshd in Resources */ = {isa = PBXBuildFile; fileRef = F28657170CC969B600A01FCE /* sshd */; };
@@ -69,6 +71,20 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		F27E36CC0DADDBC90073F5A1 /* Copy Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F27E36CD0DADDBD00073F5A1 /* Sparkle.framework in Copy Frameworks */,
+			);
+			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -96,6 +112,7 @@
 		F26A50AA0C80BB6D00A1C30C /* CustomizeBrowserDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CustomizeBrowserDelegate.mm; sourceTree = "<group>"; };
 		F26A51E90C80EAEC00A1C30C /* Add.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Add.png; path = images/Add.png; sourceTree = "<group>"; };
 		F26A51EB0C80EAF100A1C30C /* Delete.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Delete.png; path = images/Delete.png; sourceTree = "<group>"; };
+		F27E36C00DADDB1B0073F5A1 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = "../Third Party Libraries/Sparkle.framework"; sourceTree = SOURCE_ROOT; };
 		F2825A0F0C7DCDE8006936D6 /* iNdependence.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = iNdependence.icns; path = images/iNdependence.icns; sourceTree = SOURCE_ROOT; };
 		F286570F0CC969B600A01FCE /* sftp-server */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = "sftp-server"; path = "Other Files/SSH/OpenSSH/sftp-server"; sourceTree = SOURCE_ROOT; };
 		F28657170CC969B600A01FCE /* sshd */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = sshd; path = "Other Files/SSH/OpenSSH/sshd"; sourceTree = SOURCE_ROOT; };
@@ -138,6 +155,7 @@
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				F2ECD7710D0FA51E006D8DC6 /* MobileDevice.framework in Frameworks */,
 				F25D90A00D5C26C10067EA34 /* libPhoneInteraction.dylib in Frameworks */,
+				F27E36C10DADDB1B0073F5A1 /* Sparkle.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -172,6 +190,7 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F27E36C00DADDB1B0073F5A1 /* Sparkle.framework */,
 				F2ECD7700D0FA51E006D8DC6 /* MobileDevice.framework */,
 				F2CB62260C61A753005490ED /* libPhoneInteraction.xcodeproj */,
 			);
@@ -320,7 +339,7 @@
 				8D1107290486CEB800E47090 /* Resources */,
 				8D11072C0486CEB800E47090 /* Sources */,
 				8D11072E0486CEB800E47090 /* Frameworks */,
-				F2CB624A0C61A7B6005490ED /* Copy dylibs to Bundle */,
+				F27E36CC0DADDBC90073F5A1 /* Copy Frameworks */,
 			);
 			buildRules = (
 			);
@@ -416,23 +435,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		F2CB624A0C61A7B6005490ED /* Copy dylibs to Bundle */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Copy dylibs to Bundle";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cp \"../Public Libraries/$CONFIGURATION/libPhoneInteraction.dylib\" \"$BUILD_DIR/$CONFIGURATION/$PRODUCT_NAME.$WRAPPER_EXTENSION/Contents/MacOS\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		8D11072C0486CEB800E47090 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -497,8 +499,10 @@
 					"$(inherited)",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
 				);
 				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"";
+				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_2 = "\"$(SRCROOT)/../Third Party Libraries\"";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -534,7 +538,9 @@
 					"$(inherited)",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
 				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/../Third Party Libraries\"";
 				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;

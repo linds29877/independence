@@ -3918,7 +3918,7 @@ bool PhoneInteraction::isPhoneJailbroken()
 	return m_jailbroken;
 }
 
-void PhoneInteraction::recoveryModeStarted_dfu(struct am_recovery_device *rdev)
+void PhoneInteraction::recoveryModeStarted_dfu()
 {
 	char dfuFile[PATH_MAX+1];
 	unsigned int len = strlen(m_firmwarePath);
@@ -3949,13 +3949,13 @@ void PhoneInteraction::recoveryModeStarted_dfu(struct am_recovery_device *rdev)
 	}
 	
 	// send DFU file
-	if (m_mobDevInternals->sendFileToDevice(rdev, cfDFU)) {
+	if (m_mobDevInternals->sendFileToDevice(m_recoveryDevice, cfDFU)) {
 		(*m_notifyFunc)(NOTIFY_DFU_FAILED, "Error sending DFU file to device.");
 		return;
 	}
 	
 	// load ramdisk
-	if (m_mobDevInternals->sendCommandToDevice(rdev, CFSTR("go"))) {
+	if (m_mobDevInternals->sendCommandToDevice(m_recoveryDevice, CFSTR("go"))) {
 		(*m_notifyFunc)(NOTIFY_DFU_FAILED, "Error sending go command to device.");
 		return;
 	}
@@ -3974,28 +3974,28 @@ void PhoneInteraction::recoveryModeStarted(struct am_recovery_device *rdev)
 		return;
 	}
 	else if ( m_enteringDFUMode ) {
-		recoveryModeStarted_dfu(rdev);
+		recoveryModeStarted_dfu();
 		return;
 	}
 	else if ( m_finishingJailbreak || m_returningToJail ) {
 		
 		if (!m_recoveryOccurred) {
 			m_recoveryOccurred = true;
-			exitRecoveryMode(rdev);
+			exitRecoveryMode();
 		}
 
 		return;
 	}
 	else if ( m_rebooting ) {
 		m_rebooting = false;
-		exitRecoveryMode(rdev);
+		exitRecoveryMode();
 		return;
 	}
 	else if ( !m_waitingForRecovery ) {
 
 		// try once to save them from recovery mode
 		if (m_recoveryAttempts++ == 0) {
-			exitRecoveryMode(rdev);
+			exitRecoveryMode();
 		}
 
 		return;
@@ -4186,6 +4186,11 @@ void PhoneInteraction::recoveryModeFinished(am_recovery_device *dev)
 	(*m_notifyFunc)(NOTIFY_RECOVERY_DISCONNECTED, "Recovery mode ended");
 }
 
+bool PhoneInteraction::isInRecoveryMode()
+{
+	return m_inRecoveryMode;
+}
+
 bool PhoneInteraction::reboot()
 {
 	
@@ -4207,20 +4212,20 @@ void PhoneInteraction::enterRecoveryMode()
 {
 	
 	if (!isConnected()) {
-		(*m_notifyFunc)(NOTIFY_RECOVERY_FAILED, "Can't enter DFU mode when no phone is connected.");
+		(*m_notifyFunc)(NOTIFY_RECOVERY_FAILED, "Can't enter recovery mode when no phone is connected.");
 		return;
 	}
 	
 	m_enteringRecoveryMode = true;
 	
 	if (AMDeviceEnterRecovery(m_iPhone)) {
-		(*m_notifyFunc)(NOTIFY_RECOVERY_FAILED, "Error entering recovery mode.");
+		(*m_notifyFunc)(NOTIFY_RECOVERY_FAILED, "Unknown error entering recovery mode.");
 		return;
 	}
 	
 }
 
-void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
+void PhoneInteraction::exitRecoveryMode()
 {
 
 	if (!m_mobDevInternals || !m_mobDevInternals->IsInitialized()) {
@@ -4229,7 +4234,7 @@ void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 	}
 
 	// set device to auto boot
-	if (m_mobDevInternals->sendCommandToDevice(dev, CFSTR("setenv auto-boot true"))) {
+	if (m_mobDevInternals->sendCommandToDevice(m_recoveryDevice, CFSTR("setenv auto-boot true"))) {
 
 		if (m_finishingJailbreak) {
 			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error turning on auto-boot.");
@@ -4243,7 +4248,7 @@ void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 
 	// clear boot args (not needed)
 	/*
-	if (m_mobDevInternals->sendCommandToDevice(dev, CFSTR("setenv boot-args"))) {
+	if (m_mobDevInternals->sendCommandToDevice(m_recoveryDevice, CFSTR("setenv boot-args"))) {
 		
 		if (m_finishingJailbreak) {
 			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error setting boot args.");
@@ -4257,7 +4262,7 @@ void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 	 */
 
 	// save the environment
-	if (m_mobDevInternals->sendCommandToDevice(dev, CFSTR("saveenv"))) {
+	if (m_mobDevInternals->sendCommandToDevice(m_recoveryDevice, CFSTR("saveenv"))) {
 
 		if (m_finishingJailbreak) {
 			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error saving environment.");
@@ -4269,7 +4274,7 @@ void PhoneInteraction::exitRecoveryMode(am_recovery_device *dev)
 	}
 
 	// reboot into normal mode
-	if (m_mobDevInternals->sendCommandToDevice(dev, CFSTR("fsboot"))) {
+	if (m_mobDevInternals->sendCommandToDevice(m_recoveryDevice, CFSTR("fsboot"))) {
 
 		if (m_finishingJailbreak) {
 			(*m_notifyFunc)(NOTIFY_JAILBREAK_FAILED, "Error trying to reboot into normal mode.");
@@ -4441,6 +4446,11 @@ void PhoneInteraction::restoreModeFinished()
 	(*m_notifyFunc)(NOTIFY_RESTORE_DISCONNECTED, "Restore mode ended");
 }
 
+bool PhoneInteraction::isInRestoreMode()
+{
+	return m_inRestoreMode;
+}
+
 void PhoneInteraction::enterDFUMode(const char *firmwarePath)
 {
 	
@@ -4498,4 +4508,9 @@ void PhoneInteraction::dfuModeFinished(am_recovery_device *dev)
 	m_dfuDevice = NULL;
 
 	(*m_notifyFunc)(NOTIFY_DFU_DISCONNECTED, "DFU mode ended");
+}
+
+bool PhoneInteraction::isInDFUMode()
+{
+	return m_inDFUMode;
 }

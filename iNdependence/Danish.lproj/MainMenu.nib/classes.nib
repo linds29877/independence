@@ -1,130 +1,272 @@
-{
-    IBClasses =     (
-                {
-            ACTIONS =             {
-                activate = id;
-                backupActivation = id;
-                changePassword = id;
-                deactivate = id;
-                enterDFUMode = id;
-                generateActivation = id;
-                imeiDialogCancel = id;
-                imeiDialogOk = id;
-                installSSH = id;
-                installSimUnlock = id;
-                passwordDialogCancel = id;
-                passwordDialogOk = id;
-                performJailbreak = id;
-                performSimUnlock = id;
-                preFirmwareUpgrade = id;
-                putPEMOnPhone = id;
-                removeSSH = id;
-                removeSimUnlock = id;
-                restorePEM = id;
-                returnToJail = id;
-                showAboutPanel = id;
-                syncRingtones = id;
-                waitDialogCancel = id;
-            };
-            CLASS = AppController;
-            LANGUAGE = ObjC;
-            OUTLETS =             {
-                accountNameField = NSTextField;
-                activateButton = NSButton;
-                activationStateField = NSTextField;
-                basebandVersionField = NSTextField;
-                buildVersionField = NSTextField;
-                changePasswordButton = NSButton;
-                customizeBrowser = CustomizeBrowser;
-                deactivateButton = NSButton;
-                enterDFUModeButton = NSButton;
-                firmwareVersionField = NSTextField;
-                iTunesVersionField = NSTextField;
-                installSSHButton = NSButton;
-                installSimUnlockButton = NSButton;
-                jailbreakButton = NSButton;
-                jailbrokenField = NSTextField;
-                mainWindow = MainWindow;
-                newPasswordDialog = NSWindow;
-                passwordAgainField = NSSecureTextField;
-                passwordField = NSSecureTextField;
-                performSimUnlockButton = NSButton;
-                preFirmwareUpgradeButton = NSButton;
-                productVersionField = NSTextField;
-                removeSSHButton = NSButton;
-                removeSimUnlockButton = NSButton;
-                returnToJailButton = NSButton;
-                serialNumberField = NSTextField;
-                sshHandler = SSHHandler;
-                sshInstalledField = NSTextField;
-            };
-            SUPERCLASS = NSObject;
-        },
-                {
-            CLASS = CustomizeBrowser;
-            LANGUAGE = ObjC;
-            SUPERCLASS = NSBrowser;
-        },
-                {
-            ACTIONS =             {
-                addButtonPressed = id;
-                deleteButtonPressed = id;
-                selectionChanged = id;
-            };
-            CLASS = CustomizeBrowserDelegate;
-            LANGUAGE = ObjC;
-            OUTLETS =             {
-                "m_addButton" = NSButton;
-                "m_browser" = CustomizeBrowser;
-                "m_deleteButton" = NSButton;
-                "m_mainWindow" = MainWindow;
-                "m_sshHandler" = SSHHandler;
-            };
-            SUPERCLASS = NSObject;
-        },
-                {
-            CLASS = FirstResponder;
-            LANGUAGE = ObjC;
-            SUPERCLASS = NSObject;
-        },
-                {
-            ACTIONS =             {
-                showAboutPanel = id;
-            };
-            CLASS = MainWindow;
-            LANGUAGE = ObjC;
-            OUTLETS =             {
-                aboutBox = NSWindow;
-                appController = AppController;
-                statusBar = NSTextField;
-                statusLabel = NSTextField;
-                statusSpinner = NSProgressIndicator;
-                waitDialog = NSWindow;
-                waitDialogCancel = NSButton;
-                waitDialogImage = NSImageView;
-                waitDialogMessage = NSTextField;
-                waitDialogSpinner = NSProgressIndicator;
-            };
-            SUPERCLASS = NSWindow;
-        },
-                {
-            ACTIONS =             {
-                sshDialogCancel = id;
-                sshDialogOk = id;
-            };
-            CLASS = SSHHandler;
-            LANGUAGE = ObjC;
-            OUTLETS =             {
-                "m_mainWindow" = MainWindow;
-                "m_sshIPText1" = NSTextField;
-                "m_sshIPText2" = NSTextField;
-                "m_sshIPText3" = NSTextField;
-                "m_sshIPText4" = NSTextField;
-                "m_sshPassword" = NSSecureTextField;
-                "m_sshWindow" = NSWindow;
-            };
-            SUPERCLASS = NSObject;
-        }
-    );
-    IBVersion = 1;
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IBClasses</key>
+	<array>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key>showAboutPanel</key>
+				<string>id</string>
+			</dict>
+			<key>CLASS</key>
+			<string>MainWindow</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>OUTLETS</key>
+			<dict>
+				<key>aboutBox</key>
+				<string>NSWindow</string>
+				<key>appController</key>
+				<string>AppController</string>
+				<key>statusBar</key>
+				<string>NSTextField</string>
+				<key>statusLabel</key>
+				<string>NSTextField</string>
+				<key>statusSpinner</key>
+				<string>NSProgressIndicator</string>
+				<key>waitDialog</key>
+				<string>NSWindow</string>
+				<key>waitDialogCancel</key>
+				<string>NSButton</string>
+				<key>waitDialogImage</key>
+				<string>NSImageView</string>
+				<key>waitDialogMessage</key>
+				<string>NSTextField</string>
+				<key>waitDialogSpinner</key>
+				<string>NSProgressIndicator</string>
+			</dict>
+			<key>SUPERCLASS</key>
+			<string>NSWindow</string>
+		</dict>
+		<dict>
+			<key>CLASS</key>
+			<string>FirstResponder</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key>addButtonPressed</key>
+				<string>id</string>
+				<key>deleteButtonPressed</key>
+				<string>id</string>
+				<key>selectionChanged</key>
+				<string>id</string>
+			</dict>
+			<key>CLASS</key>
+			<string>CustomizeBrowserDelegate</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>OUTLETS</key>
+			<dict>
+				<key>m_addButton</key>
+				<string>NSButton</string>
+				<key>m_browser</key>
+				<string>CustomizeBrowser</string>
+				<key>m_deleteButton</key>
+				<string>NSButton</string>
+				<key>m_mainWindow</key>
+				<string>MainWindow</string>
+				<key>m_sshHandler</key>
+				<string>SSHHandler</string>
+			</dict>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key>sshDialogCancel</key>
+				<string>id</string>
+				<key>sshDialogOk</key>
+				<string>id</string>
+			</dict>
+			<key>CLASS</key>
+			<string>SSHHandler</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>OUTLETS</key>
+			<dict>
+				<key>m_mainWindow</key>
+				<string>MainWindow</string>
+				<key>m_sshIPText1</key>
+				<string>NSTextField</string>
+				<key>m_sshIPText2</key>
+				<string>NSTextField</string>
+				<key>m_sshIPText3</key>
+				<string>NSTextField</string>
+				<key>m_sshIPText4</key>
+				<string>NSTextField</string>
+				<key>m_sshPassword</key>
+				<string>NSSecureTextField</string>
+				<key>m_sshWindow</key>
+				<string>NSWindow</string>
+			</dict>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key>checkForUpdates</key>
+				<string>id</string>
+			</dict>
+			<key>CLASS</key>
+			<string>SUUpdater</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+		<dict>
+			<key>CLASS</key>
+			<string>CustomizeBrowser</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSBrowser</string>
+		</dict>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key>activate</key>
+				<string>id</string>
+				<key>backupActivation</key>
+				<string>id</string>
+				<key>changePassword</key>
+				<string>id</string>
+				<key>deactivate</key>
+				<string>id</string>
+				<key>enterDFUMode</key>
+				<string>id</string>
+				<key>enterRecoveryMode</key>
+				<string>id</string>
+				<key>generateActivation</key>
+				<string>id</string>
+				<key>imeiDialogCancel</key>
+				<string>id</string>
+				<key>imeiDialogOk</key>
+				<string>id</string>
+				<key>installSSH</key>
+				<string>id</string>
+				<key>installSimUnlock</key>
+				<string>id</string>
+				<key>passwordDialogCancel</key>
+				<string>id</string>
+				<key>passwordDialogOk</key>
+				<string>id</string>
+				<key>performJailbreak</key>
+				<string>id</string>
+				<key>performSimUnlock</key>
+				<string>id</string>
+				<key>preFirmwareUpgrade</key>
+				<string>id</string>
+				<key>putPEMOnPhone</key>
+				<string>id</string>
+				<key>removeSSH</key>
+				<string>id</string>
+				<key>removeSimUnlock</key>
+				<string>id</string>
+				<key>restorePEM</key>
+				<string>id</string>
+				<key>returnToJail</key>
+				<string>id</string>
+				<key>showAboutPanel</key>
+				<string>id</string>
+				<key>sshRemovalDialogCancel</key>
+				<string>id</string>
+				<key>sshRemovalDialogOk</key>
+				<string>id</string>
+				<key>syncRingtones</key>
+				<string>id</string>
+				<key>waitDialogCancel</key>
+				<string>id</string>
+			</dict>
+			<key>CLASS</key>
+			<string>AppController</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>OUTLETS</key>
+			<dict>
+				<key>accountNameField</key>
+				<string>NSTextField</string>
+				<key>activateButton</key>
+				<string>NSButton</string>
+				<key>activationStateField</key>
+				<string>NSTextField</string>
+				<key>basebandVersionField</key>
+				<string>NSTextField</string>
+				<key>buildVersionField</key>
+				<string>NSTextField</string>
+				<key>changePasswordButton</key>
+				<string>NSButton</string>
+				<key>chmodRemovalButton</key>
+				<string>NSButton</string>
+				<key>customizeBrowser</key>
+				<string>CustomizeBrowser</string>
+				<key>deactivateButton</key>
+				<string>NSButton</string>
+				<key>enterDFUModeButton</key>
+				<string>NSButton</string>
+				<key>enterRecoveryModeButton</key>
+				<string>NSButton</string>
+				<key>enterRecoveryModeDescription</key>
+				<string>NSTextField</string>
+				<key>firmwareVersionField</key>
+				<string>NSTextField</string>
+				<key>iTunesVersionField</key>
+				<string>NSTextField</string>
+				<key>installSSHButton</key>
+				<string>NSButton</string>
+				<key>installSimUnlockButton</key>
+				<string>NSButton</string>
+				<key>jailbreakButton</key>
+				<string>NSButton</string>
+				<key>jailbrokenField</key>
+				<string>NSTextField</string>
+				<key>libarmfpRemovalButton</key>
+				<string>NSButton</string>
+				<key>mainWindow</key>
+				<string>MainWindow</string>
+				<key>newPasswordDialog</key>
+				<string>NSWindow</string>
+				<key>passwordAgainField</key>
+				<string>NSSecureTextField</string>
+				<key>passwordField</key>
+				<string>NSSecureTextField</string>
+				<key>performSimUnlockButton</key>
+				<string>NSButton</string>
+				<key>preFirmwareUpgradeButton</key>
+				<string>NSButton</string>
+				<key>productVersionField</key>
+				<string>NSTextField</string>
+				<key>removeSSHButton</key>
+				<string>NSButton</string>
+				<key>removeSimUnlockButton</key>
+				<string>NSButton</string>
+				<key>returnToJailButton</key>
+				<string>NSButton</string>
+				<key>serialNumberField</key>
+				<string>NSTextField</string>
+				<key>shRemovalButton</key>
+				<string>NSButton</string>
+				<key>sshHandler</key>
+				<string>SSHHandler</string>
+				<key>sshInstalledField</key>
+				<string>NSTextField</string>
+				<key>sshRemovalDialog</key>
+				<string>NSWindow</string>
+			</dict>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+	</array>
+	<key>IBVersion</key>
+	<string>1</string>
+</dict>
+</plist>

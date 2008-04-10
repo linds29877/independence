@@ -32,6 +32,7 @@ MainWindow *g_mainWindow;
 	g_mainWindow = self;
 	m_statusSpinning = false;
 	m_modal = false;
+	waitDialog = nil;
 }
 
 - (void)displayAlert:(NSString*)title message:(NSString*)msg
@@ -65,7 +66,9 @@ MainWindow *g_mainWindow;
 - (void)startDisplayWaitingSheet:(NSString*)title message:(NSString*)msg image:(NSImage*)img
 					cancelButton:(bool)cancel indeterminate:(BOOL)indeterminate runModal:(bool)modal
 {
-		
+
+	if (waitDialog != nil) return;
+
 	if (img != nil) {
 		waitDialog = [[NSPanel alloc] initWithContentRect:NSMakeRect(0, 0, 496, 286)
 												styleMask:NSTitledWindowMask
@@ -190,34 +193,37 @@ MainWindow *g_mainWindow;
 
 - (void)endDisplayWaitingSheet
 {
+
+	if (waitDialog == nil) return;
+
 	[waitDialogSpinner stopAnimation:self];
 	[NSApp endSheet:waitDialog];
 	[waitDialog orderOut:self];
-
+	
 	if (m_modal) {
 		[NSApp stopModal];
 	}
-
+	
 	[waitDialogSpinner release];
 	waitDialogSpinner = nil;
-
+	
 	if (waitDialogCancel != nil) {
 		[waitDialogCancel setTarget:nil];
 		[waitDialogCancel setAction:nil];
 		[waitDialogCancel release];
 		waitDialogCancel = nil;
 	}
-
+	
 	if (waitDialogMessage != nil) {
 		[waitDialogMessage release];
 		waitDialogMessage = nil;
 	}
-
+	
 	if (waitDialogImage != nil) {
 		[waitDialogImage release];
 		waitDialogImage = nil;
 	}
-
+	
 	[waitDialog release];
 	waitDialog = nil;
 }

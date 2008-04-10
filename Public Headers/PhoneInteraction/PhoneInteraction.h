@@ -130,6 +130,9 @@ public:
 	// used to check connection status (but don't poll -- use notifcation callbacks instead)
 	bool isConnected();
 	bool isConnectedToAFC();
+	bool isInRecoveryMode();
+	bool isInRestoreMode();
+	bool isInDFUMode();
 
 	// information functions
 	bool readValue(const char *key, char **value);
@@ -173,6 +176,7 @@ public:
 	// used to switch phone modes
 	void enterDFUMode(const char *firmwarePath);
 	void enterRecoveryMode();
+	void exitRecoveryMode();
 
 	// used to reboot the phone via recovery mode
 	bool reboot();
@@ -236,7 +240,7 @@ private:
 								 const char *basepath, bool ignoreUserFiles);
 	bool removePathRecursive(const char *path);
 	bool writeDataToFile(void *buf, int size, const char *file, int failureMsg = 0, int successMsg = 0);
-	void recoveryModeStarted_dfu(struct am_recovery_device *rdev);
+	void recoveryModeStarted_dfu();
 	CFDictionaryRef getUserRingtoneDictionary();
 
 	void connectToPhone();
@@ -271,7 +275,6 @@ private:
 
 	void recoveryModeStarted(struct am_recovery_device *dev);
 	void recoveryModeFinished(struct am_recovery_device *dev);
-	void exitRecoveryMode(am_recovery_device *dev);
 	
 	void restoreModeStarted();
 	void restoreModeFinished();
