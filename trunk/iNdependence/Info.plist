@@ -7,9 +7,9 @@
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleGetInfoString</key>
-	<string>1.4, © The Operator 2007-2008</string>
+	<string>1.4.1, © The Operator 2007-2008</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.4</string>
+	<string>1.4.1</string>
 	<key>CFBundleHelpBookFolder</key>
 	<string>iNdependenceHelp</string>
 	<key>CFBundleHelpBookName</key>
@@ -17,7 +17,7 @@
 	<key>CFBundleIconFile</key>
 	<string>iNdependence.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.operator.iNdependence</string>
+	<string>com.dialectro.iNdependence</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -27,10 +27,12 @@
 	<key>CFBundleSignature</key>
 	<string>indp</string>
 	<key>CFBundleVersion</key>
-	<string>1.4</string>
+	<string>1.4.1</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>SUFeedURL</key>
+	<string>http://dialectro.com/software/independence/appcast.xml</string>
 </dict>
 </plist>

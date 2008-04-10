@@ -40,6 +40,7 @@ enum
 	MENU_ITEM_PERFORM_SIM_UNLOCK = 16,
 	MENU_ITEM_INSTALL_SSH = 17,
 	MENU_ITEM_CHANGE_PASSWORD = 18,
+	MENU_ITEM_ENTER_RECOVERY_MODE = 19,
 	MENU_ITEM_ENTER_DFU_MODE = 20,
 	MENU_ITEM_REMOVE_SSH = 21,
 	MENU_ITEM_PRE_FIRMWARE_UPGRADE = 22
@@ -235,6 +236,11 @@ static void phoneInteractionNotification(int type, const char *msg)
 				[g_appController setRecoveryMode:false];
 				[g_mainWindow updateStatus];
 				break;
+			case NOTIFY_RECOVERY_FAILED:
+				[g_mainWindow endDisplayWaitingSheet];
+				[g_mainWindow updateStatus];
+				[g_mainWindow displayAlert:@"Failure" message:[NSString stringWithCString:msg encoding:NSUTF8StringEncoding]];
+				break;
 			case NOTIFY_RESTORE_CONNECTED:
 				[g_appController setRestoreMode:true];
 				[g_mainWindow updateStatus];
@@ -313,6 +319,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 	m_waitingForDeactivation = false;
 	m_waitingForNewActivation = false;
 	m_waitingForNewDeactivation = false;
+	m_waitingForRecoveryModeSwitch = false;
 	m_bootCount = 0;
 	m_sshPath = NULL;
 	m_ramdiskPath = nil;
@@ -1024,6 +1031,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 			[deactivateButton setEnabled:NO];
 		}
 
+		[enterRecoveryModeButton setEnabled:YES];
 		[enterDFUModeButton setEnabled:YES];
 
 		if (m_installingSSH) {
@@ -1051,7 +1059,10 @@ static void phoneInteractionNotification(int type, const char *msg)
 			[mainWindow endDisplayWaitingSheet];
 			[mainWindow displayAlert:@"Success" message:@"Successfully deactivated phone."];
 		}
-
+		else if (m_waitingForRecoveryModeSwitch) {
+			m_waitingForRecoveryModeSwitch = false;
+			[mainWindow endDisplayWaitingSheet];
+		}
 
 		[performSimUnlockButton setEnabled:YES];
 	}
@@ -1062,6 +1073,7 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 		[activateButton setEnabled:NO];
 		[deactivateButton setEnabled:NO];
+		[enterRecoveryModeButton setEnabled:NO];
 		[enterDFUModeButton setEnabled:NO];
 		[performSimUnlockButton setEnabled:NO];
 	}
@@ -1117,6 +1129,24 @@ static void phoneInteractionNotification(int type, const char *msg)
 - (void)setRecoveryMode:(bool)inRecovery
 {
 	m_recoveryMode = inRecovery;
+
+	if (m_recoveryMode) {
+		[enterRecoveryModeButton setTitle:@"Exit Recovery Mode"];
+		[enterRecoveryModeButton setEnabled:YES];
+		[enterRecoveryModeDescription setStringValue:@"Returns your phone back to normal mode"];
+
+		if (m_waitingForRecoveryModeSwitch) {
+			m_waitingForRecoveryModeSwitch = false;
+			[mainWindow endDisplayWaitingSheet];
+		}
+
+	}
+	else {
+		[enterRecoveryModeButton setTitle:@"Enter Recovery Mode"];
+		[enterRecoveryModeButton setEnabled:NO];
+		[enterRecoveryModeDescription setStringValue:@"Puts your phone into a mode where you can restore the firmware from iTunes without needing activation"];
+	}
+
 	[mainWindow updateStatus];
 }
 
@@ -1389,6 +1419,23 @@ static void phoneInteractionNotification(int type, const char *msg)
 
 	m_returningToJail = true;
 	m_phoneInteraction->returnToJail([servicesFile UTF8String], [fstabFile UTF8String]);
+}
+
+- (IBAction)enterRecoveryMode:(id)sender
+{
+	m_waitingForRecoveryModeSwitch = true;
+
+	if ([self isInRecoveryMode]) {
+		[mainWindow startDisplayWaitingSheet:@"Returning to normal mode" message:@"Returning to normal mode..." image:nil
+								cancelButton:false runModal:false];
+		m_phoneInteraction->exitRecoveryMode();
+	}
+	else {
+		[mainWindow startDisplayWaitingSheet:@"Entering recovery mode" message:@"Entering recovery mode..." image:nil
+								cancelButton:false runModal:false];
+		m_phoneInteraction->enterRecoveryMode();
+	}
+
 }
 
 - (IBAction)enterDFUMode:(id)sender
@@ -2487,12 +2534,22 @@ static void phoneInteractionNotification(int type, const char *msg)
 			}
 
 			break;
-		case MENU_ITEM_ENTER_DFU_MODE:
+		case MENU_ITEM_ENTER_RECOVERY_MODE:
 
-			if (![self isConnected]) {
+			if ([self isInRecoveryMode]) {
+				[menuItem setTitle:@"Exit Recovery Mode"];
+			}
+			else if (![self isConnected]) {
 				return NO;
 			}
 
+			break;
+		case MENU_ITEM_ENTER_DFU_MODE:
+			
+			if (![self isConnected]) {
+				return NO;
+			}
+			
 			break;
 		case MENU_ITEM_JAILBREAK:
 			
